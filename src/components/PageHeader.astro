@@ -18,6 +18,10 @@ interface Props {
    */
   featuredImage?: string
   /**
+   * The second featured image of the page
+   */
+  featuredImage2?: string
+  /**
    * The title of the page
    */
   title: string
@@ -49,7 +53,14 @@ interface Props {
    * @description Object mapping URL segments to their display labels
    */
   customBreadcrumbLabels?: Record<string, string>
-
+  /**
+   * The keypoints of the page
+   */
+  keypoints?: string[]
+  /**
+   * The stack of the page
+   */
+  stack?: string[]
   /**
    * Whether to join the last breadcrumb
    */
@@ -63,9 +74,12 @@ const {
   bgType,
   showBreadcrumbs = true,
   featuredImage,
+  featuredImage2,
   author,
   customBreadcrumbLabels,
   joinLastBreadcrumb = false,
+  keypoints,
+  stack,
 } = Astro.props
 
 // Helper function to format segment names
@@ -133,7 +147,7 @@ const sanitizedSubtitle: string = subtitle
   </div>
   <div class:list={['py-16', bgType && `bg-${bgType}`]}>
     <div class="space-content container">
-      {
+      <!-- {
         featuredImage && (
           <div class="featured-image-container mb-8">
             <Image
@@ -145,9 +159,40 @@ const sanitizedSubtitle: string = subtitle
             />
           </div>
         )
+      } -->
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div class="order-2 flex flex-col justify-center md:order-1">
+          <Heading level="h1">{title}</Heading>
+          {sanitizedSubtitle && <p class="text-2xl" set:html={sanitizedSubtitle} />}
+        </div>
+
+        {
+          featuredImage2 && (
+            <div class="order-1 mr-0 flex justify-center sm:-mr-5 md:order-2 md:justify-end xl:-mr-18">
+              <Image src={featuredImage2} alt="" width={380} height={250} class="object-cover" />
+            </div>
+          )
+        }
+      </div>
+      {
+        keypoints && (
+          <p class="flex flex-wrap gap-4">
+            {keypoints.map((keypoint, index) => (
+              <>
+                <span>{keypoint}</span>
+                {index !== keypoints.length - 1 && <span class="text-neutral-500">·</span>}
+              </>
+            ))}
+          </p>
+        )
       }
-      <Heading level="h1">{title}</Heading>
-      {sanitizedSubtitle && <p class="text-2xl" set:html={sanitizedSubtitle} />}
+      {
+        stack && (
+          <p class="flex flex-wrap gap-4">
+            Built with {stack.slice(0, -1).join(', ')} and {stack[stack.length - 1]}
+          </p>
+        )
+      }
       {
         author && (
           <div class="mt-6 flex items-center">

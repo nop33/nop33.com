@@ -1,0 +1,179 @@
+---
+title: Flatwise
+author: Ilias Trichopoulos
+description: A web app that fairly redistributes furniture costs when flatmates move in or out.
+featuredImage2: '/projects/flatwise/flatwise-iphone-left.png'
+keypoints: ['Personal project', 'Started in 2019', 'In continuous real-world use', 'Zurich, Switzerland']
+stack: ['Vue.js', 'Material UI', 'Firebase', 'Google OAuth']
+---
+
+import ContentMedia from '@components/ContentMedia.astro'
+import BreakoutSection from '@components/BreakoutSection.astro'
+import { Media } from 'accessible-astro-components'
+
+## The problem
+
+_Flatmates change. Furniture stays._
+
+In 2019, I set up a new flatshare in Zurich. The apartment was large, empty, and needed to be fully furnished. My flatmates and I invested several thousand CHF together and split all costs equally.
+
+Like most flatshares, people didn't stay forever. When someone eventually moved out, there was no fair way to compensate them for the money they had invested in shared furniture. They either had to accept the loss or negotiate informally with the next person moving in.
+
+This created a few clear problems:
+
+- Furniture was paid upfront but used over many years
+- Flatmates changed regularly
+- There was no objective way to calculate a fair buy-out
+- Manual calculations and negotiations created friction
+
+I wanted a solution that was transparent, fair, and easy to apply every time.
+
+<BreakoutSection>
+  <div class="container my-60">
+    <div class="grid grid-cols-1 gap-24 md:grid-cols-[1fr_2fr] items-center">
+      <Media
+        src="/projects/flatwise/flatwise-iphone-balances-portrait.png"
+        class="max-w-[280px] w-full h-auto mx-auto md:mx-0"
+        ratio="auto"
+      />
+      <div class="space-content flex flex-col justify-center">
+
+        ## The idea
+
+        _Treat furniture as a depreciating shared asset_
+
+        Instead of seeing furniture as a sunk cost, I treated it as a shared investment that loses value over time.
+
+        Each flatmate contributes the same initial amount.<br/>
+        The total value depreciates at a fixed yearly rate.<br/>
+        When someone moves out, the incoming flatmate buys their depreciated share.
+
+        Example:
+
+        - Initial investment per flatmate: 2'000 CHF
+        - Annual depreciation: 20%
+        - Move-out after 1 year → payout: 1'600 CHF
+
+        The rules are simple, predictable, and agreed upon upfront. No negotiation needed.
+      </div>
+    </div>
+  </div>
+</BreakoutSection>
+
+<div>
+  <div class="my-60 space-content">
+    ## Technical implementation
+
+    _Learning a modern frontend framework by building something real._
+
+    I built the app from scratch using Vue.js, deliberately choosing a framework I had only scratched the surface of while working at Station AG in Zurich.
+    At the time, my frontend experience was mostly limited to vanilla JS, jQuery and some Preact.
+
+    To support real usage beyond a single device or session, I also implemented a backend using Firebase.
+
+    - Framework: Vue.js (with Vuex, Vue Router)
+    - UI library: Material UI (through Vuetify)
+    - Backend: Firebase (Firestore + Auth)
+    - Architecture: Single-page application with Firebase for authentication and database
+
+    The architecture is intentionally simple, but complete enough to behave like a real product rather than a prototype.
+  </div>
+</div>
+
+## Challenges and solutions
+
+_Making changes safely once the app was in real use._
+
+Once the app was in active, day-to-day use, the main challenge shifted from building features to not breaking something that people relied on. I was especially concerned about two risks:
+
+- Pushing changes directly to production without proper testing
+- Accidentally corrupting shared data stored in Firestore
+
+At that point, treating the app like a “side project” was no longer acceptable.
+
+<BreakoutSection>
+  <div class="my-20">
+    <Media src="/projects/flatwise/flatwise-firebase.png" />
+  </div>
+</BreakoutSection>
+
+
+<BreakoutSection>
+  <div class="grid grid-cols-1 gap-24 lg:grid-cols-2">
+    <div class="space-content">
+      ### Staging environment
+
+      To reduce risk, I introduced a staging environment that mirrored production as closely as possible.
+
+      - A separate Firebase project for staging
+      - The same Firestore data model
+      - The same Firebase Security Rules, cloned and tested before release
+      - All changes deployed and validated in staging first
+
+      Only once I was confident that authentication, authorization, and data integrity behaved as expected would I deploy to production. This gave me confidence to continue improving the app without putting existing data at risk.
+    </div>
+    <div class="space-content">
+      ### Protecting the data
+
+      To further reduce the blast radius of mistakes, I also implemented regular database backups.
+
+      - Scripts that periodically exported Firestore data
+      - Backups stored locally on my machine
+      - Ability to restore data manually if needed
+
+      This turned "fear of data loss" into a manageable, controlled risk.
+
+      It was a practical lesson in the difference between writing code and owning software in production.
+    </div>
+  </div>
+</BreakoutSection>
+
+
+<div>
+  <div class="my-60 space-content">
+    ## What I learned
+
+    _Deepening frontend experience._
+
+    This project didn't change how I approach software. That shift had already happened years earlier when I built the [ESN Webmanager](/portfolio/esn-webmanager) for the student organization I volunteered for as a board member.
+
+    Instead, this project helped me extend and deepen those foundations in a new technical context. Itforced me to learn:
+
+    - Component-based UI design
+    - State management and data flow with Vuex and persisting shared state with Firestore
+    - Designing data models for multi-user access
+    - OAuth-based authentication flows via the Firebase SDK
+    - Writing Firebase Security Rules to ensure users could only access data they were authorized to see
+
+    I learned far more by shipping and maintaining this app than I would have by following tutorials alone. It pushed me beyond “just frontend” and forced me to think about authentication, authorization, and data integrity from the start.
+
+    <div>
+      <div class="my-20">
+        <BreakoutSection>
+        ```
+        service cloud.firestore {
+          match /databases/{database}/documents {
+            match /users/{userId} {
+              allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+            }
+          }
+        }
+        ```
+        </BreakoutSection>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+## Real world impact
+
+_Quiet success over seven years._
+
+The app has been used continuously since 2019 in the same flatshare. Multiple flatmate changes handled smoothly, no disputes about money or fairness, no major rewrites, no migrations, no maintenance drama.
+
+It has quietly done its job for over seven years, which I consider the strongest validation of the original idea and implementation.
+
+## Future work
+
+Together with [Yann Wallis](https://github.com/ywallis) we are working on a brand new app called [OweYeah!](/portfolio/oweyeah) that will eventually replace Flatwise.
