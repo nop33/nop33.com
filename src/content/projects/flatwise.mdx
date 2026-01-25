@@ -5,11 +5,17 @@ description: A web app that fairly redistributes furniture costs when flatmates 
 featuredImage2: '/projects/flatwise/flatwise-iphone-left.png'
 keypoints: ['Personal project', 'Started in 2019', 'In continuous real-world use', 'Zurich, Switzerland']
 stack: ['Vue.js', 'Material UI', 'Firebase', 'Google OAuth']
+github: 'https://github.com/nop33/flatwise'
+live: 'https://flatwise.netlify.app'
 ---
 
 import ContentMedia from '@components/ContentMedia.astro'
 import BreakoutSection from '@components/BreakoutSection.astro'
 import { Media } from 'accessible-astro-components'
+import VueLogoBadge from '@components/logoBadges/VueLogoBadge.astro'
+import VuetifyLogoBadge from '@components/logoBadges/VuetifyLogoBadge.astro'
+import FirebaseLogoBadge from '@components/logoBadges/FirebaseLogoBadge.astro'
+import NetlifyLogoBadge from '@components/logoBadges/NetlifyLogoBadge.astro'
 
 ## The problem
 
@@ -40,7 +46,7 @@ I wanted a solution that was transparent, fair, and easy to apply every time.
 
         ## The idea
 
-        _Treat furniture as a depreciating shared asset_
+        _Treat furniture as a depreciating shared asset._
 
         Instead of seeing furniture as a sunk cost, I treated it as a shared investment that loses value over time.
 
@@ -57,6 +63,7 @@ I wanted a solution that was transparent, fair, and easy to apply every time.
         The rules are simple, predictable, and agreed upon upfront. No negotiation needed.
       </div>
     </div>
+
   </div>
 </BreakoutSection>
 
@@ -66,7 +73,7 @@ I wanted a solution that was transparent, fair, and easy to apply every time.
 
     _Learning a modern frontend framework by building something real._
 
-    I built the app from scratch using Vue.js, deliberately choosing a framework I had only scratched the surface of while working at Station AG in Zurich.
+    I built the app from scratch using Vue.js, deliberately choosing a framework I had only scratched the surface of while working at Station AG [TODO: link to experience page] in Zurich.
     At the time, my frontend experience was mostly limited to vanilla JS, jQuery and some Preact.
 
     To support real usage beyond a single device or session, I also implemented a backend using Firebase.
@@ -77,6 +84,16 @@ I wanted a solution that was transparent, fair, and easy to apply every time.
     - Architecture: Single-page application with Firebase for authentication and database
 
     The architecture is intentionally simple, but complete enough to behave like a real product rather than a prototype.
+
+    <div>
+      <div class="flex flex-col items-center sm:flex-row justify-center sm:gap-10 gap-24 sm:flex-direction-column mt-60">
+        <VueLogoBadge />
+        <VuetifyLogoBadge />
+        <FirebaseLogoBadge />
+        <NetlifyLogoBadge />
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -97,10 +114,9 @@ At that point, treating the app like a “side project” was no longer acceptab
   </div>
 </BreakoutSection>
 
-
 <BreakoutSection>
-  <div class="grid grid-cols-1 gap-24 lg:grid-cols-2">
-    <div class="space-content">
+  <div class="grid grid-cols-1 gap-24 lg:grid-cols-2 ">
+    <div class=" space-content">
       ### Staging environment
 
       To reduce risk, I introduced a staging environment that mirrored production as closely as possible.
@@ -112,7 +128,7 @@ At that point, treating the app like a “side project” was no longer acceptab
 
       Only once I was confident that authentication, authorization, and data integrity behaved as expected would I deploy to production. This gave me confidence to continue improving the app without putting existing data at risk.
     </div>
-    <div class="space-content">
+    <div class=" space-content">
       ### Protecting the data
 
       To further reduce the blast radius of mistakes, I also implemented regular database backups.
@@ -125,9 +141,24 @@ At that point, treating the app like a “side project” was no longer acceptab
 
       It was a practical lesson in the difference between writing code and owning software in production.
     </div>
+
   </div>
 </BreakoutSection>
 
+    <div>
+      <div class="flex flex-col sm:flex-row sm:gap-2 gap-24 items-center justify-center my-60">
+        <Media
+          src="/projects/flatwise/flatwise-item.png"
+          class="max-w-[280px] w-full h-auto mx-auto md:mx-0"
+          ratio="auto"
+        />
+        <Media
+          src="/projects/flatwise/flatwise-moveout.png"
+          class="max-w-[280px] w-full h-auto mx-auto md:mx-0"
+          ratio="auto"
+        />
+      </div>
+    </div>
 
 <div>
   <div class="my-60 space-content">
@@ -137,7 +168,7 @@ At that point, treating the app like a “side project” was no longer acceptab
 
     This project didn't change how I approach software. That shift had already happened years earlier when I built the [ESN Webmanager](/portfolio/esn-webmanager) for the student organization I volunteered for as a board member.
 
-    Instead, this project helped me extend and deepen those foundations in a new technical context. Itforced me to learn:
+    Instead, this project helped me extend and deepen those foundations in a new technical context. It forced me to learn:
 
     - Component-based UI design
     - State management and data flow with Vuex and persisting shared state with Firestore
@@ -162,9 +193,9 @@ At that point, treating the app like a “side project” was no longer acceptab
         </BreakoutSection>
       </div>
     </div>
+
   </div>
 </div>
-
 
 ## Real world impact
 

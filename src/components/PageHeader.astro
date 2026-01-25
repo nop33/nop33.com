@@ -1,5 +1,5 @@
 ---
-import { Avatar, Breadcrumbs, BreadcrumbsItem, Heading } from 'accessible-astro-components'
+import { Avatar, Breadcrumbs, BreadcrumbsItem, Heading, Link, Button } from 'accessible-astro-components'
 import { Image } from 'astro:assets'
 import sanitizeHtml from 'sanitize-html'
 
@@ -62,6 +62,14 @@ interface Props {
    */
   stack?: string[]
   /**
+   * The GitHub link of the page
+   */
+  github?: string
+  /**
+   * The live link of the page
+   */
+  live?: string
+  /**
    * Whether to join the last breadcrumb
    */
   joinLastBreadcrumb?: boolean
@@ -80,6 +88,8 @@ const {
   joinLastBreadcrumb = false,
   keypoints,
   stack,
+  github,
+  live,
 } = Astro.props
 
 // Helper function to format segment names
@@ -200,6 +210,22 @@ const sanitizedSubtitle: string = subtitle
           </div>
         )
       }
+      <div class="flex flex-wrap gap-4">
+        {
+          github && (
+            <Link href={github} target="_blank">
+              GitHub
+            </Link>
+          )
+        }
+        {
+          live && (
+            <Link href={live} target="_blank">
+              Live
+            </Link>
+          )
+        }
+      </div>
     </div>
   </div>
 </section>

@@ -1,0 +1,13 @@
+---
+interface Props {
+  title: string
+  color: string
+}
+
+const { color, title }: Props = Astro.props
+---
+
+<div class=`flex items-center gap-2` style=`color: ${color}`>
+  <slot />
+  <span class="font-medium">{title}</span>
+</div>
