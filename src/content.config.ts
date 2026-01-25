@@ -13,10 +13,12 @@ const projects = defineCollection({
     description: z.string(),
     github: z.string().optional(),
     live: z.string().optional(),
+    download: z.string().optional(),
     featuredImage2: z.string().optional(),
     keypoints: z.array(z.string()).default([]),
     stack: z.array(z.string()).default([]),
     tags: z.array(z.string()).default([]),
+    collaborators: z.array(z.string()).default([]),
   }),
 })
 

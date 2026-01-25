@@ -70,9 +70,17 @@ interface Props {
    */
   live?: string
   /**
+   * The download link of the page
+   */
+  download?: string
+  /**
    * Whether to join the last breadcrumb
    */
   joinLastBreadcrumb?: boolean
+  /**
+   * The collaborators of the page
+   */
+  collaborators?: string[]
 }
 
 const {
@@ -90,6 +98,8 @@ const {
   stack,
   github,
   live,
+  download,
+  collaborators,
 } = Astro.props
 
 // Helper function to format segment names
@@ -199,7 +209,8 @@ const sanitizedSubtitle: string = subtitle
       {
         stack && (
           <p class="flex flex-wrap gap-4">
-            Built with {stack.slice(0, -1).join(', ')} and {stack[stack.length - 1]}
+            Built with {stack.slice(0, -1).join(', ')} and {stack[stack.length - 1]}{' '}
+            {collaborators?.length ? `together with ${collaborators.join(', ')}` : null}
           </p>
         )
       }
@@ -222,6 +233,13 @@ const sanitizedSubtitle: string = subtitle
           live && (
             <Link href={live} target="_blank">
               Live
+            </Link>
+          )
+        }
+        {
+          download && (
+            <Link href={download} target="_blank">
+              Download
             </Link>
           )
         }
