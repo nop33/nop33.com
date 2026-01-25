@@ -40,49 +40,49 @@ const viteConfig = {
 }
 
 // Add workspace-specific config only when using symlinks
-if (isLinked) {
-  console.log('Workspace detected - enabling auto-reload for locally linked components')
+// if (isLinked) {
+//   console.log('Workspace detected - enabling auto-reload for locally linked components')
 
-  const componentsRealPath = resolve('../accessible-astro-components')
+//   const componentsRealPath = resolve('../accessible-astro-components')
 
-  // Essential config for symlinked packages
-  viteConfig.resolve.preserveSymlinks = true
-  viteConfig.server = {
-    fs: {
-      allow: ['..', '../..'],
-    },
-  }
-  viteConfig.optimizeDeps = {
-    exclude: ['accessible-astro-components'],
-  }
+//   // Essential config for symlinked packages
+//   viteConfig.resolve.preserveSymlinks = true
+//   viteConfig.server = {
+//     fs: {
+//       allow: ['..', '../..'],
+//     },
+//   }
+//   viteConfig.optimizeDeps = {
+//     exclude: ['accessible-astro-components'],
+//   }
 
-  // Custom watcher for linked components - triggers reload on changes
-  viteConfig.plugins.push({
-    name: 'reload-on-components-change',
-    configureServer(server) {
-      const componentsWatchPath = resolve(componentsRealPath, 'src/components')
+//   // Custom watcher for linked components - triggers reload on changes
+//   viteConfig.plugins.push({
+//     name: 'reload-on-components-change',
+//     configureServer(server) {
+//       const componentsWatchPath = resolve(componentsRealPath, 'src/components')
 
-      const watcher = watch(componentsWatchPath, { recursive: true }, (eventType, filename) => {
-        if (filename?.endsWith('.astro')) {
-          console.log('Component changed:', filename, ' - reloading...')
+//       const watcher = watch(componentsWatchPath, { recursive: true }, (eventType, filename) => {
+//         if (filename?.endsWith('.astro')) {
+//           console.log('Component changed:', filename, ' - reloading...')
 
-          // Invalidate all modules from the components package
-          Array.from(server.moduleGraph.urlToModuleMap.keys()).forEach((url) => {
-            if (url.includes('accessible-astro-components')) {
-              const mod = server.moduleGraph.urlToModuleMap.get(url)
-              if (mod) server.moduleGraph.invalidateModule(mod)
-            }
-          })
+//           // Invalidate all modules from the components package
+//           Array.from(server.moduleGraph.urlToModuleMap.keys()).forEach((url) => {
+//             if (url.includes('accessible-astro-components')) {
+//               const mod = server.moduleGraph.urlToModuleMap.get(url)
+//               if (mod) server.moduleGraph.invalidateModule(mod)
+//             }
+//           })
 
-          // Trigger full page reload
-          server.ws.send({ type: 'full-reload', path: '*' })
-        }
-      })
+//           // Trigger full page reload
+//           server.ws.send({ type: 'full-reload', path: '*' })
+//         }
+//       })
 
-      server.httpServer?.on('close', () => watcher.close())
-    },
-  })
-}
+//       server.httpServer?.on('close', () => watcher.close())
+//     },
+//   })
+// }
 
 // https://astro.build/config
 export default defineConfig({
