@@ -15,6 +15,7 @@ const projects = defineCollection({
     live: z.string().optional(),
     download: z.string().optional(),
     featuredImage2: z.string().optional(),
+    featuredImageWidth: z.number().optional(),
     keypoints: z.array(z.string()).default([]),
     stack: z.array(z.string()).default([]),
     tags: z.array(z.string()).default([]),
