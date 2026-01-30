@@ -187,8 +187,8 @@ const sanitizedSubtitle: string = subtitle
       } -->
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-16">
         <div class="order-2 flex flex-col justify-center md:order-1">
-          <Heading level="h1">{title}</Heading>
-          {sanitizedSubtitle && <p class="text-2xl" set:html={sanitizedSubtitle} />}
+          <h1 class="leading-none">{title}</h1>
+          {sanitizedSubtitle && <p class="mt-4 text-2xl" set:html={sanitizedSubtitle} />}
         </div>
 
         {
