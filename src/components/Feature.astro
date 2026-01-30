@@ -11,23 +11,22 @@ interface Props {
   /**
    * The icon to display
    */
-  icon: string
+  icon?: string
   /**
    * The title to display
    */
   title: string
 }
 
-const { icon = 'mdi:rocket', title = 'Title' }: Props = Astro.props
+const { icon, title = 'Title' }: Props = Astro.props
 ---
 
 <div class="feature flex flex-col gap-4">
-  <Icon aria-hidden="true" name={icon} />
+  {icon && <Icon aria-hidden="true" name={icon} />}
   <div class="content">
     <Heading level="h3" size="h6" class="mb-2">{title}</Heading>
-    <p>
-      <slot>Lorem ipsum dolor sit amet consectetur adipisicing elit. Hic, corporis.</slot>
-    </p>
+
+    <slot />
   </div>
 </div>
 
