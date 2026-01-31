@@ -22,38 +22,75 @@ import StyledComponentsLogoBadge from '@components/logoBadges/StyledComponentsLo
 import NodeLogoBadge from '@components/logoBadges/NodeLogoBadge.astro'
 import ReduxLogoBadge from '@components/logoBadges/ReduxLogoBadge.astro'
 import TanStackLogoBadge from '@components/logoBadges/TanStackLogoBadge.astro'
+import { Media } from 'accessible-astro-components'
 
 The Alephium Desktop Wallet is the flagship desktop wallet for the Alephium blockchain.
 It is a security-critical, long-lived product that has been in active development for more than five years and is used daily by thousands of users to manage assets, interact with dApps, and sign transactions safely.
 
-I worked on the wallet as a core frontend engineer, contributing both to product features and to foundational architectural decisions together with my colleague [Mikael Vraivre](https://x.com/mikalph). Over time, the project evolved from a relatively simple Electron app into a highly modular, performance-sensitive system that balances UX, security, and scalability.
-
-## What the wallet does
-
-At a high level, the Desktop Wallet enables users to securely create, manage, and use Alephium wallets on their local machine, while integrating deeply with the Alephium ecosystem.
+I worked on the wallet as a core frontend engineer, contributing both to product features and to foundational architectural decisions together with my colleague [Mikael Vraivre](https://x.com/mikalph). The project was at its infancy when I joined and over time it evolved from a relatively simple Electron app into a highly modular, performance-sensitive system that balances UX, security, and scalability.
 
 <BreakoutSection>
-  <div class="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3">
-    <Feature title="Create and manage multiple Alephium wallets">Encrypted and stored locally.</Feature>
-    <Feature title="Generate multiple addresses per wallet">With deterministic restoration.</Feature>
-    <Feature title="Send transactions">
-      multiple assets and NFTs per transaction, optional unlock dates, configurable gas settings
-    </Feature>
-    <Feature title="View, filter, and export transaction history" />
-    <Feature title="Create passphrase-wallets">For advanced security and plausible deniability.</Feature>
-    <Feature title="Connect Ledger hardware wallets for cold signing" />
-    <Feature title="Connect to Alephium dApps via WalletConnect">
-      For seamless integration with the Alephium ecosystem.
-    </Feature>
-    <Feature title="Offline / air-gapped wallet generation" />
-    <Feature title="Import wallets created with other Alephium software" />
-    <Feature title="Export wallets via animated QR codes">Compatible with the Alephium Mobile Wallet.</Feature>
-    <Feature title="Extensive personalization">
-      localization (language, currency, number formats), theming (light / dark / system), configurable node endpoints
-      and proxy settings
-    </Feature>
+  <div class="my-30">
+    <Media src="/projects/alephium-desktop-wallet/desktop-wallet-2.png" />
   </div>
 </BreakoutSection>
+
+<div>
+  <div class="my-60 text-center">
+    ## What the wallet does
+
+    At a high level, the Desktop Wallet enables users to securely create, manage, and use Alephium wallets on their local machine, while integrating deeply with the Alephium ecosystem.
+
+    <BreakoutSection>
+      <div class="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3 my-30 text-left">
+        <Feature title="Multiple seeds">Create and manage multiple encrypted and locally stored Alephium wallets.</Feature>
+        <Feature title="Multiple addresses">Supports multiple addresses per wallet with deterministic restoration.</Feature>
+        <Feature title="Send transactions">Send multiple assets and NFTs per tx, with optional unlock dates.</Feature>
+        <Feature title="Transaction history">View, filter, and export transaction history.</Feature>
+        <Feature title="Passphrase wallets">
+          Create passphrase wallets for advanced security and plausible deniability.
+        </Feature>
+        <Feature title="Ledger integration">Connect Ledger hardware wallets for cold signing.</Feature>
+        <Feature title="WalletConnect integration">Connect to Alephium dApps via WalletConnect.</Feature>
+        <Feature title="Offline mode">Supports offline mode for air-gapped wallet generation.</Feature>
+        <Feature title="Export wallets">Export wallets with seamless import into the Alephium Mobile Wallet.</Feature>
+      </div>
+    </BreakoutSection>
+
+  </div>
+</div>
+
+<div>
+  <div class="my-60 space-content">
+    ## Architecture
+
+    The app can be described in the following subsystems:
+
+    ### Electron main process
+    This is the Node.js part of the app that is responsible for the OS-level interactions and the app's lifecycle. It handles auto-updates, deep links, native theme integration, and hardware access such as Ledger devices.
+
+    ### UI renderer process
+    This is the React part of the app that is responsible for the UI. It handles the routing, networking, localization, signing orchestration, and all user-facing logic.
+
+    This separation keeps the security-sensitive OS layer small and auditable, while allowing the product logic to remain web-native.
+
+    ### State management
+    Global UI and local state is managed with Redux Toolkit and shared through packages in our monorepo with the Alephium Mobile Wallet.
+
+    ### Remote data access
+    Tanstack Query is used to read and cache on-chain data. Data is persisted in IndexedDB, scoped per wallet. Transactions are submitted using the node provider from the Alephium web3 package.
+
+    ### Wallet engine
+    The wallet engine consists of three main components:
+    - **Key management**: storing encrypted mnemonics and decrypting for signing.
+    - **Signing**: signing with stored mnemonic of with hardware wallets.
+    - **Address generation**: discovering active addresses and deterministically regenerating addresses from stored MediaMetadata.
+
+    ### dApp connectivity
+    The main process captures `alephium://` deep links and forwards them to the renderer. The renderer manages sessions, proposal approval, and signing requests. When user action is required, the app automatically brings itself to the foreground.
+
+  </div>
+</div>
 
 ## High-level architecture
 
