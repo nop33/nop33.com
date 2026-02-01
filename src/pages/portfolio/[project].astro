@@ -5,6 +5,7 @@ import SocialShares from '@components/SocialShares.astro'
 import { Heading } from 'accessible-astro-components'
 import { getCollection, render } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
+import CallToAction from '@components/CallToAction.astro'
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects')
@@ -67,6 +68,7 @@ const author = {
       <Content />
     </div>
   </section>
+  <CallToAction />
 </DefaultLayout>
 
 <style lang="scss" is:global>

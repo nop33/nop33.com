@@ -49,15 +49,8 @@ const { page, uniqueTags } = Astro.props
 console.log(page.lastPage)
 ---
 
-<DefaultLayout
-  title="Portfolio"
-  description="A showcase of projects built with Astro Content Collections, demonstrating dynamic content management."
->
-  <PageHeader
-    title="Portfolio"
-    subtitle='A showcase of projects built with Astro Content Collections, demonstrating dynamic content management and organization. Learn more about <a href="https://docs.astro.build/en/guides/content-collections/">Astro Content Collections</a> in the official documentation.'
-    bgType="bordered"
-  />
+<DefaultLayout title="Portfolio" description="A showcase of my projects.">
+  <PageHeader title="Portfolio" subtitle="A showcase of my projects." bgType="bordered" />
   <section class="my-12">
     <div class="container">
       <Heading level="h2" size="h5" class="mb-2">Tags</Heading>
