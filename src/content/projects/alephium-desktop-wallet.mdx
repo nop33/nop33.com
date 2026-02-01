@@ -60,56 +60,10 @@ I worked on the wallet as a core frontend engineer, contributing both to product
   </div>
 </div>
 
-<div>
-  <div class="my-60 space-content">
-    ## Architecture
-
-    The app can be described in the following subsystems:
-
-    ### Electron main process
-    This is the Node.js part of the app that is responsible for the OS-level interactions and the app's lifecycle. It handles auto-updates, deep links, native theme integration, and hardware access such as Ledger devices.
-
-    ### UI renderer process
-    This is the React part of the app that is responsible for the UI. It handles the routing, networking, localization, signing orchestration, and all user-facing logic.
-
-    This separation keeps the security-sensitive OS layer small and auditable, while allowing the product logic to remain web-native.
-
-    ### State management
-    Global UI and local state is managed with Redux Toolkit and shared through packages in our monorepo with the Alephium Mobile Wallet.
-
-    ### Remote data access
-    Tanstack Query is used to read and cache on-chain data. Data is persisted in IndexedDB, scoped per wallet. Transactions are submitted using the node provider from the Alephium web3 package.
-
-    ### Wallet engine
-    The wallet engine consists of three main components:
-    - **Key management**: storing encrypted mnemonics and decrypting for signing.
-    - **Signing**: signing with stored mnemonic of with hardware wallets.
-    - **Address generation**: discovering active addresses and deterministically regenerating addresses from stored MediaMetadata.
-
-    ### dApp connectivity
-    The main process captures `alephium://` deep links and forwards them to the renderer. The renderer manages sessions, proposal approval, and signing requests. When user action is required, the app automatically brings itself to the foreground.
-
-  </div>
-</div>
-
-## High-level architecture
-
-The Desktop Wallet is built with Electron + React and lives inside the Alephium frontend monorepo. A large portion of its business logic is shared with the Alephium Mobile Wallet through common packages such as @alephium/shared and @alephium/shared-react.
-
-The app is intentionally split into two clearly separated parts:
-
-- **Electron main process**
-  Privileged OS responsibilities: window lifecycle, auto-updates, deep links, native theme integration, and hardware access.
-
-- **Renderer (React SPA)**
-  Product UI, wallet state, networking, signing orchestration, and all user-facing logic.
-
-This separation keeps the security-sensitive OS layer small and auditable, while allowing the product logic to remain web-native and highly testable.
-
-<div>
-  <div class="space-content my-60">
-    <div>
-      <div class="sm:flex-direction-column mt-60 flex flex-col flex-wrap items-center justify-center gap-24 sm:flex-row sm:gap-10">
+<BreakoutSection>
+  <div class="container my-60">
+    <div class="grid grid-cols-1 gap-24 md:grid-cols-[1fr_2fr] items-center">
+      <div class="flex flex-col gap-12 ">
         <ElectronLogoBadge />
         <ReactLogoBadge />
         <TypeScriptLogoBadge />
@@ -118,202 +72,171 @@ This separation keeps the security-sensitive OS layer small and auditable, while
         <ReduxLogoBadge />
         <TanStackLogoBadge />
       </div>
+      <div class="space-content">
+
+        ## Tech stack
+
+        The app is built on a modern, type-safe frontend stack optimized for long-running desktop applications, security-critical flows, and complex client-side state. It is packaged as a cross-platform desktop app using Electron, with Node.js powering the main process.
+
+        The entire codebase is written in TypeScript, which is essential for a project of this size and longevity.
+
+        The UI is built with React and styled using styled-components, which allows for colocated styles that evolve with the component.
+
+        The state is split between UI/local and remote state. UI state is managed with Redux Toolkit and remote state with TanStack Query. Using an async library like Tanstack Query allows for decoupling the data fetching from the UI state management and provides useful features such as caching, prefetching, and query invalidation.
+
+        ### Why this stack
+
+        This combination allows the wallet to scale in complexity without collapsing under its own weight:
+        - Electron + Node.js → controlled OS access
+        - TypeScript → safety in a large, shared codebase
+        - Redux → predictable UI and local state
+        - TanStack Query → performant, declarative server state
+        - Styled-components → flexible theming and customization
+      </div>
     </div>
+
   </div>
-</div>
+</BreakoutSection>
 
-## Subsystems and responsibilities
+<BreakoutSection>
+  <div class="my-20">
+    <Media src="/projects/alephium-desktop-wallet/architecture-diagram.svg" />
+  </div>
+</BreakoutSection>
 
-### 1) Electron “platform” layer (main + preload)
+<BreakoutSection>
+  <div class="my-20 space-content">
+    ## Architecture
 
-The Electron layer acts as a thin OS adapter:
+    The app can be described in the following subsystems:
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
 
-- Window lifecycle, focus, maximize, and native window controls.
-- Auto-updates via GitHub releases.
-- Native theme detection and propagation to the renderer.
-- Custom protocol and deep-link handling (used for WalletConnect).
-- Strict hardware access whitelisting for Ledger devices.
-- A narrow, explicitly defined IPC surface exposed via contextBridge, with sender validation on every IPC call.
+      <div>
+        ### Electron main process
+        This is the Node.js part of the app that is responsible for the OS-level interactions and the app's lifecycle. It handles auto-updates, deep links, native theme integration, and hardware access such as Ledger devices.
+      </div>
 
-### 2) UI shell & navigation (renderer)
+      <div>
+      ### UI renderer process
+      This is the React part of the app that is responsible for the UI. It handles the routing, networking, localization, signing orchestration, and all user-facing logic.
 
-The renderer is a React SPA structured around user flows:
+        This separation keeps the security-sensitive OS layer small and auditable, while allowing the product logic to remain web-native.
+      </div>
 
-- Onboarding and wallet creation
-- Unlock / lock flow
-- Authenticated wallet routes
+      <div>
+        ### State management
+        Global UI and local state is managed with Redux Toolkit and shared through packages in our monorepo with the Alephium Mobile Wallet.
+      </div>
 
-Key concerns here include:
+      <div>
+        ### Remote data access
+        Tanstack Query is used to read and cache on-chain data. Data is persisted in IndexedDB, scoped per wallet. Transactions are submitted using the node provider from the Alephium web3 package.
+      </div>
 
-- Routing with HashRouter (Electron-friendly).
-- Theming via styled-components, including system theme syncing from Electron.
-- Localization using i18next and locale-aware date/number formatting.
+      <div>
+        ### Wallet engine
+        The wallet engine consists of three main components:
+        - **Key management**: storing encrypted mnemonics and decrypting for signing.
+        - **Signing**: signing with stored mnemonic of with hardware wallets.
+        - **Address generation**: discovering active addresses and deterministically regenerating addresses from stored MediaMetadata.
+      </div>
 
-### 3) State management: Redux Toolkit + shared reducers
+      <div>
+        ### dApp connectivity
+        The main process captures `alephium://` deep links and forwards them to the renderer. The renderer manages sessions, proposal approval, and signing requests. When user action is required, the app automatically brings itself to the foreground.
+      </div>
+    </div>
 
-Global application state is managed with Redux Toolkit:
+  </div>
+</BreakoutSection>
 
-- Shared domain reducers (network, balances, transactions, addresses).
-- Desktop-specific slices (active wallet, settings, contacts, Ledger state, modals, toasts).
+<BreakoutSection>
+  <div class="my-60">
+    <Media src="/projects/alephium-desktop-wallet/desktop-wallet-1.png" />
+  </div>
+</BreakoutSection>
 
-Side effects are handled through Redux listener middleware, which keeps reducers pure while enabling persistence, synchronization, and feature-specific reactions.
+## Engineering decisions
 
-This structure allows both the Desktop and Mobile wallets to share core domain logic while diverging only where platform-specific behavior is required.
+### Process boundary: Electron main vs renderer
 
-### 4) Data access and caching
+The Electron main process focuses on OS integration (window lifecycle, deep links, updater, native theme) whereas the product logic runs in the React renderer. This is the recommended choice for Electron apps so that UI logic stays web-native and OS privileges are centralized and easier to audit. Only a curated API is exposed via the `contextBridge` to reduces accidental privilege escalation. It enforces a security boundary with the cost of additional boilerplate code for IPC (Inter-Process Communication) surface design.
 
-Network access is built on top of shared Alephium clients:
+### Renderer state model: Redux Toolkit + TanStack Query
 
-- Throttled node and explorer APIs.
-- Direct integration with the Alephium web3 stack.
+The app has evolved over the last 5 years. The UI state as well as server-derived data state was initially stored in React.Context while API requests were made using `fetch` in simple React hooks. This proved to be very limiting regarding performance and reasoning so soon after I joined the team I initiated a project to migrate it to Redux using Redux Toolkit. Redux Toolkit was chosen due to its wide use and available resources and documentation. It turned out to be a success. The async logic was moved into Redux thunks, while the state now lived in Redux slices. Each component could request the data they needed through selectors and avoid lots of the performance issues we had with React.Context.
 
-For server-derived data, the app uses TanStack Query:
+The current architecture includes Redux for UI state and Tanstack Query for server state. We migrated the server state from Redux to Tanstack Query to benefit from several feature such an async library provides such as a request retry mechanism and caching. This has improved the performance of the app even further. It also disentangled the logic of how and when API requests are fired, something that it was quite challenging to achieve with Redux thunks. On the downside, the developer now has to maintain two mental modals and two debugging interfaces. All read-flows are now declarative through the Tanstack Query hooks, but the write flows remain imperative.
 
-- Read-heavy queries are cached aggressively.
-- Query results are persisted to IndexedDB, scoped per wallet.
-- Cache is cleared on wallet lock and on app updates.
-- Expensive queries are prefetched off the critical render path.
+### Persistence strategy: localStorage for durable user config, IndexedDB for query cache
 
-This dramatically reduced network load and improved perceived performance, especially for wallets with many addresses or tokens.
+Settings and wallet metadata are stored in localStorage to benefit from persistence and synchronicity, whereas the query cache is stored in IndexedDB to overcome the storage size limits of localStorage. This allowed us to achieve simple and dependency-light data persistence. Having a per-wallet query cache enables fast rehydration without re-fetching everything. The challenge with caching has always been cache invalidation. We chose a pragmatic approach to keep the cache between app unlocks, but completely clear it on app updates. This “invalidate-everything” approach is safer than partial migrations, but it sacrifices cached performance after upgrades.
 
-### 5) Wallet engine & signing
+### Wallet security posture: decrypt in memory, clear on lock
 
-Security is central to the architecture:
+We decided to treat decrypted secrets as in-memory only, by clearing on lock and on idle. This aligns with desktop thread modal (walk-away/background exposure). It also simplifies UX: The user enters their password to unlock their wallet. For as long as the wallet is unlocked, the user does not need to re-enter their password to sign transactions. When the user locks their wallet (or when the app detects an idle state), the secrets are cleared from memory, and the user needs to re-enter their password to decrypt them. Ideally, the user would need to confirm with their password every time they would have to send a transaction (a feature that can be enabled through the app settings) so that no secrets would need to be kept in-memory. This is a UX/security trade-off.
 
-- Encrypted mnemonics are stored at rest in localStorage.
-- Decrypted secrets live only in memory, inside the keyring.
-- Secrets are cleared on lock, idle, or app quit.
-- Software signing and Ledger signing are unified behind a common signing interface.
-- Address metadata is persisted minimally and used to deterministically regenerate addresses on unlock.
+### Address management: metadata-first restore + network-driven discovery
 
-### 6) dApp connectivity (WalletConnect)
+The app persists minimal address metadata (such as index, key type, settings) and it deterministically regenerates addresses on unlock. This creates a small persistent footprint. The drawback is additional computation at unlock to regenerate addresses.
 
-WalletConnect integration spans both processes:
+### Passphrase-enabled wallets
 
-- Electron captures `alephium://` deep links and forwards them to the renderer.
-- The renderer manages sessions, proposal approval, and signing requests.
-- When user action is required, the app automatically brings itself to the foreground.
+Address metadata such as the index (used for deterministic regeneration) as well as name and color are stored in persisted storage. This allows for a better UX: the user can tag their addresses so they can identify them easier. It also allows persisting the generated addresses between app unlocks. An exception to this is passphrase-enabled wallets. Those wallets do not store anything in persisted storage. This decision was taken for security reasons in order to achieve plausible deniability: An attacker will have no way of knowing whether you have funds in passphrase-enabled wallets and no way to prove it since there are no evidence in the storage of the app. The cost for this security feature is, once again, UX: Passphrase wallet users need to regenerate their addresses on every unlock, and they cannot persist metadata such as name and color for each address. This is an acceptable trade-off considering that it is an advanced feature.
 
-### How data flows through the app
+<BreakoutSection>
+  <div class="my-60">
+    <Media src="/projects/alephium-desktop-wallet/desktop-wallet-4.png" />
+  </div>
+</BreakoutSection>
 
-#### Startup → ready to unlock
+## Challenges & lessons learned
 
-On startup, the renderer initializes all providers (Redux, routing, localization, query persistence) and performs migrations of any legacy data. OS settings such as language and theme are synced from Electron via IPC.
+This project has its fair share of challenges and lessons learned. From secrets management in process memory to API rate limiting, throttling and caching, there was and still is a lot to learn from this project. I am planning to write a series of blog posts to cover the challenges and lessons learned.
 
-#### Unlock → wallet hydration
+### Early misuse of React Context
 
-The unlock flow is orchestrated by a dedicated hook:
+Storing API data in React Context led to excessive re-renders. The defined `Map` object deemed to be not the appropiate data structure to store the remote addresses data, since a new object would be defined for every data change of any address of the wallet, causing components to re-render even though they didn't have to. The solution was to migrate the data layer to Redux.
 
-- User enters their password.
-- The mnemonic is decrypted into memory.
-- Wallet-specific data is restored:
-  - address metadata
-  - persisted query cache (if allowed)
-  - user settings and hidden tokens
-- Shared and desktop-specific Redux state is updated.
-- The UI transitions into the unlocked wallet routes.
+### Blocking auto-update due to GitHub API rate limiting
 
-#### Steady state: reads and writes
+The app uses the GitHub API to check for updates. The GitHub API has a rate limit. To avoid it, we would only check for updates once a day, or on every start-up. Due to a mistake in the dependency array of a useEffect hook, however, the app spammed the GitHub API with requests, causing it to temporarily block the app's auto-update pipeline. It was a painful but formative lesson in how easy it is to overload both the frontend and external services. The solution came with using a proper async library for making API requests instead of a simple hook.
 
-- **Reads**
-  React components declare their data needs via TanStack Query hooks. Results are cached and shared across the app.
-- **Writes**
-  User actions either dispatch Redux actions (settings, UI state) or invoke imperative domain flows (transaction building, signing, submission).
+### Scaling API usage
 
-#### Lock / quit
+As Alephium grew, the naive "poll everything" strategy collapsed:
 
-- Locking clears all decrypted material and query caches.
-- On quit, the app performs a two-phase shutdown to safely persist the query cache before exiting.
+- Too many endpoints.
+- Too many addresses.
+- Too many tokens and NFTs.
 
-### Mental model
+The solution came in many stages, each of which deserves its own blog post:
 
-- **Renderer** = the product
-  Feature-driven React code, Redux for UI state, TanStack Query for server state.
-- **Electron** = OS adapter
-  Minimal, auditable, privilege-containing layer.
-- **Security posture**
-  Encrypt at rest, decrypt in memory, clear aggressively, and make trade-offs explicit to the user.
-
-### Key architectural decisions
-
-#### Electron process boundary
-
-Keeping business logic out of the main process reduces the attack surface and makes the system easier to reason about. The cost is IPC boilerplate, but the security and maintainability benefits outweighed it.
-
-#### Redux Toolkit + TanStack Query
-
-The state architecture evolved over time:
-
-- Early versions relied heavily on React Context and ad-hoc fetch hooks.
-- This caused performance issues and made reasoning about data flow difficult.
-- Migrating to Redux Toolkit centralized UI state and improved predictability.
-- Later, server state was migrated from Redux to TanStack Query to gain caching, retries, and better control over request lifecycles.
-
-The result is a clear split:
-
-- Redux for UI and local state
-- TanStack Query for server-derived data
-
-#### Persistence strategy
-
-localStorage for synchronous, durable user configuration.
-
-IndexedDB for large, asynchronous query caches.
-
-Caches are preserved across unlocks but intentionally invalidated on app updates to avoid complex migrations.
-
-#### Wallet security & UX trade-offs
-
-The wallet keeps decrypted secrets in memory while unlocked to avoid repeated password prompts during normal use. For advanced users, stricter modes exist (e.g. password confirmation per transaction, passphrase wallets with zero persistence), trading convenience for stronger security guarantees.
-
-#### Passphrase-enabled wallets
-
-Passphrase wallets deliberately leave no persistent traces in storage.
-This enables plausible deniability at the cost of UX: no persisted addresses, no metadata, and full regeneration on every unlock. For an advanced feature, this was considered an acceptable trade-off.
-
-### Challenges & lessons learned
-
-#### Early misuse of React Context
-
-Storing API data in React Context led to excessive re-renders and even subtle bugs. In one case, a useEffect mistake caused repeated GitHub polling and temporarily blocked the auto-update pipeline. It was a painful but formative lesson in how easy it is to overload both the frontend and external services.
-
-#### Scaling API usage
-
-As Alephium grew, the naïve “poll everything” strategy collapsed:
-
-Too many endpoints.
-
-Too many addresses.
-
-Too many tokens and NFTs.
-
-We addressed this in stages:
-
-Backend and frontend rate limiting.
-
-Smarter retry handling.
-
-Proper caching with TanStack Query.
-
-A “latest transaction” sentinel query to control when other queries should refresh.
-
-Limiting background refreshes to the most active addresses.
-
-Persisting query caches across sessions.
+- Backend and frontend rate limiting.
+- Smarter retry handling.
+- Proper caching with TanStack Query.
+- A "latest transaction" sentinel query to control when other queries should refresh.
+- Limiting background refreshes to the most active addresses.
+- Persisting query caches across sessions.
 
 Each step reduced load and improved UX, especially for power users with large wallets.
 
-#### Startup performance
+### Startup performance
 
-Persisted caches solved cold-start slowness, but introduced new problems: constantly syncing the cache caused rendering stalls. The final solution was to persist the cache only at well-defined lifecycle points (before quit), rather than continuously.
+Persisted caches solved cold-start slowness, but introduced new problems: constantly syncing the cache caused rendering stalls, blocking the UI thread. The final solution was to persist the cache only at well-defined lifecycle points (before quit), rather than continuously.
 
-## What this project says about me
+<div>
+  <div class="my-60 space-content">
+    ## What this project says about me
 
-This project reflects how I approach complex, long-lived software:
+    This project reflects how I approach complex, long-lived software:
 
-- Start pragmatic, but refactor when scale demands it.
-- Treat performance and security as first-class product features.
-- Prefer clear mental models over clever abstractions.
-- Be willing to migrate large systems when the payoff is worth it.
+    - Start pragmatic, but refactor when scale demands it.
+    - Treat performance and security as first-class product features.
+    - Prefer clear mental models over clever abstractions.
+    - Be willing to migrate large systems when the payoff is worth it.
 
-Working on the Alephium Desktop Wallet significantly shaped how I design frontend architectures for serious, state-heavy applications, especially in environments where security and correctness matter as much as UX.
+    Working on the Alephium Desktop Wallet significantly shaped how I design frontend architectures for serious, state-heavy applications, especially in environments where security and correctness matter as much as UX.
+
+  </div>
+</div>
