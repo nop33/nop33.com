@@ -111,29 +111,29 @@ I worked on the wallet as a core frontend engineer, contributing both to product
     The app can be described in the following subsystems:
     <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
 
-      <div>
+      <div class="space-content">
         ### Electron main process
         This is the Node.js part of the app that is responsible for the OS-level interactions and the app's lifecycle. It handles auto-updates, deep links, native theme integration, and hardware access such as Ledger devices.
       </div>
 
-      <div>
+      <div class="space-content">
       ### UI renderer process
       This is the React part of the app that is responsible for the UI. It handles the routing, networking, localization, signing orchestration, and all user-facing logic.
 
         This separation keeps the security-sensitive OS layer small and auditable, while allowing the product logic to remain web-native.
       </div>
 
-      <div>
+      <div class="space-content">
         ### State management
         Global UI and local state is managed with Redux Toolkit and shared through packages in our monorepo with the Alephium Mobile Wallet.
       </div>
 
-      <div>
+      <div class="space-content">
         ### Remote data access
         Tanstack Query is used to read and cache on-chain data. Data is persisted in IndexedDB, scoped per wallet. Transactions are submitted using the node provider from the Alephium web3 package.
       </div>
 
-      <div>
+      <div class="space-content">
         ### Wallet engine
         The wallet engine consists of three main components:
         - **Key management**: storing encrypted mnemonics and decrypting for signing.
@@ -141,7 +141,7 @@ I worked on the wallet as a core frontend engineer, contributing both to product
         - **Address generation**: discovering active addresses and deterministically regenerating addresses from stored MediaMetadata.
       </div>
 
-      <div>
+      <div class="space-content">
         ### dApp connectivity
         The main process captures `alephium://` deep links and forwards them to the renderer. The renderer manages sessions, proposal approval, and signing requests. When user action is required, the app automatically brings itself to the foreground.
       </div>
