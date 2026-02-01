@@ -2,12 +2,16 @@
 interface Props {
   title: string
   color: string
+  lightThemeColor?: string
 }
 
-const { color, title }: Props = Astro.props
+const { color, title, lightThemeColor }: Props = Astro.props
 ---
 
-<div class=`flex items-center gap-2` style=`color: ${color}`>
+<div
+  class="inline-flex items-center gap-2 rounded-full border border-current/30 bg-(--badge-bg-light) px-4 py-2 text-sm leading-none text-(--badge-text-color-light) dark:border-current/30 dark:bg-(--badge-bg-dark) dark:text-(--badge-text-color-dark)"
+  style={`--badge-text-color-light: ${lightThemeColor ?? color}; --badge-text-color-dark: ${color}; --badge-bg-light: color-mix(in oklch, var(--badge-text-color-light) 6%, transparent); --badge-bg-dark: color-mix(in oklch, var(--badge-text-color-dark) 6%, transparent);`}
+>
   <slot />
   <span class="font-medium">{title}</span>
 </div>

@@ -85,6 +85,10 @@ interface Props {
    * The collaborators of the page
    */
   collaborators?: string[]
+  /**
+   * The links of the page
+   */
+  links?: { href: string; label: string }[]
 }
 
 const {
@@ -105,6 +109,7 @@ const {
   live,
   download,
   collaborators,
+  links,
 } = Astro.props
 
 // Helper function to format segment names
@@ -193,7 +198,7 @@ const sanitizedSubtitle: string = subtitle
 
         {
           featuredImage2 && (
-            <div class="order-1 mr-0 flex justify-center sm:-mr-5 md:order-2 md:justify-end xl:-mr-18">
+            <div class="order-1 mr-0 mb-8 flex justify-center sm:-mr-5 md:order-2 md:justify-end xl:-mr-18">
               <Image
                 src={featuredImage2}
                 alt=""
@@ -222,7 +227,7 @@ const sanitizedSubtitle: string = subtitle
         stack && (
           <p class="flex flex-wrap gap-4">
             Built with {stack.slice(0, -1).join(', ')} and {stack[stack.length - 1]}{' '}
-            {collaborators?.length ? `together with ${collaborators.join(', ')}` : null}
+            {collaborators?.length ? `together with ${collaborators.join(', ')}` : null}.
           </p>
         )
       }
@@ -253,6 +258,17 @@ const sanitizedSubtitle: string = subtitle
             <Link href={download} target="_blank">
               Download
             </Link>
+          )
+        }
+        {
+          links && (
+            <div class="flex flex-wrap gap-4">
+              {links.map((link) => (
+                <Link href={link.href} target="_blank">
+                  {link.label}
+                </Link>
+              ))}
+            </div>
           )
         }
       </div>

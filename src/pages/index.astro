@@ -1,6 +1,7 @@
 ---
 import DefaultLayout from '@layouts/DefaultLayout.astro'
-import { Card } from 'accessible-astro-components'
+import { Card, Link, Media } from 'accessible-astro-components'
+import { Icon } from 'astro-icon/components'
 ---
 
 <DefaultLayout title="Home">
@@ -17,7 +18,7 @@ import { Card } from 'accessible-astro-components'
       </p>
     </div>
   </section>
-  <section class="my-24">
+  <section class="my-64">
     <div class="container">
       <h2 class="text-center text-4xl md:text-left">About me</h2>
       <p class="text-center text-2xl md:text-left dark:text-neutral-500">
@@ -26,24 +27,72 @@ import { Card } from 'accessible-astro-components'
       </p>
     </div>
   </section>
-  <section class="my-24">
+  <section class="my-64">
     <div class="container">
       <h2 class="mb-6 text-center text-4xl md:text-left">Projects</h2>
-      <p class="mb-6 text-center text-2xl md:text-left dark:text-neutral-500">
+      <p class="mb-12 text-center text-2xl md:text-left dark:text-neutral-500">
         There is always a project in the works, whether professional or personal, and an endless list of ideas. Here are
         some of the projects I've spent most of my time on and am most proud of.
       </p>
-      <div class="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3">
-        <Card url={'/portfolio/alephium-desktop-wallet'} headingLevel="h3" title="Alephium Desktop Wallet">
-          Electron React app for securely storing and managing assets on the Alephium blockchain.
-        </Card>
-        <Card url={'/portfolio/alephium-mobile-wallet'} headingLevel="h3" title="Alephium Mobile Wallet">
-          React Native mobile app for securely storing and managing assets on the Alephium blockchain.
-        </Card>
-        <Card url={'/portfolio/flatwise'} headingLevel="h3" title="Flatwise">
-          A web app that fairly redistributes furniture costs when flatmates move in or out, using depreciation instead
-          of an awkward conversation. Built with Vue.js & Material UI. Used in a real Zurich flatshare since 2019.
-        </Card>
+      <div>
+        <div class="grid grid-cols-1 gap-12 md:grid-cols-2">
+          <Media src="/projects/alephium-desktop-wallet/19shots_so.png" />
+          <div class="space-content mt-24">
+            <h3 class="md:text-left">Alephium Desktop Wallet</h3>
+            <p class="text-2xl md:text-left dark:text-neutral-500">
+              Electron React app for securely storing and managing assets on the Alephium blockchain.
+            </p>
+            <Link
+              href="/portfolio/alephium-desktop-wallet"
+              isButton
+              variant="outlined"
+              animateOnHover
+              animationType="nudge"
+            >
+              View project
+              <Icon aria-hidden="true" name="lucide:arrow-right" size="1.5rem" />
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-24">
+        <div class="grid grid-cols-1 gap-12 md:grid-cols-3">
+          <div class="space-content mt-24 md:col-span-2">
+            <h3 class="md:text-left">Flatwise</h3>
+            <p class="text-2xl md:text-left dark:text-neutral-500">
+              A web app that fairly redistributes furniture costs when flatmates move in or out, using depreciation
+              instead of an awkward conversation. Built with Vue.js & Material UI. Used in a real Zurich flatshare since
+              2019.
+            </p>
+            <Link href="/portfolio/flatwise" isButton variant="outlined" animateOnHover animationType="nudge">
+              View project
+              <Icon aria-hidden="true" name="lucide:arrow-right" size="1.5rem" />
+            </Link>
+          </div>
+          <Media src="/projects/flatwise/flatwise-iphone-left.png" class="md:col-span-1" />
+        </div>
+      </div>
+      <div class="mt-24">
+        <div class="grid grid-cols-1 gap-12 md:grid-cols-2">
+          <Media src="/projects/alephium-mobile-wallet/63shots_so.png" />
+          <div class="space-content mt-24">
+            <h3 class="md:text-left">Alephium Mobile Wallet</h3>
+            <p class="text-2xl md:text-left dark:text-neutral-500">
+              React Native app completing the Alephium Desktop Wallet, built for everyday use.
+            </p>
+            <Link
+              href="/portfolio/alephium-mobile-wallet"
+              isButton
+              variant="outlined"
+              animateOnHover
+              animationType="nudge"
+            >
+              View project
+              <Icon aria-hidden="true" name="lucide:arrow-right" size="1.5rem" />
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   </section>
