@@ -1,17 +1,17 @@
 import { defineConfig } from 'astro/config'
 import { fileURLToPath } from 'url'
-import { existsSync, lstatSync } from 'fs'
-import { resolve } from 'path'
+// import { existsSync, lstatSync } from 'fs'
+// import { resolve } from 'path'
 import compress from 'astro-compress'
 import icon from 'astro-icon'
 import mdx from '@astrojs/mdx'
 import sitemap from '@astrojs/sitemap'
 import tailwindcss from '@tailwindcss/vite'
-import { watch } from 'fs'
+// import { watch } from 'fs'
 
 // Check if we're using a symlinked/workspace setup
-const componentsPath = resolve('./node_modules/accessible-astro-components')
-const isLinked = existsSync(componentsPath) && lstatSync(componentsPath).isSymbolicLink()
+// const componentsPath = resolve('./node_modules/accessible-astro-components')
+// const isLinked = existsSync(componentsPath) && lstatSync(componentsPath).isSymbolicLink()
 
 // Base Vite config
 const viteConfig = {
