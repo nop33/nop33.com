@@ -9,47 +9,45 @@ import KeyStrengths from '@components/KeyStrengths.astro'
 
 <DefaultLayout title="About Ilias">
   <section class="hero my-24">
-    <div class="container">
-      <div class="grid grid-cols-1 items-center gap-24 lg:grid-cols-2">
-        <div class="flex flex-col items-center gap-8 md:items-start">
-          <h1 class="text-center text-6xl md:text-left">Ilias says hi! 👋</h1>
-          <p>
-            I was born 11 months after the web, and it took me a decade to discover it. Thirteen years later, I found
-            myself working at the web's birthplace, CERN.
-          </p>
-          <p>
-            I've been privileged to work most of my career on open-source projects. These days I work remotely as the
-            lead maintainer of several user-facing apps at <Link href="https://alephium.org">Alephium</Link>.
-          </p>
-          <h2 class="text-3xl">The beginning</h2>
-          <p>
-            My first experience with programming came at the age of 11. My parents sent me to a computer class after
-            school hours. There, I learned programming with Logo, a language similar to Lisp. We would draw shapes on
-            the screen by giving commands to a "turtle".
-          </p>
-          <p>
-            There, I also surfed the web for the fist time. When I’d finish my homework early, my teacher would allow me
-            to use the IE5. Oh boy, such fun! I had a tiny booklet with a catalogue of all the websites I knew.
-          </p>
-          <Image
-            src={booklet}
-            alt="Notebook with a catalogue of all the websites I knew"
-            width={600}
-            height={450}
-            class="h-auto w-full max-w-sm"
-            sizes="(min-width: 1024px) 20rem, (min-width: 768px) 18rem, 100vw"
-          />
-          <p>
-            In highschool, I picked the pseudo-programming class, and eventually decided to study computer science at
-            the Aristotle University of Thessaloniki.
-          </p>
-        </div>
+    <div class="narrow container">
+      <div class="flex flex-col items-center gap-8 md:items-start">
+        <h1 class="text-center text-6xl md:text-left">Ilias says hi! 👋</h1>
+        <p>
+          I was born 11 months after the web, and it took me a decade to discover it. Thirteen years later, I found
+          myself working at the web's birthplace, CERN.
+        </p>
+        <p>
+          I've been privileged to work most of my career on open-source projects. These days I work remotely as the lead
+          maintainer of several user-facing apps at <Link href="https://alephium.org">Alephium</Link>.
+        </p>
+        <h2 class="text-3xl">The beginning</h2>
+        <p>
+          My first experience with programming came at the age of 11. My parents sent me to a computer class after
+          school hours. There, I learned programming with Logo, a language similar to Lisp. We would draw shapes on the
+          screen by giving commands to a "turtle".
+        </p>
+        <p>
+          There, I also surfed the web for the fist time. When I’d finish my homework early, my teacher would allow me
+          to use the IE5. Oh boy, such fun! I had a tiny booklet with a catalogue of all the websites I knew.
+        </p>
+        <Image
+          src={booklet}
+          alt="Notebook with a catalogue of all the websites I knew"
+          width={600}
+          height={450}
+          class="h-auto w-full max-w-sm"
+          sizes="(min-width: 1024px) 20rem, (min-width: 768px) 18rem, 100vw"
+        />
+        <p>
+          In highschool, I picked the pseudo-programming class, and eventually decided to study computer science at the
+          Aristotle University of Thessaloniki.
+        </p>
       </div>
     </div>
   </section>
 
   <section class="my-24">
-    <div class="container">
+    <div class="narrow container">
       <h2 class="mb-12 text-4xl font-bold">Experience</h2>
       <Experience />
     </div>

@@ -4,17 +4,12 @@ import { Icon } from 'astro-icon/components'
 const experiences = [
   {
     role: 'Frontend Engineer',
-    company: 'Alephium (Core Team)',
+    company: 'Alephium',
     date: '2021 - Present',
     location: 'Switzerland',
-    description: 'Lead developer and maintainer of the frontend monorepo powering wallets and explorer apps, working in a small, fast-iterating core team.',
-    bullets: [
-      'Architected and maintained secure cross-platform wallets handling blockchain transactions, Ledger hardware, and dApp interactions, serving 20,000+ active monthly users (React, RN, Electron, TS).',
-      'Designed performant state management and caching for live on-chain data (Redux, TanStack Query) improving app startup time by up to 26x and in-app performance up to 10x.',
-      'Shipped major UX improvements and features in wallets, explorer, and bridge interface.',
-      'Unified 3 apps into a single monorepo architecture (pnpm, Turborepo) improving devX and enabling code sharing.',
-      'Rebuilt Alephium.org with headless CMS & static-generation stack, achieving 100% Lighthouse performance score and seamless content updates.',
-    ],
+    description:
+      "Lead frontend engineer and maintainer of Alephium's wallet and explorer ecosystem, building secure, high-performance blockchain apps used by 20,000+ monthly users across web, desktop, and mobile.",
+    bullets: [],
     live: true,
   },
   {
@@ -22,7 +17,8 @@ const experiences = [
     company: 'Freelance',
     date: '2019 - 2022',
     location: 'Switzerland',
-    description: 'Delivered high-performance websites for small businesses and startups (React, Gatsby, Netlify).',
+    description:
+      'Designed and shipped fast, reliable websites for startups and small businesses, focusing on performance, accessibility, and maintainability using modern React-based stacks.',
     bullets: [],
   },
   {
@@ -30,46 +26,36 @@ const experiences = [
     company: 'Petro-Logistics SA',
     date: '2019 - 2021',
     location: 'Switzerland',
-    description: 'Developed the company\'s website and internal systems infrastructure.',
-    bullets: [
-      'Led a small cross-functional team of engineers, designers, and content creators to develop the company\'s new website (Hugo, Netlify).',
-      'Implemented automated backup, PKI, and infra provisioning to improve reliability (Ansible, Docker, GitLab CI/CD, Bash).',
-    ],
+    description:
+      "Led the development of the company's website with modern static web architecture and designed the internal systems infrastructure including automated backups, PKI, and infrastructure provisioning.",
+    bullets: [],
   },
   {
     role: 'Frontend Engineer & Project Lead',
     company: 'Bity SA',
     date: '2018 - 2019',
     location: 'Switzerland',
-    description: 'Worked on the company\'s cryptocurrency exchange web client and public website.',
-    bullets: [
-      'Led the frontend implementation of Bity\'s main website and open-source React exchange client.',
-      'Collaborated with designers and backend teams to deliver responsive, performant UIs.',
-    ],
+    description:
+      "Led frontend development of Bity's website and open-source exchange client while collaborating with designers and backend teams.",
+    bullets: [],
   },
   {
     role: 'Frontend Engineer',
     company: 'Station AG',
     date: '2017 - 2018',
     location: 'Switzerland',
-    description: 'Delivered interactive web experiences for high-profile clients.',
-    bullets: [
-      'Developed modern Vue and ES6 web apps (Amnesty International I\'M HERE campaign).',
-      'Assumed Scrum-master responsibilities, ensuring on-time delivery in an agile setup.',
-      'Collaborated closely with designers to craft engaging, accessible UI experiences.',
-    ],
+    description:
+      'Built interactive web experiences for high-profile clients while also taking on Scrum-master responsibilities.',
+    bullets: [],
   },
   {
     role: 'Full-Stack Software Engineer',
     company: 'Indico - CERN',
     date: '2014 - 2017',
     location: 'Switzerland',
-    description: 'Contributed to the complete rewrite of Indico\'s open-source conference-management platform used by thousands of events worldwide.',
-    bullets: [
-      'Developed reusable frontend components and improved overall UX consistency (HTML5, jQuery).',
-      'Supported backend (Python, Flask, PostgreSQL) and DevOps efforts to modernize the platform.',
-      'Implemented Indico\'s public website and internal style-guide for design coherence.',
-    ],
+    description:
+      'Worked on the full rewrite of Indico, an open-source conference-management platform used worldwide, contributing across frontend, backend, and platform modernization',
+    bullets: [],
   },
   {
     role: 'Full-Stack Software Engineer - Internship',
@@ -90,41 +76,59 @@ const experiences = [
 ]
 ---
 
-<div class="relative flex flex-col gap-12 border-l-2 border-gray-200 dark:border-gray-700 pl-6 ml-4">
-  {experiences.map((exp) => (
-    <div class="relative group">
-      {/* Timeline dot */}
-      <span
-        class={`absolute -left-[35px] top-1 h-5 w-5 rounded-full border-4 border-white dark:border-gray-900 ${
-          exp.live ? 'bg-green-500 animate-pulse ring-4 ring-green-500/30' : 'bg-gray-300 dark:bg-gray-600'
-        }`}
-      ></span>
+<div class="relative ml-4 flex flex-col gap-12 border-l-2 border-gray-200 pl-6 dark:border-gray-700">
+  {
+    experiences.map((exp) => (
+      <div class="group relative">
+        {/* Timeline dot */}
+        <span
+          class={`absolute top-1 -left-[35px] h-5 w-5 rounded-full border-4 border-white dark:border-gray-900 ${
+            exp.live ? 'animate-ping-ring bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+          }`}
+        />
 
-      <div class="flex flex-col gap-2">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-            {exp.role} <span class="text-gray-500 font-normal">@ {exp.company}</span>
-          </h3>
-          <span class="text-sm font-medium text-gray-500 whitespace-nowrap">{exp.date}</span>
+        <div class="flex flex-col gap-2">
+          <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+              {exp.role} <span class="font-normal text-gray-500">@ {exp.company}</span>
+            </h3>
+            <span class="text-sm font-medium whitespace-nowrap text-gray-500">{exp.date}</span>
+          </div>
+
+          <div class="mb-2 flex items-center gap-1 text-sm text-gray-500">
+            <Icon name="lucide:map-pin" class="h-4 w-4" />
+            <span>{exp.location}</span>
+          </div>
+
+          {exp.description && <p class="mb-2 text-gray-600 dark:text-gray-300">{exp.description}</p>}
+
+          {exp.bullets.length > 0 && (
+            <ul class="ml-2 list-inside list-disc space-y-1 text-gray-600 dark:text-gray-300">
+              {exp.bullets.map((bullet) => (
+                <li>{bullet}</li>
+              ))}
+            </ul>
+          )}
         </div>
-
-        <div class="flex items-center gap-1 text-sm text-gray-500 mb-2">
-          <Icon name="lucide:map-pin" class="w-4 h-4" />
-          <span>{exp.location}</span>
-        </div>
-
-        {exp.description && (
-          <p class="text-gray-600 dark:text-gray-300 mb-2">{exp.description}</p>
-        )}
-
-        {exp.bullets.length > 0 && (
-          <ul class="list-disc list-inside space-y-1 text-gray-600 dark:text-gray-300 ml-2">
-            {exp.bullets.map((bullet) => (
-              <li>{bullet}</li>
-            ))}
-          </ul>
-        )}
       </div>
-    </div>
-  ))}
+    ))
+  }
 </div>
+
+<style>
+  .animate-ping-ring {
+    animation: ping-ring 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  @keyframes ping-ring {
+    0% {
+      box-shadow: 0 0 0 0 oklch(0.723 0.219 142.1 / 0.6);
+    }
+    70% {
+      box-shadow: 0 0 0 8px oklch(0.723 0.219 142.1 / 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 oklch(0.723 0.219 142.1 / 0);
+    }
+  }
+</style>
