@@ -7,6 +7,7 @@ import icon from 'astro-icon'
 import mdx from '@astrojs/mdx'
 import sitemap from '@astrojs/sitemap'
 import tailwindcss from '@tailwindcss/vite'
+import yeskunallumami from '@yeskunall/astro-umami'
 // import { watch } from 'fs'
 
 // Check if we're using a symlinked/workspace setup
@@ -88,6 +89,15 @@ const viteConfig = {
 export default defineConfig({
   compressHTML: true,
   site: 'https://www.nop33.com',
-  integrations: [compress(), icon(), mdx(), sitemap()],
+  integrations: [
+    compress(),
+    icon(),
+    mdx(),
+    sitemap(),
+    yeskunallumami({
+      endpointUrl: 'https://analytics.nop33.com',
+      id: '7c408f86-644d-4218-b7c5-29a4391b4fa0',
+    }),
+  ],
   vite: viteConfig,
 })
