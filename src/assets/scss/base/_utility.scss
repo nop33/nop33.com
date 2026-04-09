@@ -231,4 +231,40 @@ $font-map: (
   > *:first-child {
     margin-block-start: 0;
   }
+
+  table {
+    border-spacing: 0;
+    border: 1px solid var(--border-color-subtle);
+    border-radius: var(--radius-l);
+    overflow: hidden;
+    margin-block: var(--space-l);
+
+    th,
+    td {
+      padding-block: var(--space-2xs);
+      padding-inline: var(--space-xs);
+      text-align: start;
+    }
+
+    th {
+      background-color: var(--border-color-subtle);
+    }
+
+    // Rounded corners on header row
+    th:first-child {
+      border-start-start-radius: var(--radius-l);
+    }
+
+    th:last-child {
+      border-start-end-radius: var(--radius-l);
+    }
+
+    td {
+      border-block-end: 1px solid var(--border-color-subtle);
+    }
+
+    tr:last-child td {
+      border-block-end: none;
+    }
+  }
 }
