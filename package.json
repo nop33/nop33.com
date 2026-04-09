@@ -5,12 +5,15 @@
   "author": "Incluud",
   "license": "MIT",
   "type": "module",
+  "packageManager": "pnpm@10.33.0",
   "homepage": "https://www.nop33.com/",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "keywords": [
     "astro",
@@ -49,6 +52,7 @@
     "eslint": "^9.35.0",
     "eslint-plugin-astro": "^1.3.1",
     "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-unused-imports": "^4.4.1",
     "globals": "^16.4.0",
     "prettier": "^3.6.2",
     "prettier-plugin-astro": "^0.14.1",

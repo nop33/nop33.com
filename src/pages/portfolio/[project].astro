@@ -1,8 +1,6 @@
 ---
 import DefaultLayout from '@layouts/DefaultLayout.astro'
 import PageHeader from '@components/PageHeader.astro'
-import SocialShares from '@components/SocialShares.astro'
-import { Heading } from 'accessible-astro-components'
 import { getCollection, render } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
 import CallToAction from '@components/CallToAction.astro'
@@ -38,12 +36,6 @@ interface Props {
 
 const { project } = Astro.props
 const { Content } = await render(project)
-
-const author = {
-  name: project.data.author,
-  image: '/projects/project-image-1.png',
-  bio: 'Project Creator',
-}
 ---
 
 <DefaultLayout title={project.data.title} description={project.data.description} url={`/portfolio/${project.id}`}>

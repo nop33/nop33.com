@@ -5,6 +5,7 @@ import jsxA11y from 'eslint-plugin-jsx-a11y'
 import tseslint from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
 import astroParser from 'astro-eslint-parser'
+import unusedImports from 'eslint-plugin-unused-imports'
 
 export default [
   // Ignore patterns
@@ -31,6 +32,18 @@ export default [
 
   // ESLint recommended rules
   js.configs.recommended,
+
+  // Unused imports — all file types
+  {
+    plugins: {
+      'unused-imports': unusedImports,
+    },
+    rules: {
+      'no-unused-vars': 'off',
+      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-vars': ['error', { argsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' }],
+    },
+  },
 
   // JavaScript files
   {
@@ -71,7 +84,7 @@ export default [
     },
     rules: {
       ...tseslint.configs.recommended.rules,
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
     },
   },
@@ -112,7 +125,7 @@ export default [
     rules: {
       ...tseslint.configs.recommended.rules,
       ...jsxA11y.configs.strict.rules,
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
     },
   },
