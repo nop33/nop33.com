@@ -11,6 +11,8 @@ const {
   description = 'Software engineer with focus on frontend, minimalist, and life-long learner.',
   url = Astro.site,
   image = 'nop33-social-preview-image.png',
+  imageWidth,
+  imageHeight,
   author = 'Ilias Trichopoulos',
 } = Astro.props
 ---
@@ -24,7 +26,7 @@ const {
     <!-- favicon -->
     <link rel="icon" type="image/svg+xml" href="/nop33-favicon.svg" />
 
-    <SiteMeta title={title} description={description.substring(0, 100)} url={url} image={image} author={author} />
+    <SiteMeta title={title} description={description.substring(0, 100)} url={url} image={image} imageWidth={imageWidth} imageHeight={imageHeight} author={author} />
 
     <!-- Enable Astro View Transitions for all browsers -->
     <ClientRouter />

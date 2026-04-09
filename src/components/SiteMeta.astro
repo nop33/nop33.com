@@ -9,10 +9,12 @@ interface Props {
   description: string
   url: string
   image: string
+  imageWidth?: number
+  imageHeight?: number
   author?: string
 }
 
-const { title, description, url, image, author = 'Ilias Trichopoulos' } = Astro.props
+const { title, description, url, image, imageWidth = 1200, imageHeight = 630, author = 'Ilias Trichopoulos' } = Astro.props
 
 let subtitle = 'Ilias Trichopoulos'
 ---
@@ -28,6 +30,8 @@ let subtitle = 'Ilias Trichopoulos'
 <meta property="og:type" content="website" />
 <meta property="og:url" content={url} />
 <meta property="og:image" content={`${Astro.site}${image}`} />
+<meta property="og:image:width" content={`${imageWidth}`} />
+<meta property="og:image:height" content={`${imageHeight}`} />
 
 <!-- twitter card -->
 <meta name="twitter:card" content="summary_large_image" />
