@@ -3,6 +3,14 @@ import DefaultLayout from '@layouts/DefaultLayout.astro'
 import { Link, Media } from 'accessible-astro-components'
 import { Icon } from 'astro-icon/components'
 import CallToAction from '@components/CallToAction.astro'
+import { getCollection } from 'astro:content'
+import imgDesktopWallet from '@content/projects/alephium-desktop-wallet/19shots_so.png'
+import imgFlatwise from '@content/projects/flatwise/flatwise-iphone-left.png'
+import imgMobileWallet from '@content/projects/alephium-mobile-wallet/63shots_so.png'
+
+const posts = await getCollection('blog')
+posts.sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime())
+const latestPosts = posts.slice(0, 3)
 ---
 
 <DefaultLayout title="nop33">
@@ -42,7 +50,7 @@ import CallToAction from '@components/CallToAction.astro'
       </p>
       <div>
         <div class="grid grid-cols-1 gap-12 md:grid-cols-2">
-          <Media src="/projects/alephium-desktop-wallet/19shots_so.png" />
+          <Media src={imgDesktopWallet.src} />
           <div class="space-content md:mt-24">
             <h3 class="md:text-left">Alephium Desktop Wallet</h3>
             <p class="text-2xl md:text-left dark:text-neutral-500">
@@ -64,7 +72,7 @@ import CallToAction from '@components/CallToAction.astro'
 
       <div class="mt-48 md:mt-24">
         <div class="grid grid-cols-1 gap-12 md:grid-cols-3">
-          <Media src="/projects/flatwise/flatwise-iphone-left.png" class="order-1 md:order-2 md:col-span-1" />
+          <Media src={imgFlatwise.src} class="order-1 md:order-2 md:col-span-1" />
           <div class="space-content order-2 md:order-1 md:col-span-2 md:mt-24">
             <h3 class="md:text-left">Flatwise</h3>
             <p class="text-2xl md:text-left dark:text-neutral-500">
@@ -81,7 +89,7 @@ import CallToAction from '@components/CallToAction.astro'
       </div>
       <div class="mt-48 md:mt-24">
         <div class="grid grid-cols-1 gap-12 md:grid-cols-2">
-          <Media src="/projects/alephium-mobile-wallet/63shots_so.png" />
+          <Media src={imgMobileWallet.src} />
           <div class="space-content md:mt-24">
             <h3 class="md:text-left">Alephium Mobile Wallet</h3>
             <p class="text-2xl md:text-left dark:text-neutral-500">
@@ -99,6 +107,32 @@ import CallToAction from '@components/CallToAction.astro'
             </Link>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+  <section class="my-64">
+    <div class="container">
+      <h2 class="mb-6 text-center text-6xl md:text-left">Blog</h2>
+      <p class="mb-12 text-center text-2xl md:text-left dark:text-neutral-500">
+        Writing about the things I learn along the way.
+      </p>
+      <ul class="space-y-8">
+        {
+          latestPosts.map((post) => (
+            <li>
+              <h3 class="md:text-left">
+                <Link href={`/blog/${post.id}`}>{post.data.title}</Link>
+              </h3>
+              <p class="mt-2 text-2xl md:text-left dark:text-neutral-500">{post.data.description}</p>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="mt-12">
+        <Link href="/blog/" isButton variant="outlined" animateOnHover animationType="nudge">
+          Read all posts
+          <Icon aria-hidden="true" name="lucide:arrow-right" size="1.5rem" />
+        </Link>
       </div>
     </div>
   </section>

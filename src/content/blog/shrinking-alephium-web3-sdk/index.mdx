@@ -1,0 +1,149 @@
+---
+title: "How We Shrunk a Blockchain SDK by 88%: Modernizing @alephium/web3"
+description: "A deep dive into modernizing the @alephium/web3 TypeScript SDK — replacing polyfills, consolidating crypto libraries, fixing the build system, and cutting bundle size from 742 kB to 207 kB."
+publishDate: 2026-04-09
+featuredImage: ./cover.png
+tags: ['TypeScript', 'SDK', 'Blockchain', 'Performance', 'Tree-shaking']
+---
+
+The `@alephium/web3` TypeScript SDK is how developers connect to and interact with the Alephium blockchain. It's similar to what [viem](https://viem.sh) is for Ethereum — providing address validation, transaction signing, smart contract interaction, and API communication.
+
+But it had a problem. A big, 742 kB problem.
+
+## The starting point
+
+A developer who imported a single function from our SDK — say, `isValidAddress` — paid for the **entire library**. A plain website with one text input and one SDK call produced a **742 kB JavaScript bundle**. A React app? **928 kB**. Getting it to work in React Native required **12 workarounds** including custom Metro resolvers, native crypto modules, and a dev build (Expo Go wouldn't work).
+
+The root causes were typical of TypeScript libraries built a few years ago without deep frontend expertise:
+
+- **No ESM output** — strictly CommonJS, defeating tree-shaking
+- **Monolithic UMD browser bundle** — webpack squashed everything into one opaque file
+- **Heavy Node.js polyfills** — `crypto-browserify`, `stream-browserify`, `buffer` shipped as dependencies
+- **Redundant crypto libraries** — both `elliptic` and `@noble/secp256k1`
+- **A global side effect** — `BigInt.prototype.toJSON` was monkey-patched on import, making `"sideEffects": false` impossible
+
+## Before we touched any code: benchmarking
+
+Before changing anything, I built four benchmark apps — the same code running in Node.js, a Vite website, a Vite + React webapp, and an Expo (React Native) app. Each one imported `isValidAddress`, validated an address, and fetched a balance. This gave us concrete "before" numbers to measure against.
+
+The Expo app was the most revealing. Getting it to work required: a custom entry point, a Buffer polyfill, `react-native-quick-crypto` (because `crypto-browserify` crashed at module evaluation time), `readable-stream`, `path-browserify`, `events`, `process`, an empty `fs` shim, a custom Metro resolver to bypass the UMD bundle (which referenced `self`, undefined in React Native), `extraNodeModules` for 6 builtins, `node-linker=hoisted` for pnpm, and `expo-dev-client` because Expo Go couldn't handle the native crypto module.
+
+That's 12 workarounds just to call one function.
+
+## Phase 1: The diet
+
+The first phase was about removing what we no longer need, without changing the build system.
+
+### Bumping Node.js to >= 20
+
+Node 14 was the minimum. Node 14 is EOL. Bumping to 20 unlocked native `fetch` (goodbye `cross-fetch`) and `globalThis.crypto.subtle` (goodbye Node `crypto` imports). We originally tried Node >= 18 but discovered that `crypto.subtle` is `undefined` on Node 18 in non-secure contexts. Node 20 just works.
+
+### Consolidating on @noble
+
+The SDK used both `elliptic` (legacy, huge, pulls in `bn.js`) and `@noble/secp256k1` (modern, audited, zero-dependency). We replaced `elliptic` with `@noble/secp256k1` for secp256k1, added `@noble/curves` for P-256 and Ed25519, and replaced `blakejs` with `@noble/hashes/blake2b`.
+
+For the wallet package, we replaced `bip39` with `@scure/bip39` and `bip32` with `@scure/bip32` — both from the same `@noble`/`@scure` ecosystem that viem uses. This eliminated the entire `noble-wrapper.ts` adapter file that existed solely to bridge `bip32`'s API with `@noble`.
+
+### Removing the BigInt monkey-patch
+
+The `BigInt.prototype.toJSON` mutation was a global side effect — any consumer importing anything from the SDK got this prototype modification. It made declaring `"sideEffects": false` impossible, which in turn made tree-shaking impossible.
+
+We replaced it with a `stringify` utility (inspired by viem's approach) — a drop-in `JSON.stringify` replacement that converts BigInt to strings via a replacer function. The swagger-typescript-api template was updated to use `stringify` automatically in the generated API files.
+
+**Dependencies went from 11 to 6** for `@alephium/web3`, and from 8 to 4 for `@alephium/web3-wallet`.
+
+## Phase 2: The build system journey
+
+This is where things got interesting — and where we learned the most.
+
+### Attempt 1: tsup
+
+The roadmap said "use tsup." tsup uses esbuild under the hood and promises dead-simple dual CJS/ESM output. We got it working, but hit problems:
+
+- **`bundle: true`** inlined all dependencies into a single file — the opposite of what we wanted for tree-shaking
+- **`bundle: false`** with `.cjs`/`.mjs` extensions broke Node's CJS directory resolution (`require('./api')` doesn't check `.cjs` files)
+- **`bundle: false`** with `.js`/`.mjs` extensions broke Vite's dev server — bare import paths like `"./api"` in `.mjs` files resolved to `.js` (CJS) instead of `.mjs`
+- **DTS bundling** renamed internal types, causing mismatches with workspace packages
+
+### Attempt 2: tsup with workarounds
+
+We tried various combinations: explicit file paths in barrel exports, `resolve.conditions` in Vite config, `optimizeDeps.include`, bundled ESM with externalized deps. Each fix introduced a new problem.
+
+### The solution: tsc dual-build (like viem)
+
+We looked at how viem does it. They don't use tsup or any build tool wrapper — they use plain `tsc` twice:
+
+1. **CJS pass**: `tsc --module commonjs --outDir dist/_cjs` + `{"type":"commonjs"}` in `dist/_cjs/package.json`
+2. **ESM pass**: `tsc --outDir dist/_esm` + `{"type":"module","sideEffects":false}` in `dist/_esm/package.json`
+
+All files use `.js` extension. The nested `package.json` determines interpretation. No extension confusion, no resolver hacks.
+
+But we hit one more issue: strict ESM resolvers (Vitest, Node.js with `"type": "module"`) require explicit `.js` extensions in import paths. tsc doesn't rewrite import specifiers — `from './api'` stays as `from './api'` in the output, which fails in strict ESM because there's no `./api.js` file (it's `./api/index.js`).
+
+**The fix: `tsc-alias`** — a post-build tool that rewrites the ESM output to add `.js` extensions (`./api` → `./api/index.js`). Source files stay clean. CJS output doesn't need it. One line added to the build script.
+
+## Phase 3: Package configuration
+
+Getting the `package.json` right is surprisingly nuanced:
+
+```json
+{
+  "type": "commonjs",
+  "sideEffects": false,
+  "main": "dist/_cjs/index.js",
+  "module": "dist/_esm/index.js",
+  "types": "dist/_cjs/index.d.ts",
+  "exports": {
+    ".": {
+      "import": { "types": "./dist/_esm/index.d.ts", "default": "./dist/_esm/index.js" },
+      "require": { "types": "./dist/_cjs/index.d.ts", "default": "./dist/_cjs/index.js" }
+    },
+    "./api/explorer": { "..." },
+    "./api/node": { "..." }
+  }
+}
+```
+
+Each field serves a different consumer: `main` for legacy CJS, `module` for legacy bundlers, `types` for TypeScript with `moduleResolution: "node"`, and `exports` for everything modern. The `import`/`require` conditions each have their own `types` entry — CJS declarations in `_cjs/`, ESM declarations in `_esm/` — avoiding the [FalseCJS](https://github.com/arethetypeswrong/arethetypeswrong.github.io/blob/main/docs/problems/FalseCJS.md) type issue.
+
+We added `publint` and `@arethetypeswrong/cli` to validate the configuration. Even viem doesn't pass `attw` for strict `node16` ESM resolution — it's a known limitation of dual CJS/ESM packages when tsc doesn't rewrite import paths in `.d.ts` files.
+
+## TypeScript 5.9
+
+Upgrading from TypeScript 4.9 to 5.9 across the monorepo was straightforward but gave us `moduleResolution: "bundler"` — which properly resolves `exports` fields in `package.json`. We also migrated from Jest to Vitest, which handles ESM natively — no more `transformIgnorePatterns` hacks for `@noble` and `@scure` packages. However, upgrading `@noble/hashes` and `@noble/curves` to v2 (ESM-only) is still blocked by our dual CJS/ESM build: the CJS build uses `--moduleResolution node` which can't resolve subpath exports from ESM-only packages. That upgrade waits for either dropping CJS or bumping to Node 22+ with `--module nodenext`.
+
+## The results
+
+We tested with the actual benchmark apps, using packages published to a local Verdaccio registry (exactly as consumers experience from npm):
+
+| App | v2.0.10 | v3.0.0 | Reduction |
+|---|---|---|---|
+| Website (vanilla JS) | 1,697 kB | **207 kB** | **-88%** |
+| Webapp (React) | 1,904 kB | **407 kB** | **-79%** |
+
+And in the real production apps from the [alephium-frontend](https://github.com/alephium/alephium-frontend) monorepo:
+
+| App | Before | After | Reduction |
+|---|---|---|---|
+| Explorer: `index.js` chunk | 2,480 kB | **730 kB** | **-71%** |
+| Desktop wallet | 7,740 kB | **4,944 kB** | **-36%** |
+| Mobile wallet (iOS) | 22.5 MB | **21.3 MB** | **-5.3%** |
+
+The explorer also removed `rollup-plugin-node-polyfills` — no longer needed. The mobile wallet's improvement is more modest because the SDK is a smaller fraction of the total React Native bundle.
+
+For Expo/React Native, the setup went from **12 workarounds to 2**: `react-native-get-random-values` (for `@noble/secp256k1`) and an empty `fs` shim (Metro resolves dynamic imports statically). **Expo Go works** — no dev build required.
+
+## What I'd do differently
+
+**Start with `tsc`, not `tsup`.** We spent significant time debugging tsup's ESM resolution quirks before realizing that viem's plain-tsc approach avoids them entirely. Build tool wrappers add convenience but also abstraction — when something breaks, you're debugging the wrapper's behavior, not your code.
+
+**Benchmark with published packages from day one.** We initially tested with `pnpm link` and tarball installs, which behave differently from real npm installs. Setting up Verdaccio early would have caught issues sooner.
+
+**Don't underestimate `package.json` complexity.** Getting `exports`, `types`, `main`, `module`, `type`, and `sideEffects` right for dual CJS/ESM is genuinely hard. Tools like `publint` and `attw` help, but even the reference libraries (viem) don't pass every check.
+
+## What's next
+
+- **Drop CJS or bump to Node 22+** — unlocks `@noble` v2 / `@scure` v2 (ESM-only packages), currently blocked by the CJS build's `--moduleResolution node`
+- **Sub-path exports** — `@alephium/web3/codec`, `@alephium/web3/address`, etc. for even more granular tree-shaking
+
+The full roadmap, benchmark data, and reference apps are available in the [web3-rewrite repo](https://github.com/nop33/web3-rewrite).

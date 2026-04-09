@@ -1,6 +1,7 @@
 ---
 import { Avatar, Breadcrumbs, BreadcrumbsItem, Heading, Link, Button } from 'accessible-astro-components'
 import { Image } from 'astro:assets'
+import type { ImageMetadata } from 'astro'
 import sanitizeHtml from 'sanitize-html'
 
 /**
@@ -20,7 +21,7 @@ interface Props {
   /**
    * The second featured image of the page
    */
-  featuredImage2?: string
+  featuredImage2?: string | ImageMetadata
   /**
    * The width of the second featured image
    */
