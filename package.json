@@ -5,6 +5,7 @@
   "author": "Incluud",
   "license": "MIT",
   "type": "module",
+  "packageManager": "pnpm@10.33.0",
   "homepage": "https://www.nop33.com/",
   "scripts": {
     "dev": "astro dev",
