@@ -6,7 +6,7 @@ featuredImage: ./cover.png
 tags: ['TypeScript', 'SDK', 'Blockchain', 'Performance', 'Tree-shaking']
 ---
 
-The `@alephium/web3` TypeScript SDK is how developers connect to and interact with the Alephium blockchain. It's similar to what [viem](https://viem.sh) is for Ethereum. It provides utilities like address validation, transaction signing, smart contract interaction, and API communication.
+The [`@alephium/web3` TypeScript SDK](https://github.com/alephium/alephium-web3) is how developers connect to and interact with the Alephium blockchain. It's similar to what [viem](https://viem.sh) is for Ethereum. It provides utilities like address validation, transaction signing, smart contract interaction, and API communication.
 
 But it had a problem. A big, 742 kB problem.
 
@@ -155,4 +155,4 @@ A colleague rightfully questioned the need for an empty `fs` shim. The reason it
 - **Drop CJS or bump to Node 22+**. This will unlock `@noble` v2 / `@scure` v2 (ESM-only packages), currently blocked by the CJS build's `--moduleResolution node`
 - **Sub-path exports** — `@alephium/web3/codec`, `@alephium/web3/address`, etc. for even more granular tree-shaking
 
-The full roadmap, benchmark data, and reference apps are available in the [web3-rewrite repo](https://github.com/nop33/web3-rewrite).
+The full roadmap, benchmark data, and reference apps are available in the [web3-rewrite repo](https://github.com/nop33/web3-rewrite). Lastly, I wrote a [migration guide](https://github.com/alephium/alephium-web3/blob/94400aae1542255233f253629bc76873f5e81876/packages/web3/MIGRATION.md) that explains how to go from v2 to v3.
