@@ -6,7 +6,7 @@ featuredImage: ./cover.png
 tags: ['Syncthing', 'Obsidian', 'Self-hosting', 'Proxmox', 'Docker']
 ---
 
-I use [Obsidian](https://obsidian.md) for all my notes — projects, recipes, finances, travel plans, everything. The one thing missing was seamless sync between my MacBook and my Android phone without relying on a cloud service. Obsidian Sync exists, but I already have a home server running 24/7 — why not use it?
+I use [Obsidian](https://obsidian.md) for all my notes: projects, recipes, finances, travel plans, everything. OK, that's a lie. I use Notion as well. I've been trying to migrate over to Obsidian for years. The main reason why I haven't yet done it is a seamless sync between my MacBook and my Android phone without relying on a cloud service. Obsidian Sync exists, but I already have a home server running 24/7. So, why not use it?
 
 [Syncthing](https://syncthing.net) is an open-source, peer-to-peer file synchronization tool. No central server, no account, end-to-end encrypted. Exactly what I needed.
 
@@ -17,9 +17,9 @@ My home server is an HP EliteDesk running [Proxmox VE](https://www.proxmox.com/e
 - **LXC 100** — [Caddy](https://caddyserver.com) reverse proxy (`192.168.21.51`)
 - **VM 101** — `production-docker` (`192.168.21.52`) running Docker with a UFW firewall
 
-I already use this setup to host [Calibre Web](https://github.com/janeczku/calibre-web) for my ebook library and [Umami](https://umami.is) for website analytics. A 40 GB virtual drive called "Dionysus" (mounted at `/dionysus`) stores all persistent data.
+I already use this setup to host [Calibre Web](https://github.com/janeczku/calibre-web) for my ebook library and [Umami](https://umami.is) for website analytics. A 40 GB virtual drive called "Dionysus" (thanks Yann), mounted at `/dionysus`, stores all persistent data.
 
-The plan: run Syncthing as a Docker container on VM 101, store the vault on Dionysus alongside my Calibre library, and sync to my MacBook and phone. The server acts as an always-on hub — even if my laptop is asleep when I edit a note on my phone, the changes flow through the server and sync to the MacBook when it wakes up.
+The plan: run Syncthing as a Docker container on VM 101, store the vault on Dionysus alongside my Calibre library, and sync to my MacBook and phone. The server acts as an always-on hub. Even if my laptop is asleep when I edit a note on my phone, the changes flow through the server and sync to the MacBook when it wakes up.
 
 ## Step 1: Syncthing on the server
 
@@ -55,7 +55,7 @@ services:
       retries: 3
 ```
 
-`network_mode: host` is important — Docker's default bridge networking breaks Syncthing's local device discovery. Without it, devices on the same LAN won't find each other automatically.
+`network_mode: host` is important: Docker's default bridge networking breaks Syncthing's local device discovery. Without it, devices on the same LAN won't find each other automatically.
 
 ```bash
 cd /home/ilias/docker/syncthing
@@ -83,7 +83,7 @@ The GUI is restricted to the local network. For remote access, I use Caddy (more
 
 ## Step 3: Secure the GUI
 
-The Syncthing web GUI is available at `http://192.168.21.52:8384`. First thing: set a username and password under **Actions** > **Settings** > **GUI**. Then note the **Device ID** — you'll need it to connect other devices.
+The Syncthing web GUI is available at `http://192.168.21.52:8384`. First thing: set a username and password under **Actions** > **Settings** > **GUI**. Then note the **Device ID**. You'll need it to connect other devices.
 
 ## Step 4: macOS setup
 
@@ -104,9 +104,9 @@ On the server GUI, I created a shared folder:
 - **Folder ID**: `obsidian-vault` (must match exactly on all devices)
 - **Folder Path**: `/var/syncthing/data` (maps to `/dionysus/obsidian/vault` on the host)
 - **Folder Type**: Send & Receive
-- **File Versioning**: Staggered (keeps recent versions frequently, older versions at increasing intervals — a safety net against accidental deletions propagating everywhere)
+- **File Versioning**: Staggered (keeps recent versions frequently, older versions at increasing intervals. This is a safety net against accidental deletions propagating everywhere)
 
-On the MacBook, I accepted the folder and pointed it to `~/ObsidianVault`. Since the vault already existed on my MacBook, Syncthing detected the matching files and skipped re-transferring them.
+On the MacBook I accepted the folder and pointed it to `~/ObsidianVault`. Since the vault already existed on my MacBook, Syncthing detected the matching files and skipped re-transferring them.
 
 ## Step 6: Android setup
 
@@ -114,14 +114,14 @@ The original Syncthing Android app is deprecated. Install **[Syncthing-Fork](htt
 
 Critical Android settings:
 
-1. **Disable battery optimization** — Android Settings > Apps > Syncthing-Fork > Battery > Unrestricted. Without this, Android kills the app in the background and sync stops.
-2. **Grant All Files Access** — needed on Android 11+ to sync files outside the app's own directory.
+1. **Disable battery optimization**: Android Settings > Apps > Syncthing-Fork > Battery > Unrestricted. Without this, Android kills the app in the background and sync stops.
+2. **Grant All Files Access**: needed on Android 11+ to sync files outside the app's own directory.
 
 Then add the server's Device ID, accept on the server side, and accept the shared folder pointing to `/storage/emulated/0/ObsidianVault`. Install Obsidian from the Play Store and open the vault from that path.
 
 ## Step 7: The .stignore file
 
-Syncthing's `.stignore` file works like `.gitignore` — it tells Syncthing which files to skip. This file is **not synced** between devices, so you need to create it on each one separately, in the root of the vault.
+Syncthing's `.stignore` file works like `.gitignore`. It tells Syncthing which files to skip. This file is **not synced** between devices, so you need to create it on each one separately, in the root of the vault.
 
 ```
 // Obsidian workspace state (device-specific, changes constantly)
@@ -138,13 +138,13 @@ Thumbs.db
 ~*
 ```
 
-The `workspace.json` ignore is the most important one. This file changes every time you click anything in Obsidian — without ignoring it, you'd get constant sync activity and frequent conflicts.
+The `workspace.json` ignore is the most important one. This file changes every time you click anything in Obsidian. Without ignoring it, you'd get constant sync activity and frequent conflicts.
 
 ## Step 8: Remote access
 
 ### Direct sync from anywhere
 
-On my local network, devices connect directly. But away from home, Syncthing falls back to relay servers — encrypted, but slower. To enable direct connections from anywhere, I added a port forwarding rule on my Unifi UDR7 router:
+On my local network, devices connect directly. But away from home, Syncthing falls back to relay servers. They are encrypted, but slower. To enable direct connections from anywhere, I added a port forwarding rule on my Unifi UDR7 router:
 
 - **Port**: 22000 (TCP + UDP)
 - **Forward to**: `192.168.21.52:22000`
@@ -177,6 +177,8 @@ I now have my Obsidian vault syncing across three devices with no cloud dependen
 - **MacBook** — full bidirectional sync
 - **Android phone** — full bidirectional sync
 
-Editing a note on my phone while on the go, then picking up right where I left off on my laptop at home — it just works. And if anything goes wrong, staggered file versioning keeps old versions around for recovery.
+Editing a note on my phone while on the go, then picking up right where I left off on my laptop at home. It just works! And if anything goes wrong, staggered file versioning keeps old versions around for recovery.
 
 Total cost: a bit of time setting it up, and zero monthly fees.
+
+I wonder, however, how much battery the Syncthing-Fork app will consume on my phone. To be continued...
