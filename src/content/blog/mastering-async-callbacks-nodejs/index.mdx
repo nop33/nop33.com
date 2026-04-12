@@ -1,0 +1,454 @@
+---
+title: 'Mastering Async Callbacks in Node.js, Without the Complexity (part 1)'
+description: 'The web spider example from Node.js Design Patterns lost me. Here are the simple exercises I used to finally internalize callback-based async control flow.'
+publishDate: 2026-04-12T10:00:00
+featuredImage: ./cover.png
+tags: ['Node.js', 'JavaScript', 'Async', 'Tutorial']
+---
+
+I've been reading [Node.js Design Patterns](https://www.nodejsdesignpatterns.com/) (4th Edition) by Mario Casciaro and Luciano Mammino. It's an excellent book. I've even read the 3rd Edition on my Kobo, but I realized I am having a tough time comprehending technical subjects on an e-book reader, so I decided to order the physical book.
+
+As I was reading in (in parallel with my favorite LLMs to test my comprehension), chapters 4 and 5 hit me like a wall. Both chapters teach async control flow patterns (callbacks in ch. 4, promises/async-await in ch. 5) through a progressively complex "web spider" example that crawls URLs, parses HTML, writes files to disk, and handles recursive link traversal.
+
+The patterns themselves aren't that hard. But the spider mixes four concerns at once: HTTP requests, filesystem I/O, URL parsing, and the control-flow pattern you're actually trying to learn. I kept re-reading the same code and feeling like I understood it, but when I tried to write something from scratch, nothing stuck.
+
+So I took a different approach: strip away everything except the control-flow pattern and build it myself, step by step, with Claude Code as my guide. Instead of a web spider, I used a trivially simple fake async function `fetchUser(id, cb)` that simulates a database call with `setTimeout`. No HTTP. No filesystem. No URL parsing. Just the pattern.
+
+It worked. The patterns finally clicked. In this post (Part 1 of 2), I'll walk you through the four callback exercises I used to internalize chapter 4. In [Part 2](/blog/from-callbacks-to-promises-nodejs), I'll rebuild the same exercises with promises and async/await and show how much simpler they become.
+
+## The setup: a fake async function
+
+Every exercise in this series uses the same tiny function:
+
+```js
+const fetchUser = (id, cb) => {
+  if (id < 0) {
+    const err = new Error(`Invalid id: ${id}`)
+    return process.nextTick(() => cb(err))
+  }
+
+  setTimeout(
+    () => {
+      cb(null, { id, name: 'User ' + id })
+    },
+    100 + Math.random() * 300,
+  )
+}
+```
+
+It takes an `id` and a callback, waits 100-400ms to simulate network latency, and returns a fake user object. If the id is negative, it errors. That's it.
+
+But even this 10-line function has a subtlety worth understanding before we move on.
+
+### The Zalgo problem
+
+Notice that the error branch uses `process.nextTick(() => cb(err))` instead of just `cb(err)`. Why not call the callback immediately?
+
+Because the success branch calls the callback asynchronously (inside a `setTimeout`). If the error branch called it synchronously, then `fetchUser` would be **sometimes sync, sometimes async** depending on its input. This is known as ["releasing Zalgo"](https://blog.izs.me/2013/08/designing-apis-for-asynchrony/): a function that unpredictably switches between sync and async behavior is nightmarish to reason about.
+
+Here's the problem it causes. Consider this caller:
+
+```js
+console.log('before')
+fetchUser(-1, (err) => console.log('callback:', err.message))
+console.log('after')
+```
+
+With a **synchronous** error branch, the output would be:
+
+```
+before
+callback: Invalid id
+after
+```
+
+The callback fires _before_ `console.log('after')` runs. But with a positive id (async branch), the output would be:
+
+```
+before
+after
+callback: User 1
+```
+
+Same function, different ordering depending on the input. Code that works after the function call might run before _or_ after the callback, unpredictably. That's Zalgo.
+
+The rule is simple: **an async function must be async on every code path, always.** Wrapping the error callback in `process.nextTick` guarantees that the callback is always deferred to the next iteration of the event loop, regardless of which branch executes.
+
+## Exercise 1: The error-first callback
+
+Before tackling any control-flow patterns, I made sure I could write and consume an error-first callback correctly. The exercise: call `fetchUser` three times. Once with a valid id, once with an invalid id, and once more with a valid id, and handle the results.
+
+```js
+const cb = (err, result) => {
+  if (err) {
+    console.error(err)
+  } else {
+    console.log(`Got user: ${result.id} - ${result.name}`)
+  }
+}
+
+fetchUser(1, cb)
+fetchUser(-5, cb)
+fetchUser(2, cb)
+```
+
+Output:
+
+```
+Error: Invalid id
+Got user: 1 - User 1
+Got user: 2 - User 2
+```
+
+Two things to notice:
+
+**1. The error-first convention.** When there's no error, we pass `null` as the first argument: `cb(null, user)`. When there is an error, we pass only the error: `cb(err)`. The callback always checks `err` first. This convention is baked into Node.js and every library that uses callbacks. Ugly af.
+
+**2. The output order.** The error prints first even though `fetchUser(-5)` is the second call. Why? Because `process.nextTick` callbacks run before `setTimeout` callbacks in the event loop. The error (deferred via `nextTick`) fires before either success callback (deferred via `setTimeout`). The order isn't "order of invocation" — it's "order of event-loop scheduling."
+
+Simple exercise, but the foundation for everything that follows. If this is solid, the rest builds on top.
+
+## Exercise 2: Sequential execution
+
+Now the real work begins. The goal: fetch a list of users **one at a time**, each call waiting for the previous one to finish. This is the "sequential iteration pattern" from chapter 4 of the book.
+
+### The challenge
+
+Write a function `fetchUsersSequentially(ids, finalCb)` that:
+
+- Takes an array of ids (e.g., `[1, 2, 3, 4, 5]`) and a final callback
+- Calls `fetchUser` on each id **one after another**. Each call must wait for the previous one to finish.
+- When all are done, calls `finalCb(null, results)` with an array of user objects in the same order as `ids`
+- If any call fails, stops immediately and calls `finalCb(err)`
+
+<details>
+<summary>Hints (try it yourself first)</summary>
+
+The canonical way to do sequential iteration with callbacks is **recursion via an iterator function**:
+
+- Define an inner function `iterate(index)` that checks if `index === ids.length`. If yes, we're done, so call `finalCb(null, results)`.
+- Otherwise, call `fetchUser(ids[index], (err, user) => { ... })`. In that inner callback: on error, call `finalCb(err)` and return. Otherwise, push `user` into `results` and call `iterate(index + 1)`.
+- Kick it off with `iterate(0)`.
+
+Do **not** use a `for` loop! With callbacks, a `for` loop would fire all the requests at once (parallel), not sequentially. That's Exercise 3.
+
+</details>
+
+### My solution
+
+```js
+const fetchUsersSequentially = (ids, finalCb) => {
+  const results = []
+
+  const iterate = (index) => {
+    if (index === ids.length) {
+      return finalCb(null, results)
+    }
+
+    fetchUser(ids[index], (err, result) => {
+      if (err) {
+        return finalCb(err)
+      }
+      results.push(result)
+      iterate(index + 1)
+    })
+  }
+
+  iterate(0)
+}
+```
+
+The driver code:
+
+```js
+console.time('sequential')
+fetchUsersSequentially([1, 2, 3, 4, 5], (err, results) => {
+  console.timeEnd('sequential')
+  if (err) return console.error(err)
+  for (const user of results) console.log(`Got user: ${user.id} - ${user.name}`)
+})
+```
+
+Output:
+
+```
+Got user: 1 - User 1
+Got user: 2 - User 2
+Got user: 3 - User 3
+Got user: 4 - User 4
+Got user: 5 - User 5
+sequential: 1.472s
+```
+
+Five sequential fetches, each averaging ~250ms. Total: ~1.5s. Remember this number, we'll compare it against parallel execution.
+
+### Style note: "done" check at the top
+
+Putting the `if (index === ids.length)` check at the **top** of `iterate` (rather than checking "is this the last one?" after fetching) handles the edge case of an empty array naturally. If `ids` is `[]`, `iterate(0)` immediately sees `0 === 0` and calls `finalCb(null, [])`. With the check at the bottom, you'd call `fetchUser(undefined, ...)` — a latent bug.
+
+## Exercise 3: Unlimited parallel execution
+
+Now the opposite: fetch all users **at the same time** and gather the results when everything's done.
+
+### The challenge
+
+Write `fetchUsersInParallel(ids, finalCb)` with the same contract `finalCb(err, results)`, results in input order, fires exactly once. But kick off all fetches immediately.
+
+<details>
+<summary>Hints</summary>
+
+- Use a `for` loop to kick off all fetches at once.
+- Track completions with a `completed` counter. When it equals `ids.length`, call `finalCb(null, results)`.
+- Use `results[i] = user` (not `.push()`) to preserve input order despite out-of-order completions.
+- Use a `hasError` flag to ensure `finalCb` is called at most once after an error.
+
+</details>
+
+### My solution
+
+```js
+const fetchUsersInParallel = (ids, finalCb) => {
+  const results = new Array(ids.length)
+  let completed = 0
+  let hasError = false
+
+  for (let i = 0; i < ids.length; i++) {
+    fetchUser(ids[i], (err, result) => {
+      if (hasError) return
+      if (err) {
+        hasError = true
+        return finalCb(err)
+      }
+      results[i] = result
+      if (++completed === ids.length) finalCb(null, results)
+    })
+  }
+}
+```
+
+Output (success case):
+
+```
+parallel-success: 309ms
+Got user: 1 - User 1
+Got user: 2 - User 2
+Got user: 3 - User 3
+Got user: 4 - User 4
+Got user: 5 - User 5
+```
+
+**309ms** for five fetches, versus ~1.5s sequential. The speedup is almost 5x! All five ran concurrently, bottlenecked only by the slowest one. That's the whole point of parallel.
+
+### What I learned: why `hasError` must be checked at the top
+
+My first attempt had the `hasError` check in the wrong place. I only checked `!hasError` on the success path:
+
+```js
+// Buggy version
+fetchUser(ids[i], (err, result) => {
+  if (err) {
+    hasError = true
+    return finalCb(err)
+  }
+  results[i] = result
+  if (++completed === ids.length && !hasError) finalCb(null, results)
+  //                                ^^^^^^^^^ only checked here
+})
+```
+
+This seemed reasonable. If an error occurred, `completed` would never reach `ids.length` (error'd callbacks don't increment it), so the success callback would never fire. And that's true. But what about **multiple errors**?
+
+With `[1, -2, -3, 4]`:
+
+1. `fetchUser(-2)` errors → `hasError = true`, `finalCb(err)`. **First call.** Good.
+2. `fetchUser(-3)` errors → `hasError = true` (already was), `finalCb(err)`. **Second call.** Bad!
+
+`finalCb` fired twice. The flag didn't protect the error path from other errors.
+
+The fix: check `hasError` **at the very top of the callback**, before anything else. This drops all late-arriving callbacks, no matter if they're late errors or late successes:
+
+```js
+fetchUser(ids[i], (err, result) => {
+  if (hasError) return // drop everything after first error
+  if (err) {
+    hasError = true
+    return finalCb(err)
+  }
+  results[i] = result
+  if (++completed === ids.length) finalCb(null, results)
+})
+```
+
+This is the kind of bug that only manifests with specific input patterns (multiple errors) and specific timing. In a real system, it would show up as intermittent double-responses, corrupted state, or, in the worst case, charging a credit card twice. The lesson: **with callbacks, every single code path through the callback must be explicitly guarded. There's no built-in safety net.**
+
+### Why `let` matters in the for loop
+
+A subtle but critical detail: the loop uses `let i`, not `var i`. With `let`, each iteration gets its own binding of `i` captured by the closure. With `var`, every callback would close over the **same** `i` variable (which would be `5` by the time any callback fires), and you'd write every result to `results[5]`. Use `let`.
+
+## Exercise 4: Limited parallel execution
+
+This is the hardest exercise and the most important one. It's where the `TaskQueue` class in the book comes from, and it's the pattern behind database connection pools, `http.Agent` `maxSockets`, worker pools, and every other concurrency limiter you'll encounter in production.
+
+### Why concurrency limits exist
+
+In Exercise 3, we ran 5 fetches in parallel. That's fine. But what if you had 1000?
+
+Every concurrent operation holds real resources:
+
+- **File descriptors** — each open socket, file, or pipe is a file descriptor in Unix. Your process has a hard cap (`ulimit -n`, commonly 1024, for my MacBook it's 2048). Opening one past the limit crashes with `EMFILE`.
+- **Database connections** — each connection is a live TCP socket plus a backend process/thread on the DB server. Postgres defaults to `max_connections = 100`. Hit that limit and your next connection attempt fails (and you're not the only client).
+- **Memory** — each in-flight operation has buffers, closures, and intermediate state sitting in RAM.
+- **Remote rate limits** — the server you're talking to has its own caps. Hammer it hard enough and you get 429s, 503s, or bans.
+- **Bandwidth** — 1000 concurrent downloads through a shared pipe each get 1/1000th of the bandwidth, so they all finish slowly.
+
+There's also a less obvious reason: **throughput is not a monotonic function of concurrency.** For most real workloads, throughput rises as you add concurrency up to some optimum (where your bottleneck resource is fully utilized), then _falls_ as contention overhead outpaces the gains. A hundred workers fighting over one lock get less done than ten workers doing the same job.
+
+The limited-parallel pattern isn't a Node quirk. It's the right shape for talking to any finite resource, in any language.
+
+### The challenge
+
+Write `fetchUsersWithConcurrency(ids, concurrency, finalCb)`, same contract as before, but at most `concurrency` fetches may be in flight at any time.
+
+<details>
+<summary>Hints</summary>
+
+You need four state variables:
+
+- `results` — pre-allocated `new Array(ids.length)`
+- `nextIndex` — the index of the next id to fetch (starts at 0)
+- `running` — how many fetches are currently in flight (starts at 0)
+- `completed` — how many have finished successfully (starts at 0)
+
+And one internal helper, `tryNext()`, with a `while` loop:
+
+```
+while (running < concurrency AND nextIndex < ids.length AND not hasError):
+    capture nextIndex into a local variable
+    increment nextIndex and running
+    call fetchUser, and in the callback:
+        decrement running
+        handle errors (with hasError guard)
+        write result to results[i]
+        check if completed === ids.length
+        call tryNext() to fill the freed slot
+```
+
+The `while` loop handles both "first call launches a burst" and "subsequent calls top up one at a time."
+
+</details>
+
+### My solution
+
+```js
+const fetchUsersWithConcurrency = (ids, concurrency, finalCb) => {
+  const results = new Array(ids.length)
+  let nextIndex = 0
+  let running = 0
+  let completed = 0
+  let hasError = false
+
+  const tryNext = () => {
+    while (running < concurrency && nextIndex < ids.length && !hasError) {
+      const i = nextIndex
+      nextIndex++
+      running++
+
+      fetchUser(ids[i], (err, result) => {
+        running--
+        if (hasError) return
+        if (err) {
+          hasError = true
+          return finalCb(err)
+        }
+        results[i] = result
+        if (++completed === ids.length) return finalCb(null, results)
+        tryNext()
+      })
+    }
+  }
+
+  tryNext()
+}
+```
+
+With logging added to `fetchUser`, the output with 20 ids and concurrency 3:
+
+```
+  → start fetch 1
+  → start fetch 2
+  → start fetch 3
+  ← done   fetch 1
+  → start fetch 4
+  ← done   fetch 3
+  → start fetch 5
+  ← done   fetch 2
+  → start fetch 6
+  ...
+  ← done   fetch 19
+  ← done   fetch 20
+limited-parallel: 1.765s
+Fetched 20 users
+```
+
+You can see the rhythm: exactly 3 `→ start` lines before any `← done`, then each completion immediately triggers a new start. The pipeline stays full.
+
+**Timing**: 1.765s for 20 tasks with concurrency 3. Compare:
+
+- Fully parallel (concurrency = 20): ~400ms
+- Fully sequential (concurrency = 1): ~5s
+- Limited parallel (concurrency = 3): ~1.8s
+
+Limited parallel sits between the two — trading throughput for resource bounds. Real systems use this every day.
+
+### What I learned: `nextIndex` vs `completed`
+
+My first version used `completed < ids.length` as the scheduling guard instead of `nextIndex < ids.length`. It seemed equivalent: "keep going until we're done." It wasn't.
+
+The difference:
+
+- `nextIndex` tracks how many tasks have been **kicked off** (scheduled)
+- `completed` tracks how many tasks have **finished**
+
+When you've scheduled all 20 tasks but only 17 have completed, `completed < ids.length` is still true, so the `while` loop enters and tries to schedule task #21, which is `ids[20]`, which is `undefined`.
+
+Here's the trace from my buggy version:
+
+```
+  ← done   fetch 17
+  → start fetch undefined    ← phantom task!
+  ← done   fetch 19
+  → start fetch undefined    ← another one!
+  ← done   fetch undefined
+limited-parallel: 1.791s
+Fetched 21 users               ← wrong count!
+```
+
+The `→ start fetch undefined` lines are phantom tasks because the scheduler tried to fetch beyond the end of the array. The `Fetched 21 users` is because `results[20]` was written by a phantom fetch, extending the array past its original length.
+
+The fix: use `nextIndex < ids.length` in the scheduling guard. "Should I schedule more?" is strictly about the input queue, not about the state of the world.
+
+Every task flows through three states:
+
+```
+       unscheduled         →    in flight    →    completed
+(ids.length - nextIndex)        (running)        (completed)
+
+```
+
+The `while` loop moves tasks from unscheduled to in flight. Its guard must ask "is there anything left **to schedule**?" (`nextIndex < ids.length`), not "is everything **done**?" (`completed < ids.length`).
+
+## Wrapping up Part 1
+
+Here's what I had to manually juggle with callbacks across these four exercises:
+
+| Rule                                         | What goes wrong if you break it                                            |
+| -------------------------------------------- | -------------------------------------------------------------------------- |
+| Both code paths must be async (no Zalgo)     | Callers can't predict whether their code runs before or after the callback |
+| `return` after calling `finalCb(err)`        | The success path also fires, leading to double result                      |
+| `hasError` flag at the top of every callback | `finalCb` fires multiple times on concurrent errors                        |
+| `nextIndex` (not `completed`) for scheduling | Phantom tasks scheduled beyond the end of the array                        |
+| `finalCb` called exactly once per invocation | Consumers see duplicate responses, corrupted state                         |
+
+Every one of these is a **rule you, the programmer, must remember and implement correctly**. The language doesn't enforce any of them. A missing `return`, a misplaced flag check, or the wrong counter in a guard, any one of these can cause a bug that only surfaces under specific input patterns and specific timing.
+
+In [Part 2](/blog/from-callbacks-to-promises-nodejs), I rebuild all four exercises with promises and async/await. Every rule in the table above becomes a language-enforced guarantee that you couldn't violate if you tried. The code gets shorter, the bugs get impossible, and the same patterns become almost trivially simple to express.
