@@ -102,6 +102,10 @@
 }
 
 @layer base {
+  code:not(pre code) {
+    font-size: 0.875em;
+  }
+
   p {
     text-wrap: pretty;
   }
