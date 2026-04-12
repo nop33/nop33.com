@@ -1,8 +1,6 @@
 ---
 import DefaultLayout from '@layouts/DefaultLayout.astro'
 import PageHeader from '@components/PageHeader.astro'
-import SocialShares from '@components/SocialShares.astro'
-import { Heading } from 'accessible-astro-components'
 import { Image } from 'astro:assets'
 import { getCollection, render } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
@@ -42,26 +40,13 @@ const formattedDate = post.data.publishDate.toLocaleDateString('en-US', {
   {
     post.data.featuredImage && (
       <div class="container my-12">
-        <Image
-          src={post.data.featuredImage}
-          alt=""
-          width={1200}
-          height={630}
-          class="w-full rounded-lg object-cover"
-        />
+        <Image src={post.data.featuredImage} alt="" width={1200} height={630} class="w-full rounded-lg object-cover" />
       </div>
     )
   }
   <section class="my-12">
     <div class="narrow space-content container">
       <Content />
-    </div>
-  </section>
-  <section class="my-12">
-    <div class="narrow space-content container">
-      <Heading level="h2">Share this post</Heading>
-      <p>Like this post? Share it with your friends!</p>
-      <SocialShares />
     </div>
   </section>
 </DefaultLayout>
