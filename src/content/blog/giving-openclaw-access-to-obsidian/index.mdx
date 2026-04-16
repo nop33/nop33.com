@@ -1,0 +1,186 @@
+---
+title: 'Giving OpenClaw Safe Access to Your Obsidian Vault'
+description: 'How I gave my self-hosted AI assistant read access to my entire Obsidian vault and restricted write access to a single folder — without risking my notes.'
+publishDate: 2026-04-16
+featuredImage: ./cover.webp
+tags: ['Obsidian', 'Self-hosting', 'AI', 'Security', 'Linux']
+---
+
+I have an AI assistant ([OpenClaw](https://github.com/openclaw)) running on my home server. I also have an [Obsidian vault](/blog/syncing-obsidian-with-syncthing) with all my notes. I wanted my [private AI](https://venice.ai/) to read my notes to understand me better, and to write daily journal entries on my behalf.
+
+But I didn't want it to be able to delete or modify my existing notes if something went wrong.
+
+## The problem
+
+Giving an AI agent filesystem access is a trust problem. If the agent can read and write freely, a single bug or hallucination could corrupt or delete files. With a sync system like [Syncthing](https://syncthing.net) propagating changes across devices, the damage would spread everywhere within seconds.
+
+I needed two things:
+
+1. **Read access** to the entire vault, so the AI can learn about me and reference my notes
+2. **Write access** to a single folder (`Journal/`) — so it can create daily notes, monthly reviews, and annual reviews
+
+And critically: the AI should have **no way** to escalate its access, even if it tries.
+
+## The architecture
+
+My setup runs on [Proxmox VE](https://www.proxmox.com/en/proxmox-virtual-environment/overview) with two VMs:
+
+- **VM 101** (`production-docker`) — stores the Obsidian vault on disk, runs Syncthing
+- **VM 102** (`openclaw`) — runs the AI assistant
+
+The vault lives at `/dionysus/obsidian/vault` on VM 101. The key insight is to use **two separate channels** for read and write, each with different permissions:
+
+```
+      OpenClaw VM (102)                      VM 101 (production-docker)
+┌────────────────────────────┐             ┌───────────────────────────┐
+│                            │             │                           │
+│  NFS mount (read-only)    ──────────────>│  /dionysus/obsidian/vault │
+│  /mnt/obsidian-vault       │             │                           │
+│                            │             │                           │
+│  SSH (forced command)     ──────────────>│  write script             │
+│  (only writes to Journal/) │             │  (validates path + ext)   │
+│                            │             │                           │
+└────────────────────────────┘             └───────────────────────────┘
+```
+
+## The read path: NFS
+
+[NFS](https://en.wikipedia.org/wiki/Network_File_System) (Network File System) lets one machine share a directory over the network. On VM 101, I exported the vault as **read-only**:
+
+```
+/dionysus/obsidian/vault 192.168.21.60(ro,sync,no_subtree_check)
+```
+
+On the OpenClaw VM, it's mounted at `/mnt/obsidian-vault`. The AI can read every note, but the operating system enforces that it cannot write, delete, or modify anything through this mount. No application-level workaround can bypass this since it's enforced by the NFS server.
+
+## The write path: SSH with a forced command
+
+For writing journal entries, the AI uses SSH. The key is configured with a **forced command**, which means it can only execute one specific script, no matter what command the AI tries to run.
+
+The SSH key in `authorized_keys` on VM 101 looks like this:
+
+```
+command="/usr/local/bin/obsidian-write-journal-for-openclaw",no-port-forwarding,no-agent-forwarding,no-pty,no-X11-forwarding ssh-ed25519 AAAA... openclaw-obsidian-write
+```
+
+Even if the AI tries to `ssh user@server "rm -rf /"`, the SSH server ignores the requested command and runs the forced script instead. The `no-pty` flag prevents getting an interactive shell. The `no-port-forwarding` and `no-agent-forwarding` flags close other escape routes.
+
+## The write script
+
+The script on VM 101 validates every write request:
+
+```bash
+#!/bin/bash
+VAULT="/dionysus/obsidian/vault"
+ALLOWED_DIR="Journal"
+
+# SSH passes the original command via this variable
+if [[ -n "$SSH_ORIGINAL_COMMAND" ]]; then
+  eval set -- $SSH_ORIGINAL_COMMAND
+fi
+
+MODE="write"
+
+while [[ "$1" == --* ]]; do
+  case "$1" in
+    --append) MODE="append"; shift ;;
+    *) echo "ERROR: Unknown flag $1" >&2; exit 1 ;;
+  esac
+done
+
+FILENAME="$1"
+
+# Must provide a filename
+if [[ -z "$FILENAME" ]]; then
+  echo "ERROR: No filename provided" >&2
+  exit 1
+fi
+
+# Must be inside Journal/
+if [[ "$FILENAME" != "$ALLOWED_DIR/"* ]] || [[ "$FILENAME" == *".."* ]]; then
+  echo "ERROR: Can only write to $ALLOWED_DIR/" >&2
+  exit 1
+fi
+
+# Must be a markdown file
+if [[ "$FILENAME" != *.md ]]; then
+  echo "ERROR: Only .md files are allowed" >&2
+  exit 1
+fi
+
+mkdir -p "$VAULT/$(dirname "$FILENAME")"
+
+if [[ "$MODE" == "append" ]]; then
+  cat >> "$VAULT/$FILENAME"
+else
+  cat > "$VAULT/$FILENAME"
+fi
+```
+
+Three checks:
+
+1. **Path restriction** — filename must start with `Journal/` and cannot contain `..` (no path traversal)
+2. **Extension restriction** — only `.md` files
+3. **No delete capability** — the script can only create or update files, there's no delete operation
+
+The `--append` flag is important. If I've already written something in my daily note manually, the AI appends its summary below without replacing my content.
+
+## How the AI uses it
+
+From the OpenClaw VM:
+
+```bash
+# Create a daily note
+echo "# 2026-04-16
+
+## What I did today
+- Set up Syncthing for Obsidian sync
+- Configured NFS and SSH access for OpenClaw
+" | ssh -i ~/.ssh/obsidian_write ilias@192.168.21.52 "Journal/2026-04-16.md"
+
+# Append to an existing note
+echo "
+## Evening reflection
+Productive day focused on infrastructure.
+" | ssh -i ~/.ssh/obsidian_write ilias@192.168.21.52 "--append Journal/2026-04-16.md"
+```
+
+Once written, [Syncthing](/blog/syncing-obsidian-with-syncthing) propagates the changes to my MacBook and Android phone automatically.
+
+## What happens if the AI goes rogue?
+
+| Threat                           | Protection                                                           |
+| -------------------------------- | -------------------------------------------------------------------- |
+| Delete all notes                 | Can't — NFS mount is read-only, write script has no delete operation |
+| Overwrite notes outside Journal/ | Can't — script rejects any path not starting with `Journal/`         |
+| Modify the write script itself   | Can't — script lives on VM 101, outside the AI's reach               |
+| Get a shell on VM 101            | Can't — SSH key has forced command and `no-pty`                      |
+| Bypass SSH and write directly    | Can't — NFS mount is read-only                                       |
+| Corrupt a journal entry          | Recoverable — Syncthing keeps old versions in `.stversions/`         |
+
+The layered approach means there's no single point of failure. The AI would need to compromise both the NFS protocol _and_ the SSH forced command mechanism to do real damage. Both are enforced at the OS/protocol level, not the application level.
+
+## The journal structure
+
+All AI-written entries go into `Journal/` with date-based naming:
+
+| Type           | Filename        | Trigger                                                          |
+| -------------- | --------------- | ---------------------------------------------------------------- |
+| Daily note     | `2026-04-16.md` | Every evening — AI asks what I did, writes a summary             |
+| Monthly review | `2026-04.md`    | End of month — AI reads that month's daily notes and synthesizes |
+| Annual review  | `2026.md`       | End of year — AI reads the 12 monthly reviews and reflects       |
+
+Daily notes follow the same format as my Obsidian Daily Notes plugin template, so they integrate seamlessly with the rest of my vault.
+
+## Why not just use an API?
+
+A REST API with authentication would work too, but the SSH forced command approach has advantages for a home server:
+
+- **No additional service to run** — SSH is already there
+- **No authentication code to write** — SSH keys handle it
+- **Battle-tested security** — SSH forced commands have been used for decades (think `git` over SSH, `rsync` backup scripts)
+- **Simple to audit** — one script, one key, one `authorized_keys` line
+
+## Takeaway
+
+The core pattern is: **separate your read and write channels, and enforce restrictions at the infrastructure level, not the application level.** An AI agent promising to only write to one folder is not the same as an AI agent that _can only_ write to one folder. The difference matters when things go wrong.
