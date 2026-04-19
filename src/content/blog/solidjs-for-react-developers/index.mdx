@@ -1,0 +1,235 @@
+---
+title: 'SolidJS for React Developers: Day 1 of learning journey'
+description: 'A practical guide to SolidJS from a React perspective: signals, reactivity, and the mental shifts that matter, learnt by building a real app.'
+publishDate: 2026-04-19
+featuredImage: ./cover.webp
+tags: ['SolidJS', 'React', 'TypeScript', 'Frontend']
+---
+
+I spend about two hours every month reconciling expenses across multiple Swiss bank accounts into a Google Sheet. It works, but it's tedious. I decided to build a small client-side app to speed up the process. Drop some CSV files, auto-categorize transactions, get monthly totals. Nothing fancy.
+
+I also wanted to learn a new framework. I've been writing React for years, and SolidJS kept showing up in conversations. It promises React-like ergonomics with fundamentally better performance. So I picked it.
+
+Together with my friend Claude, we started building together. I enjoy learning with LLMs, especially because I can ask very specific questions and get very specific answers as I am learning.
+
+## The big mental shift: components run once
+
+This is the single most important thing to understand. In React, your component function is a render function. It re-runs on every state change. In Solid, it's a **setup function**. It runs exactly once.
+
+But wait. I can write `.tsx` files? Noice.
+
+```tsx
+// React — this function runs on EVERY render
+const Counter = () => {
+  const [count, setCount] = useState(0)
+  console.log('rendering') // logs on every click
+  return <button onClick={() => setCount(count + 1)}>{count}</button>
+}
+
+// Solid — this function runs ONCE
+const Counter = () => {
+  const [count, setCount] = createSignal(0)
+  console.log('setup') // logs once, ever
+  return <button onClick={() => setCount(count() + 1)}>{count()}</button>
+}
+```
+
+So how does the UI update? Solid uses **fine-grained reactivity**. When you write `{count()}` in JSX, Solid subscribes that specific DOM text node to the signal. When the signal changes, only that text node updates. There is no virtual DOM diffing which means there isn't any re-rendering of the component tree.
+
+This has practical consequences that'll trip you up if you're not ready for them. Trust me, bro.
+
+## Signals are getter functions, not values
+
+In React, `useState` returns a value. In Solid, `createSignal` returns a **getter function**.
+
+```tsx
+// React
+const [count, setCount] = useState(0)
+console.log(count) // 0
+
+// Solid
+const [count, setCount] = createSignal(0)
+console.log(count) // [Function]
+console.log(count()) // 0 — note the ()
+```
+
+The getter is a function because Solid uses it to track _where_ the signal is read. When you call `count()` inside JSX, Solid knows that specific DOM node depends on this signal. It's what makes the fine-grained updates possible.
+
+I'll forget the parentheses a bunch of times and I'll stare at the UI that doesn't update like an idiot, but I'll learn it eventually.
+
+## Never destructure props
+
+In React, destructuring props is idiomatic:
+
+```tsx
+// React — totally fine
+const Greeting = ({ name }) => <p>Hello, {name}</p>
+```
+
+In Solid, this **breaks reactivity**:
+
+```tsx
+// Solid — BROKEN. name captures the value at setup time,
+// and since setup only runs once, it never updates.
+const Greeting = ({ name }) => <p>Hello, {name}</p>
+
+// Solid — correct
+const Greeting = (props) => <p>Hello, {props.name}</p>
+```
+
+Since the component function runs once, destructuring captures the prop values at that single moment. `props` is a reactive proxy. Accessing `props.name` in JSX creates a subscription. Destructuring throws that away.
+
+This is the habit that takes longest to break if you're coming from React. Build the muscle memory: always `props.whatever`.
+
+## `<For>` instead of `.map()`
+
+In React, you render lists with `.map()`:
+
+```tsx
+// React — map creates new elements, virtual DOM diffs them
+{
+  items.map((item) => <div key={item.id}>{item.name}</div>)
+}
+```
+
+In Solid, you use the `<For>` component:
+
+```tsx
+// Solid — For tracks each item and only updates what changed
+<For each={items()}>{(item) => <div>{item.name}</div>}</For>
+```
+
+Since Solid doesn't re-render, it needs to know _how_ to react when the list changes. `<For>` tracks each item by reference and only touches the DOM nodes for items that actually changed. If you used `.map()`, Solid would recreate all DOM nodes whenever the list signal fires. No key prop needed either. Solid tracks by reference, not by key.
+
+## `<Show>` instead of ternaries
+
+Same idea as `<For>`, but for conditional rendering:
+
+```tsx
+// React — ternary, virtual DOM diffs anyway
+{
+  isLoggedIn ? <Dashboard /> : <Login />
+}
+
+// Solid
+<Show when={isLoggedIn()} fallback={<Login />}>
+  <Dashboard />
+</Show>
+```
+
+`<Show>` fully unmounts the content when the condition is false and remounts when true. The `fallback` prop is the else branch which is arguably cleaner than nested ternaries.
+
+You _can_ use `{condition() && <Thing />}` for simple cases. In Solid, unlike React, this also properly unmounts the component. But `<Show>` gives you the `fallback` prop and a callback form for type narrowing on nullable values:
+
+```tsx
+// TypeScript knows user is non-null inside the callback
+<Show when={user()}>{(u) => <p>{u().name}</p>}</Show>
+```
+
+## `createMemo`: like `useMemo` but without the dependency array
+
+Solid's `createMemo` caches a derived value and only recomputes when its dependencies change. Sound familiar? It's `useMemo`, except you don't pass a dependency array.
+
+```tsx
+// React — manually list dependencies (miss one and enjoy stale data)
+const total = useMemo(() => items.reduce((s, i) => s + i.price, 0), [items])
+
+// Solid — automatic tracking
+const total = createMemo(() => items().reduce((s, i) => s + i.price, 0))
+```
+
+Solid tracks which signals are read inside the function and figures out the dependencies for you. Finally, no lint rules yelling about missing deps.
+
+### When to memo vs. when to use a plain function
+
+Not everything needs `createMemo`. In my expense tracker, I have category totals computed from a memo, and then summary aggregations derived from those totals:
+
+```tsx
+// Memo — expensive, read in multiple places
+const totals = createMemo(() => {
+  // iterate all transactions, group by category, sort...
+  return Array.from(map.values()).sort((a, b) => b.total - a.total)
+})
+
+// Plain functions — cheap one-liners, each reads totals()
+const costOfLiving = () => tierTotal('need')
+const spentOnMe = () => costOfLiving() + tierTotal('want')
+```
+
+Without the memo, every place that calls `totals()` would re-run the entire computation independently. With it, the computation runs once, and all callers get the cached result.
+
+The rule of thumb: if a derived value is **expensive** or **read in multiple places**, use `createMemo`. If it's a cheap one-liner read in one place, a plain function is fine.
+
+## Lifecycle: explicit functions, not `useEffect` overloads
+
+React's `useEffect` handles mount, update, and cleanup depending on what dependency array you pass. In Solid, these are separate functions with clear names:
+
+```tsx
+// React — "empty deps means mount", you just have to know
+useEffect(() => {
+  fetchData()
+  document.addEventListener('keydown', handler)
+  return () => document.removeEventListener('keydown', handler)
+}, [])
+
+// Solid — explicit intent
+onMount(() => fetchData())
+
+onMount(() => document.addEventListener('keydown', handler))
+onCleanup(() => document.removeEventListener('keydown', handler))
+```
+
+`onMount` runs once after the component mounts. `onCleanup` runs when the component is destroyed. I like that I don't have to mentally parse what an effect is supposed to do.
+
+Solid also has `createEffect` for reactive side effects (similar to `useEffect` with dependencies), but I haven't needed it yet in this project.
+
+## Refs: no `.current`
+
+React refs are objects with a `.current` property. Solid refs are just variables. Very intuitive:
+
+```tsx
+// React
+const inputRef = useRef<HTMLInputElement>(null)
+// later: inputRef.current?.focus()
+
+// Solid
+let inputRef!: HTMLInputElement
+// later: inputRef.focus()
+```
+
+The `!` (definite assignment assertion) tells TypeScript the variable will be assigned before use. You pass it to an element with `ref={inputRef}`, and Solid assigns the DOM element directly.
+
+## `classList`: built-in conditional classes
+
+If you are used to the `classnames` library, that's exactly the same, but baked in:
+
+```tsx
+// React — needs a library or template literals
+<div className={`row ${isActive ? 'bg-green' : ''} ${isError ? 'bg-red' : ''}`}>
+
+// Solid — built-in
+<div classList={{ 'bg-green': isActive(), 'bg-red': isError() }}>
+```
+
+Each key is a class name, each value is a boolean.
+
+## What I think so far
+
+I'm early in this project. The expense tracker parses CSV files from two Swiss credit card providers, auto-categorizes transactions based on merchant mappings stored in IndexedDB, and shows monthly totals grouped by category. Client-side only, no backend. It's enough to speed up my monthly accounting.
+
+The Solid experience has been surprisingly smooth. The reactivity model clicks once you internalize the "runs once" rule. Something that will still take me a while to get used to. The code ends up looking a lot like React, but the runtime behavior is fundamentally different.
+
+What I like:
+
+- **No dependency arrays.** This alone removes an entire class of bugs.
+- **Explicit lifecycle.** `onMount` and `onCleanup` are clearer than `useEffect` with varying dependency arrays.
+- **No re-render debugging.** There are no re-renders. If something doesn't update, it's because I didn't call the getter.
+- **Small API surface.** `createSignal`, `createMemo`, `<For>`, `<Show>`, `onMount`, `onCleanup`. That covers 90% of what I've needed.
+
+What tripped me up:
+
+- **Forgetting `()` on signal reads.** Multiple times.
+- **Destructuring props.** Old habits.
+- **Reaching for `useEffect` patterns** that don't exist and aren't needed.
+
+I'll write a follow-up post as the project grows and I hit more advanced patterns. For now, if you're a React developer curious about Solid, just build something small. The mental model translates faster than you'd expect.
