@@ -23,7 +23,7 @@ By restructuring the compilation pipeline, decoupling native build profiles, and
 
 On the web, code-splitting (through `React.lazy`) physically chunks the code to save network bandwidth. On mobile, 100% of the JS bundle is already compiled and sitting locally on the device's flash storage. The bottleneck isn't network download size but CPU execution time instead.
 
-In all Expo projects****** ******by default, standard top-level static imports (`import X from 'Y'`) force the Hermes engine to synchronously execute those modules the exact millisecond the app boots. The breakthrough came from flipping a single global transformer switch in `metro.config.js`:
+In all Expo projects by default, standard top-level static imports (`import X from 'Y'`) force the Hermes engine to synchronously execute those modules the exact millisecond the app boots. The breakthrough came from flipping a single global transformer switch in `metro.config.js`:
 
 ```js
 config.transformer.getTransformOptions = async () => ({
