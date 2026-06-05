@@ -1,0 +1,108 @@
+---
+/**
+ * AnimatedFigure
+ *
+ * Wrapper for the post's looping animated diagrams. It renders the figure
+ * shell, a pause/play control, and the caption, and loads the shared toggle
+ * behavior.
+ *
+ * The animated content goes in the default slot; the caption in the `caption`
+ * slot. The animations are pure CSS loops; every animated element reads
+ * `animation-play-state: var(--anim-play)`, and this wrapper owns that variable:
+ *   - default: running
+ *   - `.is-paused` (toggled by the button): paused
+ *   - `prefers-reduced-motion`: paused, and the control is hidden (the diagram
+ *     itself is expected to render its resolved/static frame in that case)
+ */
+interface Props {
+  /** Value for `data-anim`, used as a hook by the behavior script. */
+  anim: string
+  /** Accessible description of what the animation depicts. */
+  label?: string
+}
+
+const { anim, label } = Astro.props
+---
+
+<figure data-anim={anim} class="anim-figure" role="group" aria-label={label}>
+  <div class="anim-stage">
+    <slot />
+  </div>
+  <div class="anim-controls">
+    <button type="button" class="anim-toggle" aria-label="Pause animation">
+      <span class="anim-toggle-icon" aria-hidden="true">⏸</span>
+      <span class="anim-toggle-text">Pause</span>
+    </button>
+  </div>
+  <figcaption class="anim-caption">
+    <slot name="caption" />
+  </figcaption>
+</figure>
+
+<script>
+  import './animationToggle'
+</script>
+
+<style lang="scss">
+  .anim-figure {
+    --anim-play: running;
+
+    margin: 100px 0;
+  }
+
+  .anim-figure.is-paused {
+    --anim-play: paused;
+  }
+
+  .anim-stage {
+    display: flow-root;
+  }
+
+  .anim-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-block-start: 0.5rem;
+    min-height: 1.6rem;
+  }
+
+  .anim-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    padding: 0.3em 0.85em;
+    border: 1px solid var(--border-color-subtle);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--foreground-color);
+    font-size: 0.8rem;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--border-color);
+    }
+  }
+
+  .anim-toggle-icon {
+    font-size: 0.7em;
+  }
+
+  .anim-caption {
+    margin-block-start: 0.75rem;
+    color: light-dark(var(--color-neutral-700), var(--color-neutral-400));
+    font-size: 0.9rem;
+    line-height: 1.5;
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .anim-figure {
+      --anim-play: paused;
+    }
+
+    .anim-controls {
+      display: none;
+    }
+  }
+</style>

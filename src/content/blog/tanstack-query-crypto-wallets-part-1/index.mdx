@@ -1,0 +1,94 @@
+---
+title: 'Part 1: The Challenges of Async State'
+description: 'A case study, from two production Alephium crypto wallets, of the three async-state problems that pushed us off Redux thunks and toward TanStack Query: tangled request flows, a self-inflicted DDoS, and painfully slow data updates.'
+publishDate: 2026-06-12
+author: 'Ilias Trichopoulos'
+tags: ['TanStack Query', 'React', 'Redux', 'Architecture', 'Blockchain']
+---
+
+import WalletDataFlow from '@components/animations/WalletDataFlow.astro'
+
+A pretty common need on the client side of web and mobile applications is managing **asynchronous state** — data that lives on the server. The Alephium mobile and desktop wallets are no exception. This series is a case study of using [TanStack Query](https://tanstack.com/query/latest) to manage async state in real production apps: the problems I faced building them, and the solutions I architected and implemented to address those problems.
+
+This first part sets the scene. Before any solution makes sense, you need to feel the three problems that made the old architecture untenable — so that's all Part 1 is about. The solutions come in the parts that follow.
+
+## The apps
+
+To set the stage, a quick overview of what these apps are and what they run on.
+
+The [Alephium desktop wallet](/portfolio/alephium-desktop-wallet) is an Electron app for macOS, Windows, and Linux. It lets the user create and securely store Alephium wallets. A wallet is derived from a 24-word mnemonic, and each wallet has at least one address the user can send funds to and from. The user can create as many addresses as they want. Funds can be ALPH (the native token), tokens (USDT, wETH, and so on), and NFTs. The [Alephium mobile wallet](/portfolio/alephium-mobile-wallet) is a React Native app for Android and iOS, in feature parity with the desktop wallet.
+
+Both are, from the frontend's perspective, **fan-out machines**: one wallet holds many addresses, and each address needs its balances, its tokens, its NFTs, and their metadata, each from a different endpoint. That shape is the root of everything that follows.
+
+<WalletDataFlow />
+
+The rest of this post is about what happens when that simple picture meets a real wallet with dozens of addresses and hundreds of tokens.
+
+## Problem 1: the request flow is hard to reason about
+
+As I explain on my [portfolio page for the desktop wallet](/portfolio/alephium-desktop-wallet), the very first implementation kept both app state and async state in a plain `React.Context`, with network requests fired by `fetch` inside `useEffect` hooks. That got us off the ground, but we soon migrated to more sophisticated state management with Redux Toolkit. Network requests moved into async thunks, triggered from `useEffect` hooks, and the resulting (computed) async state lived in Redux.
+
+This bought us an efficient rendering strategy: when a slice of state changed, only the components consuming that exact slice re-rendered. The cost was that the logic _triggering_ those network requests became genuinely hard to follow.
+
+Here is the happy path on app unlock:
+
+1. The app initializes Redux with the list of addresses found in `localStorage`.
+2. That list sits in the dependency array of a `useEffect` in `App.tsx`, which calls the `fetchAddressesBalances` thunk.
+3. The thunk makes its network requests, writes the balances into Redux, and flips `initializedAddressBalances` to `true`.
+4. _Another_ `useEffect` has that flag in its dependency array. When it becomes `true`, it fires `fetchTokensDetails` to fetch metadata (name, logo, symbol) for the token IDs discovered in the previous step.
+
+So a single unlock ricochets between Redux state, `useEffect` dependency arrays, and async thunks. To trace one user action you have to hold the whole zig-zag in your head.
+
+And remember, this is _only_ the happy path. Layer loading and error states on top of each implicit hop and the flow gets harder to reason about with every addition.
+
+## Problem 2: too many requests
+
+The desktop wallet's user base grew, and the server grew overloaded with requests. The wallets were essentially DDoS-ing our own backend. The backend team had to add rate-limiting, which fixed the server side but created a new problem on the client side: the server now frequently responded with `429 ("Too Many Requests")`, and the apps displayed inaccurate data.
+
+The patch came quickly — throttle the number of requests the clients send, and add a retry policy for `429` responses. A combination of [`p-throttle`](https://www.npmjs.com/package/p-throttle) and [`fetch-retry`](https://www.npmjs.com/package/fetch-retry) replaced the bare `fetch` calls:
+
+```ts
+import pThrottle from 'p-throttle'
+import fetchRetry from 'fetch-retry'
+
+const throttle = pThrottle({ limit: 10, interval: 1000 })
+
+const throttledFetch = throttle((url, options = {}) => fetch(url, options))
+
+const MAX_API_RETRIES = 3
+
+const exponentialBackoffFetchRetry = fetchRetry(throttledFetch, {
+  retryOn: (_, __, response: Response | null) => !!response && response.status === 429,
+  retries: MAX_API_RETRIES,
+  retryDelay: (attempt: number) => Math.pow(2, attempt) * 1000,
+})
+```
+
+This saved the day. The server could keep up, and the client slowly received all the data it needed, eventually showing up-to-date information. But, as you may already suspect, this created a _new_ problem — which I'll get to in Problem 3. First, the throttle has trade-offs worth naming.
+
+### Rate-limit trade-offs
+
+- **One throttle bucket for two servers.** The explorer and node share a single 10-req/s budget, so when the explorer is failing and the node is the fallback, they contend exactly when I can least afford it. Per-host buckets would let each run at its own ceiling.
+- **FIFO with no priority.** On a cold load, the address a user is actually looking at might be 40th in the throttle queue. A priority lane for interactive fetches versus background polling would fix the perceived latency.
+- **The rate limit is a guess.** `10/1000` was chosen by feel; that the `429`s stopped tells me it is _at or under_ the server's real limit, not that it's optimal. The servers almost certainly return `Retry-After` and `X-RateLimit` headers, and honoring those would let the system self-tune instead of hard-coding a number.
+
+## Problem 3: data updates are painfully slow
+
+Throttling solved the symptom, not the cause. The client still fired _way_ too many requests — it just metered them out slowly. Consider a wallet with 10 addresses, 10 listed tokens (tokens with official metadata on the GitHub token list), 10 unlisted tokens, and 10 NFTs. To paint the first screen the client fires:
+
+- 10 requests for ALPH balances
+- 10 requests for token balances
+- 1 request for the GitHub token list
+- 10 requests for the type (fungible / non-fungible) of the unlisted tokens
+- 10 requests for the metadata of the unlisted tokens
+- (plus more for transaction history, which I'll leave out of scope)
+
+That's **41 requests** right off the bat. With a 10-req/s throttle, the data needs at least ~4 seconds just to drain the queue — before accounting for any network round-trip time. So the throttle that rescued the server now sits between the user and their data. We had to attack the real problem: **fire dramatically fewer requests in the first place.**
+
+## What comes next
+
+I worked closely with the backend team, and together we landed on a multi-layer solution that addressed **all three problems** at once — the tangled flow, the request flood, and the slow updates. The foundation of that solution is TanStack Query.
+
+In the next parts of this series I'll walk through that architecture: how I gate expensive queries behind a single cheap poll so balances only refetch when something actually changes, how I compose derived state without melting the CPU, how I persist the cache for instant cold starts, and the layered defense that keeps all of it under the rate limit. Each layer is a direct answer to one of the three problems above.
+
+Onward to Part 2.

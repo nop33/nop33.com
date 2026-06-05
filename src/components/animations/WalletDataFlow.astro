@@ -1,0 +1,453 @@
+---
+/**
+ * "The apps" intro animation — how data becomes available on the client.
+ *
+ * Left: a simple mobile device (status bar, a centered "wallet worth" box with
+ * a skeleton loader, and the Android navigation buttons). Right: the server.
+ * On a loop: the phone fires three requests, the server answers with three
+ * responses, then the skeleton is replaced by the wallet's worth.
+ *
+ * Everything is plain HTML/CSS. The phone scales as a container (internal text
+ * is sized in `cqi`), so it stays crisp and proportional at any width, and the
+ * stage stays side-by-side down to narrow screens. All motion is a single
+ * synced loop of period `--loop`; pause/play is owned by AnimatedFigure.
+ */
+import AnimatedFigure from './AnimatedFigure.astro'
+---
+
+<AnimatedFigure
+  anim="data-flow"
+  label="The mobile wallet fetching its data: the phone sends three requests to the server, the server returns three responses, and the skeleton loader is then replaced by the wallet's total worth."
+>
+  <div class="stage" aria-hidden="true">
+    <!-- Phone -->
+    <div class="phone">
+      <div class="screen">
+        <div class="statusbar">
+          <span class="clock">11:54</span>
+          <span class="sysicons"><i></i><i></i><i></i></span>
+        </div>
+
+        <div class="content">
+          <div class="balance-card">
+            <span class="balance-label">Wallet worth</span>
+            <span class="slot balance-slot">
+              <span class="skeleton sk-balance"></span>
+              <span class="value balance-value">$20.13</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="navbar">
+          <span class="nav nav-back"></span>
+          <span class="nav nav-home"></span>
+          <span class="nav nav-recent"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wire -->
+    <div class="wire">
+      <span class="rail rail-req"></span>
+      <span class="dot req req1"></span>
+      <span class="dot req req2"></span>
+      <span class="dot req req3"></span>
+      <span class="rail rail-res"></span>
+      <span class="dot res res1"></span>
+      <span class="dot res res2"></span>
+      <span class="dot res res3"></span>
+    </div>
+
+    <!-- Server -->
+    <div class="server">
+      <span class="server-stack"><i></i><i></i><i></i></span>
+      <span class="server-label">Server</span>
+    </div>
+  </div>
+
+  <Fragment slot="caption">
+    On launch the wallet fires a burst of requests for its balances, tokens, and prices. While they're in flight the UI
+    shows a skeleton loader; as the responses land, the real data (the wallet's worth) is calculated and replaces it.
+  </Fragment>
+</AnimatedFigure>
+
+<style lang="scss">
+  .stage {
+    --loop: 6s;
+
+    display: flex;
+    align-items: center;
+    gap: clamp(0.5rem, 2.5%, 1.25rem);
+    padding-block: clamp(0.5rem, 2%, 1rem);
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+
+  /* Keep every animated element on the wrapper's shared play/pause clock. */
+  .stage :where(.skeleton, .value, .dot, .server-stack) {
+    animation-play-state: var(--anim-play, running);
+  }
+
+  /* ---------- Phone ---------- */
+
+  .phone {
+    container-type: inline-size;
+    flex: 0 0 auto;
+    width: clamp(128px, 36%, 192px);
+    overflow: hidden;
+    border: 1px solid #2a2e36;
+    border-radius: 20px;
+    background: #050608;
+    box-shadow: 0 10px 30px rgb(0 0 0 / 35%);
+  }
+
+  .screen {
+    display: flex;
+    flex-direction: column;
+    aspect-ratio: 10 / 19;
+    overflow: hidden;
+    border-radius: 20px;
+    background: #08090c;
+    color: #f1f3f5;
+  }
+
+  .statusbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 3.5cqi 5cqi 0;
+    color: #ced4da;
+    font-size: 3.4cqi;
+    font-weight: 600;
+  }
+
+  .sysicons {
+    display: inline-flex;
+    gap: 1cqi;
+
+    i {
+      width: 2.4cqi;
+      height: 2.4cqi;
+      border-radius: 0.6cqi;
+      background: #ced4da;
+    }
+  }
+
+  .content {
+    display: grid;
+    flex: 1;
+    padding: 4cqi;
+    place-items: start center;
+  }
+
+  .balance-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3cqi;
+    width: 100%;
+    padding: 9cqi 4cqi;
+    border-radius: 5cqi;
+    background: #16181d;
+  }
+
+  .balance-label {
+    color: #868e96;
+    font-size: 3.8cqi;
+  }
+
+  .balance-value {
+    font-size: 14cqi;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .sk-balance {
+    width: 38cqi;
+    height: 13cqi;
+    border-radius: 2.5cqi;
+  }
+
+  .navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 4cqi 9cqi 4.5cqi;
+  }
+
+  .nav {
+    opacity: 0.85;
+  }
+
+  .nav-back {
+    width: 4cqi;
+    height: 4cqi;
+    background: #ced4da;
+    clip-path: polygon(100% 0%, 100% 100%, 0% 50%);
+  }
+
+  .nav-home {
+    width: 4cqi;
+    height: 4cqi;
+    border: 0.8cqi solid #ced4da;
+    border-radius: 50%;
+  }
+
+  .nav-recent {
+    width: 3.6cqi;
+    height: 3.6cqi;
+    border: 0.8cqi solid #ced4da;
+    border-radius: 0.8cqi;
+  }
+
+  /* Skeleton / value cross-fade. Both layers share one grid cell and overlap. */
+  .slot {
+    display: grid;
+  }
+
+  .slot > * {
+    grid-area: 1 / 1;
+    justify-self: center;
+  }
+
+  .skeleton {
+    align-self: center;
+    background: linear-gradient(100deg, #20242b 30%, #353b45 50%, #20242b 70%) 0 0 / 300% 100%;
+    animation:
+      sk-shimmer 1.4s linear infinite,
+      sk-fade var(--loop) linear infinite;
+  }
+
+  .value {
+    opacity: 0;
+    animation: reveal var(--loop) linear infinite;
+  }
+
+  /* ---------- Wire ---------- */
+
+  .wire {
+    position: relative;
+    flex: 1 1 auto;
+    align-self: stretch;
+    min-width: 64px;
+  }
+
+  .rail {
+    position: absolute;
+    inset-inline: 2%;
+    height: 2px;
+    border-radius: 2px;
+    background: repeating-linear-gradient(90deg, var(--border-color-subtle) 0 6px, transparent 6px 12px);
+  }
+
+  .rail-req {
+    top: 40%;
+  }
+
+  .rail-res {
+    top: 60%;
+  }
+
+  .dot {
+    position: absolute;
+    width: clamp(7px, 1.6cqw, 11px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    opacity: 0;
+  }
+
+  .req {
+    top: 40%;
+    background: #4d8df0;
+    box-shadow: 0 0 0 3px rgb(77 141 240 / 18%);
+    translate: 0 -50%;
+    animation: fly-right var(--loop) linear infinite;
+  }
+
+  .res {
+    top: 60%;
+    background: #37b24d;
+    box-shadow: 0 0 0 3px rgb(55 178 77 / 18%);
+    translate: 0 -50%;
+    animation: fly-left var(--loop) linear infinite;
+  }
+
+  .req1 {
+    animation-delay: calc(var(--loop) * -0);
+  }
+  .req2 {
+    animation-delay: calc(var(--loop) * -0.04);
+  }
+  .req3 {
+    animation-delay: calc(var(--loop) * -0.08);
+  }
+  .res1 {
+    animation-delay: calc(var(--loop) * -0);
+  }
+  .res2 {
+    animation-delay: calc(var(--loop) * -0.04);
+  }
+  .res3 {
+    animation-delay: calc(var(--loop) * -0.08);
+  }
+
+  .wire-label {
+    position: absolute;
+    inset-inline: 0;
+    color: light-dark(var(--color-neutral-700), var(--color-neutral-400));
+    font-size: clamp(0.6rem, 2.4cqw, 0.75rem);
+    text-align: center;
+  }
+
+  .lbl-req {
+    top: 14%;
+  }
+
+  .lbl-res {
+    top: 78%;
+  }
+
+  /* ---------- Server ---------- */
+
+  .server {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    width: clamp(64px, 16%, 104px);
+    padding: clamp(0.6rem, 2cqw, 1rem) 0;
+    border: 1px solid var(--border-color-subtle);
+    border-radius: 12px;
+    background: light-dark(var(--color-neutral-100), var(--color-neutral-800));
+  }
+
+  .server-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 54%;
+    animation: server-pulse var(--loop) ease-in-out infinite;
+
+    i {
+      height: clamp(8px, 2.2cqw, 12px);
+      border-radius: 3px;
+      background: light-dark(var(--color-neutral-500), var(--color-neutral-600));
+    }
+  }
+
+  .server-label {
+    color: var(--foreground-color);
+    font-size: clamp(0.65rem, 2.4cqw, 0.8rem);
+    font-weight: 600;
+  }
+
+  /* ---------- Keyframes (all share period --loop) ---------- */
+
+  @keyframes fly-right {
+    0%,
+    8% {
+      left: 2%;
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    24% {
+      left: 96%;
+      opacity: 1;
+    }
+    26%,
+    100% {
+      left: 96%;
+      opacity: 0;
+    }
+  }
+
+  @keyframes fly-left {
+    0%,
+    34% {
+      left: 96%;
+      opacity: 0;
+    }
+    36% {
+      opacity: 1;
+    }
+    50% {
+      left: 2%;
+      opacity: 1;
+    }
+    52%,
+    100% {
+      left: 2%;
+      opacity: 0;
+    }
+  }
+
+  @keyframes sk-fade {
+    0%,
+    55% {
+      opacity: 1;
+    }
+    60%,
+    95% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes reveal {
+    0%,
+    56% {
+      opacity: 0;
+      transform: translateY(3px);
+    }
+    62%,
+    95% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    99%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes sk-shimmer {
+    to {
+      background-position: -300% 0;
+    }
+  }
+
+  @keyframes server-pulse {
+    0%,
+    24%,
+    40%,
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
+    32% {
+      box-shadow: 0 0 0 4px rgb(77 141 240 / 20%);
+    }
+  }
+
+  /* Reduced motion: hold the resolved (data-loaded) frame, no motion. */
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton,
+    .dot {
+      opacity: 0 !important;
+      animation: none;
+    }
+
+    .value {
+      opacity: 1 !important;
+      transform: none;
+      animation: none;
+    }
+
+    .server-stack {
+      animation: none;
+    }
+  }
+</style>
