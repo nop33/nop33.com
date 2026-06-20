@@ -1,0 +1,463 @@
+---
+/**
+ * Problem 1: the implicit request chain (Redux-thunk era).
+ *
+ * The flow, as a loop of six hops:
+ *   1. localStorage → App      2. App → Redux thunk     3. Redux thunk → Server
+ *   4. Server → Redux thunk    5. Redux thunk → Redux    6. Redux → App
+ *
+ * Layout is fully orthogonal (no diagonals): Redux is a wide bar across the top,
+ * App + Local Storage stack on the left, Redux thunk + Server stack on the
+ * right. Every connector is a straight horizontal or vertical segment.
+ *
+ * Boxes are plain HTML (theme-aware, color-coded, text sized in `cqw`).
+ * Connectors are a thin SVG overlay sharing the stage's coordinate space; a dot
+ * travels each hop in sequence, blue outbound and green on the way back. One
+ * synced loop (period `--loop`); pause/play is owned by AnimatedFigure.
+ *
+ * Box ↔ SVG alignment: stage aspect-ratio 1000/700, overlay viewBox
+ * "0 0 1000 700" with preserveAspectRatio="none", so 1% = 10 user units in x and
+ * 7 in y. Each dot starts at its hop's source (cx/cy) and animates
+ * `transform: translate(--dx, --dy)` to the destination.
+ *
+ * Note: in-box code/identifiers use <div>/<span>, NOT <pre>/<code>, so the
+ * site's global prose styling for code blocks doesn't leak in.
+ */
+import AnimatedFigure from './AnimatedFigure.astro'
+
+const code = `useEffect(() => {
+  if (isBalancesInitialized) return
+  dispatch(fetchAddressesBalances(addresses))
+}, [addresses, isBalancesInitialized])`
+---
+
+<AnimatedFigure
+  anim="redux-flow"
+  label="The Redux-thunk data flow on app unlock, as a six-hop loop. localStorage seeds the addresses into the App; a useEffect dispatches the fetchAddressesBalances thunk; the thunk requests data from the server; the server responds; the thunk sets the Redux addressesSlice state; and that state update re-renders the App, which re-runs the effect."
+>
+  <div class="stage" aria-hidden="true">
+    <svg class="wires" viewBox="0 0 1000 700" preserveAspectRatio="none">
+      <defs>
+        <marker
+          id="rf-arrow"
+          viewBox="0 0 10 10"
+          refX="8"
+          refY="5"
+          markerUnits="userSpaceOnUse"
+          markerWidth="15"
+          markerHeight="15"
+          orient="auto-start-reverse"
+        >
+          <path d="M0,0 L10,5 L0,10 z"></path>
+        </marker>
+      </defs>
+
+      <g class="tracks">
+        <path class="track" d="M250,532 L250,490" marker-end="url(#rf-arrow)"></path>
+        <path class="track" d="M480,301 L560,301" marker-end="url(#rf-arrow)"></path>
+        <path class="track" d="M660,371 L660,490" marker-end="url(#rf-arrow)"></path>
+        <path class="track" d="M840,490 L840,371" marker-end="url(#rf-arrow)"></path>
+        <path class="track" d="M750,231 L750,147" marker-end="url(#rf-arrow)"></path>
+        <path class="track" d="M280,147 L280,231" marker-end="url(#rf-arrow)"></path>
+      </g>
+
+      <g class="dots">
+        <circle class="dot out dot1" r="10" cx="250" cy="532"></circle>
+        <circle class="dot out dot2" r="10" cx="500" cy="301"></circle>
+        <circle class="dot out dot3" r="10" cx="660" cy="371"></circle>
+        <circle class="dot in dot4" r="10" cx="840" cy="490"></circle>
+        <circle class="dot in dot5" r="10" cx="750" cy="231"></circle>
+        <circle class="dot in dot6" r="10" cx="280" cy="147"></circle>
+      </g>
+
+      <g class="wire-labels">
+        <text class="wl" x="262" y="515">1. addresses</text>
+        <text class="wl" x="520" y="291" text-anchor="middle">2. dispatch</text>
+        <text class="wl" x="648" y="440" text-anchor="end">3. request</text>
+        <text class="wl" x="852" y="440">4. response</text>
+        <text class="wl" x="762" y="195">5. sets state</text>
+        <text class="wl" x="292" y="185">6. state update</text>
+        <text class="wl" x="292" y="203">→ re-render</text>
+      </g>
+    </svg>
+
+    <div class="node redux">
+      <span class="node-title">Redux</span>
+      <span class="node-sub">addressesSlice:</span>
+      <span class="rx-field code">isBalancesInitialized,</span>
+      <span class="rx-field code">addressesBalances</span>
+    </div>
+
+    <div class="node thunk">
+      <div class="node-title">Redux thunk</div>
+      <span class="mono">fetchAddressesBalances</span>
+    </div>
+
+    <div class="node app">
+      <div class="node-title">App (React code)</div>
+      <div class="code">{code}</div>
+      <div class="balance-card">
+        <span class="balance-label">Wallet worth</span>
+        <span class="slot balance-slot">
+          <span class="skeleton sk-balance"></span>
+          <span class="value balance-value">$20.13</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="node server">
+      <span class="server-stack"><i></i><i></i><i></i></span>
+      <span class="server-label">Server</span>
+    </div>
+
+    <div class="node storage">
+      <div class="node-title">Local Storage</div>
+      <span class="mono">addresses: ["0x1…", "0x2…"]</span>
+    </div>
+  </div>
+
+  <Fragment slot="caption">
+    On wallet unlock: localStorage seeds the addresses, a <code>useEffect</code> dispatches the thunk, the thunk talks to the server, calculates the computed state and writes the result into the Redux slice, and that state update re-renders the App (which re-runs the effect).
+  </Fragment>
+</AnimatedFigure>
+
+<style lang="scss">
+  .stage {
+    --loop: 9s;
+
+    container-type: inline-size;
+    position: relative;
+    aspect-ratio: 1000 / 700;
+    width: 100%;
+    max-width: 880px;
+    margin-inline: auto;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+
+  /* ---------- Connectors (SVG overlay) ---------- */
+
+  .wires {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .track {
+    fill: none;
+    stroke: var(--color-neutral-600);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+  }
+
+  #rf-arrow path {
+    fill: var(--color-neutral-600);
+  }
+
+  .wl {
+    fill: light-dark(var(--color-neutral-700), var(--color-neutral-300));
+    font-size: 14px;
+    font-style: italic;
+  }
+
+  /* ---------- Travelling dots ---------- */
+
+  .dot {
+    opacity: 0;
+    animation: rf-dot var(--loop) linear infinite;
+    animation-play-state: var(--anim-play, running);
+  }
+
+  .out {
+    fill: #4d8df0;
+    filter: drop-shadow(0 0 5px rgb(77 141 240 / 60%));
+  }
+
+  .in {
+    fill: #37b24d;
+    filter: drop-shadow(0 0 5px rgb(55 178 77 / 60%));
+  }
+
+  /* Descending delay magnitudes so hops fire in order 1 → 6 (negative delay
+     shifts a dot ahead, so later hops need a smaller-magnitude offset). */
+  .dot1 {
+    --dx: 0px;
+    --dy: -42px;
+    animation-delay: calc(var(--loop) * 0);
+  }
+  .dot2 {
+    --dx: 60px;
+    --dy: 0px;
+    animation-delay: calc(var(--loop) * -0.8667);
+  }
+  .dot3 {
+    --dx: 0px;
+    --dy: 119px;
+    animation-delay: calc(var(--loop) * -0.7333);
+  }
+  .dot4 {
+    --dx: 0px;
+    --dy: -119px;
+    animation-delay: calc(var(--loop) * -0.6);
+  }
+  .dot5 {
+    --dx: 0px;
+    --dy: -84px;
+    animation-delay: calc(var(--loop) * -0.4667);
+  }
+  .dot6 {
+    --dx: 0px;
+    --dy: 84px;
+    animation-delay: calc(var(--loop) * -0.3333);
+  }
+
+  /* ---------- Boxes ---------- */
+
+  .node {
+    position: absolute;
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: clamp(4px, 1.2cqw, 11px);
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    background: light-dark(#fff, #101216);
+    color: var(--foreground-color);
+  }
+
+  .node-title {
+    color: var(--accent);
+    font-size: clamp(10px, 2.3cqw, 17px);
+    font-weight: 700;
+  }
+
+  .node-sub {
+    font-size: clamp(9px, 1.85cqw, 13px);
+    font-weight: 600;
+  }
+
+  .mono,
+  .code {
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+
+  .mono {
+    display: block;
+    margin-block-start: 0.35em;
+    font-size: clamp(8px, 1.7cqw, 12px);
+  }
+
+  .code {
+    margin-block-start: 0.5em;
+    font-size: clamp(7.5px, 1.6cqw, 11px);
+    line-height: 1.5;
+    white-space: pre;
+  }
+
+  /* Redux is the wide top bar: lay its content out in a single horizontal row. */
+  .redux {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.3em 1.4em;
+    top: 5%;
+    left: 6%;
+    width: 88%;
+    height: 16%;
+    --accent: #fa5252;
+  }
+
+  .rx-field {
+    font-size: clamp(8px, 1.7cqw, 12px);
+  }
+
+  .thunk {
+    top: 33%;
+    left: 56%;
+    width: 38%;
+    height: 20%;
+    --accent: #9775fa;
+  }
+
+  .app {
+    top: 33%;
+    left: 6%;
+    width: 42%;
+    height: 37%;
+    --accent: #51cf66;
+  }
+
+  /* Server: matches the previous animation's server (neutral, stacked bars). */
+  .server {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    top: 70%;
+    left: 56%;
+    width: 38%;
+    height: 24%;
+    --accent: var(--border-color-subtle);
+    background: light-dark(var(--color-neutral-100), var(--color-neutral-800));
+  }
+
+  .server-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    width: 30%;
+
+    i {
+      height: clamp(7px, 2cqw, 12px);
+      border-radius: 3px;
+      background: light-dark(var(--color-neutral-500), var(--color-neutral-600));
+    }
+  }
+
+  .server-label {
+    color: var(--foreground-color);
+    font-size: clamp(11px, 2.3cqw, 16px);
+    font-weight: 600;
+  }
+
+  .storage {
+    top: 76%;
+    left: 6%;
+    width: 44%;
+    height: 18%;
+    --accent: light-dark(var(--color-neutral-700), var(--color-neutral-300));
+  }
+
+  /* ---------- Wallet-worth card inside the App (skeleton → value) ---------- */
+
+  .balance-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(2px, 0.6cqw, 5px);
+    margin-block-start: clamp(7px, 1.8cqw, 16px);
+    // margin-block-end: clamp(7px, 1.8cqw, 16px);
+    padding: clamp(6px, 1cqw, 13px) clamp(8px, 2cqw, 16px);
+    border-radius: 8px;
+    background: light-dark(var(--color-neutral-200), #16181d);
+    text-align: center;
+  }
+
+  .balance-label {
+    color: light-dark(var(--color-neutral-700), #868e96);
+    font-size: clamp(7px, 1.5cqw, 11px);
+  }
+
+  .balance-slot {
+    display: grid;
+    justify-items: center;
+  }
+
+  .balance-slot > * {
+    grid-area: 1 / 1;
+  }
+
+  .sk-balance {
+    --sk-base: light-dark(#dee2e6, #20242b);
+    --sk-hi: light-dark(#f1f3f5, #353b45);
+
+    align-self: center;
+    width: 55%;
+    height: clamp(10px, 2.4cqw, 17px);
+    border-radius: 4px;
+    background: linear-gradient(100deg, var(--sk-base) 30%, var(--sk-hi) 50%, var(--sk-base) 70%) 0 0 / 300% 100%;
+    animation:
+      rf-shimmer 1.4s linear infinite,
+      rf-skeleton var(--loop) linear infinite;
+    animation-play-state: var(--anim-play, running);
+  }
+
+  .balance-value {
+    font-size: clamp(11px, 2.6cqw, 19px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    opacity: 0;
+    animation: rf-reveal var(--loop) linear infinite;
+    animation-play-state: var(--anim-play, running);
+  }
+
+  /* ---------- Keyframe (one dot per hop, staggered) ---------- */
+
+  @keyframes rf-dot {
+    0% {
+      transform: translate(0, 0);
+      opacity: 0;
+    }
+    1.5% {
+      opacity: 1;
+    }
+    11% {
+      transform: translate(var(--dx), var(--dy));
+      opacity: 1;
+    }
+    12%,
+    100% {
+      transform: translate(var(--dx), var(--dy));
+      opacity: 0;
+    }
+  }
+
+  /* Wallet-worth reveal: skeleton for the whole fetch, then the value appears
+     only after the re-render (hop 6 finishes ~78%) and holds for ~1s before the
+     loop restarts back to the skeleton. */
+  @keyframes rf-shimmer {
+    to {
+      background-position: -300% 0;
+    }
+  }
+
+  @keyframes rf-skeleton {
+    0%,
+    77% {
+      opacity: 1;
+    }
+    82%,
+    95% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes rf-reveal {
+    0%,
+    79% {
+      opacity: 0;
+      transform: translateY(3px);
+    }
+    84%,
+    95% {
+      opacity: 1;
+      transform: none;
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(3px);
+    }
+  }
+
+  /* Reduced motion: static architecture diagram, no dots; card shows the value. */
+  @media (prefers-reduced-motion: reduce) {
+    .dot {
+      animation: none;
+      opacity: 0;
+    }
+
+    .skeleton {
+      animation: none;
+      opacity: 0;
+    }
+
+    .value {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
