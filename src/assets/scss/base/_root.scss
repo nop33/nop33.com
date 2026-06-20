@@ -48,6 +48,8 @@
   --font-measure: 70ch;
   --font-family-default: 'Atkinson Hyperlegible', sans-serif;
   --font-family-special: 'Atkinson Hyperlegible', sans-serif;
+  --font-family-monospace: ui-monospace, 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Menlo, Consolas,
+    monospace;
 
   // font families
   --font-heading: var(--font-family-special);
@@ -142,6 +144,18 @@
   --kbd-color-text: light-dark(var(--color-gray-200), var(--color-gray-800));
   --kbd-color-border: light-dark(var(--color-gray-700), var(--color-gray-300));
   --kbd-color-background: light-dark(var(--color-gray-1000), var(--color-gray-200));
+
+  // inline code — a faint brand-tinted chip so it reads as code without
+  // competing with link colours; text stays foreground for guaranteed AA contrast
+  --code-color-text: var(--foreground-color);
+  --code-color-background: light-dark(
+    oklch(from var(--brand-primary) 96% 0.025 h),
+    oklch(from var(--brand-primary) 30% 0.04 h)
+  );
+  --code-color-border: light-dark(
+    oklch(from var(--brand-primary) 88% 0.05 h),
+    oklch(from var(--brand-primary) 44% 0.06 h)
+  );
 }
 
 // dark color scheme overrides
