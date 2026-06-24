@@ -1,0 +1,172 @@
+---
+title: "You Can't Wipe a Secret in JavaScript, but You Should Try"
+description: "How I found the Alephium wallet's 24-word recovery phrase sitting in plain text in RAM on every unlock, and the defense-in-depth work it took to wipe secrets from memory across an Electron and a React Native wallet."
+publishDate: 2026-06-21
+featuredImage: ./cover.webp
+tags: ['Security', 'Cryptography', 'Electron', 'React Native', 'Blockchain']
+---
+
+import BreakoutSection from '@components/BreakoutSection.astro'
+
+A self-custody wallet has exactly one job it cannot get wrong: keep the user's secrets secret. For the [Alephium desktop wallet](/portfolio/alephium-desktop-wallet) (Electron) and the [mobile wallet](/portfolio/alephium-mobile-wallet) (React Native), those secrets come in three forms:
+
+- the **mnemonic**, the 24-word BIP39 recovery phrase the whole wallet derives from,
+- the **seed / HD root key** computed from the mnemonic, and
+- the per-address **private keys** derived from that root.
+
+Encrypting them _at rest_ is the easy part, and the part everyone remembers to do. The harder, quieter problem is what happens while the wallet is _unlocked_, when those secrets necessarily exist in plain text somewhere in the process's memory. This is the story of discovering just how exposed that memory was, and the work it took to clear it up.
+
+A spoiler on the honesty front, because it matters: in a JavaScript runtime you cannot _guarantee_ a secret is wiped from memory. What you can do is shrink its lifetime, change its form, and reduce its blast radius. Everything below is one of those three. It's defense in depth, not a magic wand, and I'll be precise about the difference at the end.
+
+## The threat model
+
+It helps to name what we're defending against, because it changes which work is worth doing.
+
+The realistic adversary here is **another process reading this process's memory**: a memory-scraping infostealer, someone poking around with a tool like [System Informer (formerly Process Hacker)](https://systeminformer.sourceforge.io/), a crash dump that ends up in a bug report, secrets paged out to a swap file, or a secret accidentally shipped off-device inside a crash report or analytics event.
+
+What this work does _not_ defend against is an attacker already running code as the user. If they own the machine, they can keylog the password and read the seed at the moment you legitimately use it. No amount of buffer-wiping fixes a compromised host.
+
+## Why JavaScript makes this genuinely hard
+
+Three properties of the runtime fight you the whole way:
+
+- **Strings are immutable.** You cannot overwrite a `string`'s contents. The engine may keep the old bytes around until garbage collection, and may have copied them when the string was interned or concatenated. The only real fix is to _never put a secret in a `string`_.
+- **Garbage collection is non-deterministic.** Even a buffer you zero out may have been copied by the runtime, and the original copy lingers until the GC decides to reclaim it. Wiping is therefore _best-effort_, and has to happen as early as possible to keep the window short.
+
+
+## Step 1: get the secrets out of Redux
+
+The first move was structural: introduce a single `Keyring` (a module modeled closely on [MetaMask's `eth-hd-keyring`](https://github.com/MetaMask/eth-hd-keyring)) that owns every secret in memory and exposes _operations_, not _material_.
+
+The public surface is things like `signTransaction`, `signMessageHash`, and `exportPublicKeyOfAddress`. Private keys are derived lazily and cached inside the keyring; the mnemonic is used to initialize and then dropped. Nothing secret ever touches Redux, and nothing secret is ever serialized.
+
+The cleanup lifecycle is explicit:
+
+```ts
+public clear = () => {
+  this.addresses.forEach((address) => {
+    if (address.privateKey) {
+      resetArray(address.privateKey) // zero the bytes in place
+      address.privateKey = null
+    }
+  })
+
+  this.hdWallet = null
+  this.addresses = []
+}
+```
+
+Where `resetArray` is exactly as unglamorous as it should be:
+
+```ts
+export const resetArray = (array: Uint8Array) => {
+  for (let i = 0; i < array.length; i++) {
+    array[i] = 0
+  }
+}
+```
+
+## Step 2: stop storing the mnemonic as a string
+
+Notice that `resetArray` takes a `Uint8Array`, not a `string`. That's the whole point. Because strings can't be wiped, the mnemonic had to stop being one.
+
+Instead of persisting `"absurd swing tornado ..."`, the wallet stores the mnemonic as a compact `Uint8Array` of the **indices** of each word in the BIP39 word list. It's smaller, and (most importantly) it's _mutable_, so it can be zeroed in place the moment it's no longer needed.
+
+The format is versioned at rest (`version: 1` = the legacy word-string, `version: 2` = the `Uint8Array`), so older wallets keep working through a migration. And the one place a string mnemonic is still legitimately needed is behind a function whose name is the warning label:
+
+<BreakoutSection>
+```ts
+// It will convert the mnemonic from Uint8Array to string, leaking it to the
+// memory. Use only when absolutely needed, ie: displaying the mnemonic for backup.
+export const dangerouslyConvertUint8ArrayMnemonicToString = (mnemonic: Uint8Array) => /* ... */
+```
+</BreakoutSection>
+
+## Step 3: the part where I found the mnemonic in RAM anyway
+
+After all of the above, I did the thing you should always do after claiming a security improvement: I tried to break it. On a Windows VM I unlocked the wallet, attached Process Hacker to the process, and searched its memory for a couple of words from my recovery phrase.
+
+There it was. The **complete 24-word mnemonic, in plain text**, freshly present in memory every single time the wallet unlocked.
+
+{/* TODO: drop the Process Hacker screenshot here once captured, e.g.:
+<BreakoutSection>
+![The full mnemonic visible in Process Hacker's memory search](./processhacker.webp)
+</BreakoutSection>
+*/}
+
+My keyring wasn't the culprit. The leak was _below_ my code, inside the BIP39 library doing the seed derivation. Deep in `mnemonicToSeed`, the library builds an intermediate `Uint8Array` (the actual input to PBKDF2) and, having derived the seed, simply returns and lets that array fall out of scope. “Out of scope” is not “erased.” Until the GC got around to it, the decoded mnemonic sat there in full.
+
+You can't fix a dependency's internals from your own code, but you _can_ vendor a patch. Using `pnpm patch`, I wrapped the derivation so the intermediate buffer is zeroed the instant the seed exists:
+
+<BreakoutSection>
+```js
+function mnemonicToSeedSync(mnemonic, wordlist, passphrase = '') {
+  const encodedMnemonicUint8Array = encodeMnemonicForSeedDerivation(mnemonic, wordlist)
+  const seed = pbkdf2(sha512, encodedMnemonicUint8Array, salt(passphrase), { c: 2048, dkLen: 64 })
+
+  resetUint8Array(encodedMnemonicUint8Array) // ← the fix
+
+  return seed
+}
+```
+</BreakoutSection>
+
+After the patch, the same Process Hacker search came up empty. The string form of the mnemonic no longer survived an unlock.
+
+This find is also what pushed my to use MetaMask's hardened crypto stack, swapping `bip39`/`bip32` for [`@metamask/scure-bip39`](https://www.npmjs.com/package/@metamask/scure-bip39) and [`@scure/bip32`](https://www.npmjs.com/package/@scure/bip32), on the principle that the most-attacked wallet in the ecosystem has already paid for a lot of this scrutiny.
+
+## Step 4: wipe on every path, especially the failing ones
+
+The happy path is easy to wipe. The path that throws halfway through derivation is the one that quietly leaves secrets lying around, and it's the one attackers are happy to trigger on purpose.
+
+So every keyring init clears first, then blanks its inputs the moment it's done with them:
+
+```ts
+public initFromEncryptedMnemonic = async (encryptedMnemonic, password, passphrase) => {
+  const { version, decryptedMnemonic } = await decryptMnemonic(encryptedMnemonic, password)
+
+  this.clear()
+  this._initFromMnemonic(decryptedMnemonic, passphrase)
+
+  encryptedMnemonic = ''
+  password = ''
+  passphrase = ''
+  resetArray(decryptedMnemonic)
+
+  return version
+}
+```
+
+and a follow-up pass made sure the keyring's secrets are cleared **on errors as well**, not just on success.
+
+One detail in that snippet is worth calling out, because it's the honest exception to the "never put a secret in a `string`" rule. The `password` and the optional BIP39 `passphrase` arrive from a UI text field, and a text field only ever hands you a `string`. You can't choose `Uint8Array` for input the platform delivers as text, and you can't zero a string once you hold it. So the best available move is the one you see here: drop the reference the instant you're done (`password = ''`, `passphrase = ''`) so the original becomes garbage-collectable as fast as possible. It's weaker than wiping a buffer in place, and it's worth being upfront that these two user-entered values are exactly where the rule bends.
+
+## Step 5: don't forget the exits
+
+A secret sitting in RAM is one risk. A secret **leaving the device** inside telemetry is a worse one, because now it's on someone else's server. A stack trace can carry a variable; an analytics event can carry a property; either can carry a key.
+
+So the last piece was making sure none of this leaves the device by accident: sanitizing exceptions before they're reported, stripping potentially sensitive fields from analytics events, and scrubbing error payloads so that the act of _diagnosing_ a problem can never become the act of _leaking_ a secret.
+
+## What this actually buys you (and what it doesn't)
+
+Let me keep the promise I made at the top and be exact:
+
+- The seed and the active private keys **must** exist in plain text in memory while the wallet is unlocked. You cannot sign a transaction without them. This work shrinks how long and in how many forms they exist. It does not, and cannot, make them not exist.
+- Wiping is **best-effort**. A zeroed buffer may have been copied by the runtime; GC timing is not under your control.
+- The library patch removed the **string** leak of the mnemonic at unlock. The derived **seed** still lives in the keyring until you `clear()` it, which is exactly why step 4 exists.
+- None of this saves a machine that's already running attacker code as the user.
+
+What you get for the effort is a real, measurable reduction in exposure: secrets out of persisted storage, out of long-lived strings, out of crash reports, wiped on every code path, and cleared from the keyring on lock. The bar an attacker has to clear goes from “read the process memory once” to “own the machine at the exact moment of use.” That's the whole game with this class of defense: not invincibility, but moving the cost.
+
+## Takeaways
+
+If you handle secrets in a JS/TS app, the checklist that fell out of this:
+
+1. **Never put a secret in a `string` when you control its representation.** Use `Uint8Array` so you can zero it. Credentials typed into a UI field are the exception you can't dodge: drop the reference as early as possible.
+2. **Keep secrets out of global stores and anything that persists** (Redux, `redux-persist`, async storage).
+3. **Wipe early, and wipe on the error path too.** Derivation that throws is where secrets leak.
+4. **Verify with a memory inspector.** Process Hacker / System Informer takes ten minutes and will humble you.
+5. **Audit your dependencies' internals.** The leak was below my code, in a well-regarded library.
+6. **Don't leak through the exits.** Scrub crash reports and analytics before they leave the device.
+
+None of this is novel cryptography. It's disciplined plumbing, and for a wallet, the plumbing _is_ the product.
