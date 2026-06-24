@@ -1,0 +1,22 @@
+// Inline code (excludes code inside `pre`, which the syntax highlighter owns)
+@layer base {
+  code:not(pre code) {
+    border: 1px solid var(--code-color-border);
+    border-radius: var(--radius-s);
+    background-color: var(--code-color-background);
+    padding: 0.12em 0.4em;
+    color: var(--code-color-text);
+    font-size: 0.875em;
+    font-family: var(--font-family-monospace);
+    // keep multi-word tokens from leaving a single character stranded on the next line
+    overflow-wrap: break-word;
+  }
+
+  // avoid a double-chip when inline code sits inside a link or kbd
+  a code:not(pre code),
+  kbd code:not(pre code) {
+    border: none;
+    background-color: transparent;
+    padding: 0;
+  }
+}
