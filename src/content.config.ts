@@ -19,6 +19,8 @@ const blog = defineCollection({
       featuredImage: image().optional(),
       author: z.string().default('Ilias Trichopoulos'),
       tags: z.array(z.string()).default([]),
+      // Drafts are hidden from production builds but still visible in `npm run dev`.
+      draft: z.boolean().default(false),
     }),
 })
 
