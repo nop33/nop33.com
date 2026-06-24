@@ -1,0 +1,121 @@
+---
+import { Icon } from 'astro-icon/components'
+import Counter from '@components/Counter.astro'
+
+const metrics = [
+  { count: '20k+', title: 'Users', sub: 'monthly active' },
+  { count: '48', title: 'Releases', sub: 'shipped to stores' },
+  { count: '26×', title: 'Faster', sub: 'desktop cold start' },
+  { count: '0', title: 'Incidents', sub: 'critical, security' },
+]
+
+const products = [
+  {
+    icon: 'lucide:smartphone',
+    name: 'Mobile wallet',
+    tag: 'Co-founded · sole maintainer',
+    desc: 'iOS + Android wallet, shipped to the App Store and Play in 2023.',
+  },
+  {
+    icon: 'lucide:monitor',
+    name: 'Desktop wallet',
+    tag: 'Sole maintainer',
+    desc: 'Security-critical Electron wallet with Ledger support, in active use for 5+ years.',
+  },
+  {
+    icon: 'lucide:compass',
+    name: 'Explorer',
+    tag: 'Sole maintainer',
+    desc: 'The public blockchain explorer for the Alephium network.',
+  },
+  {
+    icon: 'lucide:package',
+    name: 'Bridge UI + npm widget',
+    tag: 'Rebuilt · published',
+    desc: 'Rewrote the bridge UI and extracted it into a public React widget reused across products.',
+  },
+  {
+    icon: 'lucide:chart-line',
+    name: 'PowFi frontend',
+    tag: 'Owner · technical roadmap',
+    desc: 'Frontend of the DeFi platform, plus its cross-team technical roadmap.',
+  },
+  {
+    icon: 'lucide:globe',
+    name: 'alephium.org',
+    tag: 'Owner',
+    desc: 'Marketing site with a git-backed CMS and the migrated engineering blog.',
+  },
+  {
+    icon: 'lucide:boxes',
+    name: 'Frontend monorepo',
+    tag: 'Owner',
+    desc: 'pnpm + Turborepo monorepo and the shared packages every app builds on.',
+  },
+]
+
+const domains = [
+  'Frontend security',
+  'Authentication & authorization',
+  'Releases & deployment',
+  'Localization (i18n)',
+  'Frontend architecture',
+  'Performance',
+  'Quality & engineering standards',
+  'SDK & third-party integrations',
+  'Instrumentation',
+  'Technical roadmap',
+  'Production incident response',
+  'Open-source stewardship',
+]
+---
+
+<div class="flex flex-col gap-16">
+  <p class="text-2xl text-gray-600 dark:text-neutral-500">
+    For ~2 years I've been the sole frontend maintainer of Alephium's wallet ecosystem. Beyond writing the code, I'm the
+    person the team turns to for these products and domains.
+  </p>
+
+  <div class="grid grid-cols-2 gap-8 md:grid-cols-4">
+    {metrics.map((m) => <Counter count={m.count} title={m.title} sub={m.sub} />)}
+  </div>
+
+  <div class="flex flex-col gap-6">
+    <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Products I own</h3>
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        products.map((p) => (
+          <div class="flex flex-col gap-3 rounded-xl border border-gray-200 p-6 dark:border-gray-700">
+            <div class="flex items-center gap-3">
+              <Icon name={p.icon} class="h-6 w-6 shrink-0" style="color: var(--link-color)" />
+              <h4 class="text-lg font-bold text-gray-900 dark:text-white">{p.name}</h4>
+            </div>
+            <span class="text-xs font-semibold tracking-wide uppercase" style="color: var(--link-color)">
+              {p.tag}
+            </span>
+            <p class="text-gray-600 dark:text-gray-300">{p.desc}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-6">
+    <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Domains I'm the go-to for</h3>
+    <ul class="flex flex-wrap gap-2">
+      {
+        domains.map((d) => (
+          <li class="flex items-center gap-2 rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+            <Icon name="lucide:check" class="h-4 w-4" style="color: var(--link-color)" />
+            {d}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <p class="text-xl text-gray-600 dark:text-neutral-500">
+    <span class="font-bold text-gray-900 dark:text-white">Role:</span> frontend lead and mentor, and the cross-team liaison
+    for anything frontend across the wallet, explorer, bridge and PowFi teams.
+  </p>
+</div>
