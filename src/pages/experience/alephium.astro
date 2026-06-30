@@ -1,0 +1,278 @@
+---
+import DefaultLayout from '@layouts/DefaultLayout.astro'
+import { Link } from 'accessible-astro-components'
+---
+
+<DefaultLayout title="Experience: Alephium - Ilias">
+  <section class="hero my-24">
+    <div class="container">
+      <div class="flex flex-col gap-8">
+        <Link href="/about-ilias" class="text-sm uppercase tracking-wider font-bold">← Back to About</Link>
+        <h1 class="text-4xl md:text-5xl font-bold">Alephium — Responsibilities Overview</h1>
+        <p class="text-xl text-gray-600 dark:text-gray-300">
+          Senior Frontend Engineer, Core Team · Nov 2021 – Present
+        </p>
+        <div class="text-lg space-y-4">
+          <p>
+            <strong>Core maintainer and frontend lead for Alephium's entire user-facing surface</strong> — self-custody mobile & desktop wallets, blockchain explorer, the bridge UI/widget, the PowFi DeFi app, the marketing website, and the shared SDKs/packages beneath them all.
+          </p>
+          <p>
+            Senior Frontend Engineer with 13+ years building high-performance, security-critical systems across web, desktop, and mobile — most recently as core maintainer of the wallet ecosystem at Alephium, an open-source layer-1 blockchain.
+          </p>
+          <p>
+            I own the full frontend surface that users touch: I co-built the React Native mobile wallet (shipped to the App Store & Google Play, 48 production releases) and took sole ownership of the Electron desktop wallet and the blockchain explorer. Across them I architected a Turborepo monorepo with shared SDKs and UI that cut cross-platform delivery time ~40% and kept ~80% logic parity, drove a state-management evolution (React state → Redux Toolkit → TanStack Query), and resolved deep performance bottlenecks (desktop wallet: 26× faster cold start, 10× performance).
+          </p>
+          <p>
+            Security is a first-class part of my remit: I hardened in-memory secret handling — moving mnemonics and private keys into a wipeable keyring and patching an upstream BIP39 library to close a plaintext recovery-phrase leak — and maintained 0 critical security incidents while the wallets scaled to a peak of 20,000+ users. I own authentication (biometrics, fund password), encrypted storage, code signing across platforms, security audits, and supply-chain hygiene.
+          </p>
+          <p>
+            I also rebuilt Alephium's token bridge UI (Next.js) and extracted it into a publicly published, reusable React widget, led the frontend of the PowFi DeFi platform (CLMM DEX + staking), and own all CI/CD, release lifecycles (EAS → TestFlight/Play Console; signed desktop releases), and the i18n/Crowdin pipeline across every app. I lead the frontend effort, mentor my teammate, and review code across the SDK and dApp repos.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="my-24">
+    <div class="container">
+      <h2 class="mb-8 text-3xl font-bold border-b pb-4">Key Impact & Achievements</h2>
+      <ul class="list-disc list-outside ml-6 space-y-4 text-lg">
+        <li><strong>Co-built and sole-maintain</strong> Alephium's React Native mobile wallet (App Store + Google Play, 48 production releases) and inherited + own the Electron desktop wallet and blockchain explorer — the ecosystem's primary user touchpoints.</li>
+        <li><strong>Architected a Turborepo monorepo</strong> with shared SDKs and UI across web, desktop & mobile — ~40% faster cross-platform delivery at ~80% logic parity.</li>
+        <li><strong>Maintained 0 critical security incidents</strong> at a peak of 20,000+ users; hardened in-memory secret handling and patched an upstream BIP39 library to close a plaintext recovery-phrase leak.</li>
+        <li><strong>Resolved deep performance bottlenecks</strong> in the desktop wallet — 26× faster cold start, 10× overall performance.</li>
+        <li><strong>Drove a full state-management evolution</strong> (React state → Redux Toolkit → TanStack Query) backed by competitor analysis (MetaMask, Rainbow, Ledger, Uniswap) and decision docs.</li>
+        <li><strong>Rebuilt Alephium's token-bridge UI</strong> (Next.js) and extracted it into a publicly published, reusable React widget consumed across products.</li>
+        <li><strong>Led the frontend of the PowFi DeFi platform</strong> — directing a cross-team roadmap and integrating CLMM DEX + staking protocols.</li>
+        <li><strong>Own end-to-end CI/CD & release:</strong> EAS → TestFlight/Play Console, signed multi-platform desktop releases, and the Crowdin i18n pipeline across every app.</li>
+        <li><strong>Integrated Ledger hardware-wallet support</strong> and secure on-chain transaction flows; own biometrics, encrypted storage, and code signing.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="my-24 bg-gray-50 dark:bg-gray-900 py-16">
+    <div class="container">
+      <h2 class="mb-12 text-3xl font-bold border-b pb-4">1 &middot; Ownership Map</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div>
+          <h3 class="text-2xl font-semibold mb-4 text-primary">Products I own</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-6 uppercase tracking-wider">DRI for the codebase, end-to-end</p>
+          <ul class="space-y-3">
+            <li class="flex items-center gap-3">
+              <span class="h-2 w-2 rounded-full bg-green-500"></span>
+              <strong>Mobile wallet (React Native / Expo)</strong> — sole maintainer
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="h-2 w-2 rounded-full bg-green-500"></span>
+              <strong>Desktop wallet (Electron)</strong> — sole maintainer
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="h-2 w-2 rounded-full bg-green-500"></span>
+              <strong>Explorer (React)</strong> — sole maintainer
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+              <strong>alephium.org website</strong> — owner
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+              <strong>Bridge UI + published React widget</strong> — owner
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+              <strong>PowFi frontend (Next.js)</strong> — owner
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="h-2 w-2 rounded-full bg-purple-500"></span>
+              <strong>Frontend monorepo + shared packages</strong> — owner
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-semibold mb-4 text-primary">Role & Leadership</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-6 uppercase tracking-wider">How I operate</p>
+          <ul class="space-y-4">
+            <li><strong>Frontend lead</strong> — direct the frontend effort; mentor the team's other contributors; review code across the wallets, PowFi SDK/frontend, and @alephium/web3</li>
+            <li><strong>Cross-team frontend liaison</strong> — backend, blockchain/protocol, design, marketing</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-16">
+        <h3 class="text-2xl font-semibold mb-4 text-primary">Domains I own</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-6 uppercase tracking-wider">The go-to across every product</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+            <h4 class="font-bold text-lg mb-2">Security & Auth</h4>
+            <p class="text-sm">Secrets handling, encrypted storage, in-memory secret hygiene, audits, supply-chain. Biometrics, fund password, auth-flow design.</p>
+          </div>
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+            <h4 class="font-bold text-lg mb-2">Releases & CI/CD</h4>
+            <p class="text-sm">Code signing, EAS → TestFlight/Play Console, signed desktop releases, explorer deploy CI.</p>
+          </div>
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+            <h4 class="font-bold text-lg mb-2">Architecture & Perf</h4>
+            <p class="text-sm">State management, caching, data-fetching, persistence. The person who profiles and fixes performance issues.</p>
+          </div>
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+            <h4 class="font-bold text-lg mb-2">Quality & Standards</h4>
+            <p class="text-sm">Testing infra, lint/CI gates, PR conventions. Open-source stewardship (issue triage + community PRs).</p>
+          </div>
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+            <h4 class="font-bold text-lg mb-2">Integrations & Data</h4>
+            <p class="text-sm">Internal/External SDKs (WalletConnect, Ledger). Analytics (PostHog/Fathom) + error tracking (Sentry).</p>
+          </div>
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+            <h4 class="font-bold text-lg mb-2">Product Operations</h4>
+            <p class="text-sm">Frontend technical roadmap, release planning. Localization (i18n Crowdin pipeline). Production incident response.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="my-24">
+    <div class="container">
+      <h2 class="mb-8 text-3xl font-bold border-b pb-4">2 &middot; Initiatives & Impact</h2>
+      <p class="mb-8 text-gray-600 dark:text-gray-400">Bounded projects I led — the proof behind the ownership lines above.</p>
+
+      <div class="space-y-8">
+        <div class="flex flex-col md:flex-row gap-4 items-start">
+          <div class="md:w-1/4 pt-1"><span class="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 rounded-full text-sm font-medium">Mobile Wallet</span></div>
+          <div class="md:w-3/4">
+            <p><strong>Built & launched the mobile wallet</strong> — co-built it; shipped to the App Store + Google Play on 31 Oct 2023; 48 production releases since.</p>
+          </div>
+        </div>
+        <div class="flex flex-col md:flex-row gap-4 items-start">
+          <div class="md:w-1/4 pt-1"><span class="px-3 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100 rounded-full text-sm font-medium">Architecture</span></div>
+          <div class="md:w-3/4">
+            <p><strong>Consolidated the apps into a monorepo</strong> — pnpm + Turborepo; extracted shared logic into internal packages → ~40% faster cross-platform delivery at ~80% logic parity.</p>
+          </div>
+        </div>
+        <div class="flex flex-col md:flex-row gap-4 items-start">
+          <div class="md:w-1/4 pt-1"><span class="px-3 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100 rounded-full text-sm font-medium">Architecture</span></div>
+          <div class="md:w-3/4">
+            <p><strong>Re-architected async state twice</strong> — React state → Redux Toolkit → TanStack Query (+ SWR on PowFi), backed by competitor analysis (MetaMask, Rainbow, Ledger, Uniswap) → decision docs.</p>
+          </div>
+        </div>
+        <div class="flex flex-col md:flex-row gap-4 items-start">
+          <div class="md:w-1/4 pt-1"><span class="px-3 py-1 bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100 rounded-full text-sm font-medium">Performance</span></div>
+          <div class="md:w-3/4">
+            <p><strong>Performance program</strong> — desktop wallet 26× faster cold start, 10× overall; React Native cold-start; frontend↔backend request-reduction.</p>
+          </div>
+        </div>
+        <div class="flex flex-col md:flex-row gap-4 items-start">
+          <div class="md:w-1/4 pt-1"><span class="px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100 rounded-full text-sm font-medium">Security</span></div>
+          <div class="md:w-3/4">
+            <p><strong>Hardened in-memory secret handling</strong> — moved mnemonics/keys into a wipeable keyring and patched an upstream BIP39 library to close a plaintext recovery-phrase leak found via runtime memory inspection. 0 critical incidents.</p>
+          </div>
+        </div>
+        <div class="flex flex-col md:flex-row gap-4 items-start">
+          <div class="md:w-1/4 pt-1"><span class="px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100 rounded-full text-sm font-medium">Security</span></div>
+          <div class="md:w-3/4">
+            <p><strong>Designed the mobile auth flows</strong> — researched result- vs event-based approaches, competitor analysis, decision docs, then implemented (biometrics + fund password).</p>
+          </div>
+        </div>
+        <div class="flex flex-col md:flex-row gap-4 items-start">
+          <div class="md:w-1/4 pt-1"><span class="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 rounded-full text-sm font-medium">Products</span></div>
+          <div class="md:w-3/4">
+            <p><strong>Rebuilt the token-bridge UI (Next.js)</strong> and extracted it into a publicly published, reusable React widget (consumed by the Bridge UI + PowFi, open for public use).</p>
+          </div>
+        </div>
+        <div class="flex flex-col md:flex-row gap-4 items-start">
+          <div class="md:w-1/4 pt-1"><span class="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 rounded-full text-sm font-medium">Products</span></div>
+          <div class="md:w-3/4">
+            <p><strong>Led the PowFi DeFi frontend</strong> — rewrote it from an open-source codebase to Alephium brand & UX (Next.js); SWR; CLMM DEX + staking integration; directed a cross-team roadmap and liaised with marketing.</p>
+          </div>
+        </div>
+        <div class="flex flex-col md:flex-row gap-4 items-start">
+          <div class="md:w-1/4 pt-1"><span class="px-3 py-1 bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-100 rounded-full text-sm font-medium">Ecosystem</span></div>
+          <div class="md:w-3/4">
+            <p><strong>Migrated @alephium/sdk to ESM</strong> — code splitting, tree shaking, dual export ("shrinking the web3 SDK"); also contributed to the core @alephium/web3 SDK.</p>
+          </div>
+        </div>
+        <div class="flex flex-col md:flex-row gap-4 items-start">
+          <div class="md:w-1/4 pt-1"><span class="px-3 py-1 bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-100 rounded-full text-sm font-medium">Ecosystem</span></div>
+          <div class="md:w-3/4">
+            <p><strong>Integrated the shared PowFi SDK across products</strong> — wired it into both the PowFi app and the mobile wallet (staking); contributed cleanup.</p>
+          </div>
+        </div>
+        <div class="flex flex-col md:flex-row gap-4 items-start">
+          <div class="md:w-1/4 pt-1"><span class="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 rounded-full text-sm font-medium">Products</span></div>
+          <div class="md:w-3/4">
+            <p><strong>Built alephium.org</strong> — Figma → responsive, accessible, Web-Vitals-optimized; integrated a git-backed CMS so non-technical editors can publish; migrated the blog off Medium.</p>
+          </div>
+        </div>
+        <div class="flex flex-col md:flex-row gap-4 items-start">
+          <div class="md:w-1/4 pt-1"><span class="px-3 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100 rounded-full text-sm font-medium">Architecture</span></div>
+          <div class="md:w-3/4">
+            <p><strong>Shepherded recurring major framework upgrades</strong> — React 19 + React Compiler, Expo / React Native SDK majors, Electron majors.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="my-24">
+    <div class="container">
+      <h2 class="mb-12 text-3xl font-bold border-b pb-4">3 &middot; Capabilities Delivered</h2>
+      <p class="mb-8 text-gray-600 dark:text-gray-400">The feature catalog — evidence of breadth.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <div>
+          <h3 class="text-xl font-bold mb-4 flex items-center gap-2">📱 Mobile Wallet</h3>
+          <ul class="list-disc ml-5 space-y-2 text-gray-700 dark:text-gray-300">
+            <li>Secure wallet creation/recovery</li>
+            <li>Biometrics (Face ID / fingerprint) & fund password</li>
+            <li>Watch-only wallets</li>
+            <li>In-app dApp browser bridge (injected-JS WebView↔RN messaging)</li>
+            <li>WalletConnect & NFTs</li>
+            <li>Address discovery & groups</li>
+            <li>QR scanning</li>
+            <li>Fiat on-ramp (Banxa, Onramper)</li>
+            <li>Staking (via PowFi SDK)</li>
+            <li>Anti-exfiltration hardening (screen-capture prevention, auto-lock, background blur)</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold mb-4 flex items-center gap-2">💻 Desktop Wallet</h3>
+          <ul class="list-disc ml-5 space-y-2 text-gray-700 dark:text-gray-300">
+            <li>Ledger hardware-wallet support</li>
+            <li>Secure on-chain transaction flows</li>
+            <li>WalletConnect</li>
+            <li>Auto-update (electron-updater)</li>
+            <li>alephium:// deep-link handler</li>
+            <li>Code signing (Windows + macOS)</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold mb-4 flex items-center gap-2">🔍 Explorer</h3>
+          <ul class="list-disc ml-5 space-y-2 text-gray-700 dark:text-gray-300">
+            <li>Feature implementation</li>
+            <li>CI deployment path</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold mb-4 flex items-center gap-2">🌐 Cross-App</h3>
+          <ul class="list-disc ml-5 space-y-2 text-gray-700 dark:text-gray-300">
+            <li>Encrypted storage & secrets management</li>
+            <li>Error-report sanitization</li>
+            <li>Persistence architecture (MMKV / AsyncStorage, redux-persist, React Query cache + storage migrations)</li>
+            <li>Real-time data polling</li>
+            <li>Analytics (PostHog + Fathom) & Error tracking (Sentry)</li>
+            <li>Testing infra (Vitest / Jest / MSW, Testing Library, coverage gates)</li>
+            <li>i18n / Crowdin pipeline & Accessibility</li>
+            <li>CI/CD pipelines (GitHub Actions; Windows / Ubuntu / macOS matrix)</li>
+            <li>Versioning & releases (changesets)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</DefaultLayout>
