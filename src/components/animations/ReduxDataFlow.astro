@@ -116,9 +116,9 @@ const code = `useEffect(() => {
     </div>
   </div>
 
-  <Fragment slot="caption">
+  <div slot="caption">
     On wallet unlock: localStorage seeds the addresses, a <code>useEffect</code> dispatches the thunk, the thunk talks to the server, calculates the computed state and writes the result into the Redux slice, and that state update re-renders the App (which re-runs the effect).
-  </Fragment>
+  </div>
 </AnimatedFigure>
 
 <style lang="scss">
