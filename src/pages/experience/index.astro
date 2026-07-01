@@ -1,0 +1,56 @@
+---
+import DefaultLayout from '@layouts/DefaultLayout.astro'
+import { Link } from 'accessible-astro-components'
+import Experience from '@components/Experience.astro'
+import { Icon } from 'astro-icon/components'
+---
+
+<DefaultLayout title="Experience - Ilias Trichopoulos">
+  <section class="hero my-24">
+    <div class="narrow container">
+      <div class="flex flex-col items-center gap-8 md:items-start">
+        <h1 class="text-center text-6xl md:text-left">Experience</h1>
+        <p class="text-xl md:text-2xl text-center md:text-left text-gray-600 dark:text-gray-300">
+          My professional journey building software for startups, scale-ups, and the web's birthplace.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="my-16">
+    <div class="narrow container">
+      <div class="rounded-xl bg-gray-50 p-8 shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <div class="flex flex-col gap-4">
+          <div class="flex items-center gap-3">
+             <span class="flex h-3 w-3 shrink-0 rounded-full bg-green-500"></span>
+             <h2 class="text-2xl font-bold uppercase tracking-wide text-gray-900 dark:text-white">Current Focus</h2>
+          </div>
+          <h3 class="text-3xl font-bold">Frontend Lead @Alephium</h3>
+          <p class="text-lg text-gray-600 dark:text-gray-300">
+            Since 2021, I've been the core maintainer and frontend lead for Alephium's entire user-facing surface, managing
+            self-custody wallets across mobile and desktop, the blockchain explorer, and bridging infrastructure.
+          </p>
+          <div class="mt-4">
+            <Link
+              href="/experience/alephium"
+              isButton
+              variant="primary"
+              animateOnHover
+              animationType="nudge"
+            >
+              Read the Alephium deep dive
+              <Icon aria-hidden="true" name="lucide:arrow-right" size="1.5rem" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="my-24">
+    <div class="narrow container">
+      <h2 class="mb-12 text-4xl font-bold border-b pb-4">Work History</h2>
+      <Experience />
+    </div>
+  </section>
+</DefaultLayout>
