@@ -20,7 +20,7 @@ import { Link } from 'accessible-astro-components'
             Senior Frontend Engineer with 13+ years building high-performance, security-critical systems across web, desktop, and mobile — most recently as core maintainer of the wallet ecosystem at Alephium, an open-source layer-1 blockchain.
           </p>
           <p>
-            I own the full frontend surface that users touch: I co-built the React Native mobile wallet (shipped to the App Store & Google Play, 48 production releases) and took sole ownership of the Electron desktop wallet and the blockchain explorer. Across them I architected a Turborepo monorepo with shared SDKs and UI that cut cross-platform delivery time ~40% and kept ~80% logic parity, drove a state-management evolution (React state → Redux Toolkit → TanStack Query), and resolved deep performance bottlenecks (desktop wallet: 26× faster cold start, 10× performance).
+            I own the full frontend surface that users touch: I co-built the React Native mobile wallet (shipped to the App Store & Google Play, 48 production releases) and took over as core maintainer of the Electron desktop wallet and the blockchain explorer. Across them I architected a Turborepo monorepo with shared SDKs and UI that cut cross-platform delivery time ~40% and kept ~80% logic parity, drove a state-management evolution (React state → Redux Toolkit → TanStack Query), and resolved deep performance bottlenecks (desktop wallet: 26× faster cold start, 10× performance).
           </p>
           <p>
             Security is a first-class part of my remit: I hardened in-memory secret handling — moving mnemonics and private keys into a wipeable keyring and patching an upstream BIP39 library to close a plaintext recovery-phrase leak — and maintained 0 critical security incidents while the wallets scaled to a peak of 20,000+ users. I own authentication (biometrics, fund password), encrypted storage, code signing across platforms, security audits, and supply-chain hygiene.
@@ -37,7 +37,7 @@ import { Link } from 'accessible-astro-components'
     <div class="container">
       <h2 class="mb-8 text-3xl font-bold border-b pb-4">Key Impact & Achievements</h2>
       <ul class="list-disc list-outside ml-6 space-y-4 text-lg">
-        <li><strong>Co-built and sole-maintain</strong> Alephium's React Native mobile wallet (App Store + Google Play, 48 production releases) and inherited + own the Electron desktop wallet and blockchain explorer — the ecosystem's primary user touchpoints.</li>
+        <li><strong>Co-built and core maintainer of</strong> Alephium's React Native mobile wallet (App Store + Google Play, 48 production releases) and inherited + own the Electron desktop wallet and blockchain explorer — the ecosystem's primary user touchpoints.</li>
         <li><strong>Architected a Turborepo monorepo</strong> with shared SDKs and UI across web, desktop & mobile — ~40% faster cross-platform delivery at ~80% logic parity.</li>
         <li><strong>Maintained 0 critical security incidents</strong> at a peak of 20,000+ users; hardened in-memory secret handling and patched an upstream BIP39 library to close a plaintext recovery-phrase leak.</li>
         <li><strong>Resolved deep performance bottlenecks</strong> in the desktop wallet — 26× faster cold start, 10× overall performance.</li>
@@ -58,34 +58,55 @@ import { Link } from 'accessible-astro-components'
         <div>
           <h3 class="text-2xl font-semibold mb-4 text-primary">Products I own</h3>
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-6 uppercase tracking-wider">DRI for the codebase, end-to-end</p>
-          <ul class="space-y-3">
-            <li class="flex items-center gap-3">
-              <span class="h-2 w-2 rounded-full bg-green-500"></span>
-              <strong>Mobile wallet (React Native / Expo)</strong> — sole maintainer
+          <ul class="space-y-5">
+            <li class="flex items-start gap-3">
+              <span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-green-500"></span>
+              <div class="flex flex-col">
+                <strong class="leading-tight text-lg">Mobile wallet (React Native / Expo)</strong>
+                <span class="text-sm text-gray-500 dark:text-gray-400">Core maintainer</span>
+              </div>
             </li>
-            <li class="flex items-center gap-3">
-              <span class="h-2 w-2 rounded-full bg-green-500"></span>
-              <strong>Desktop wallet (Electron)</strong> — sole maintainer
+            <li class="flex items-start gap-3">
+              <span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-green-500"></span>
+              <div class="flex flex-col">
+                <strong class="leading-tight text-lg">Desktop wallet (Electron)</strong>
+                <span class="text-sm text-gray-500 dark:text-gray-400">Core maintainer</span>
+              </div>
             </li>
-            <li class="flex items-center gap-3">
-              <span class="h-2 w-2 rounded-full bg-green-500"></span>
-              <strong>Explorer (React)</strong> — sole maintainer
+            <li class="flex items-start gap-3">
+              <span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-green-500"></span>
+              <div class="flex flex-col">
+                <strong class="leading-tight text-lg">Explorer (React)</strong>
+                <span class="text-sm text-gray-500 dark:text-gray-400">Core maintainer</span>
+              </div>
             </li>
-            <li class="flex items-center gap-3">
-              <span class="h-2 w-2 rounded-full bg-blue-500"></span>
-              <strong>alephium.org website</strong> — owner
+            <li class="flex items-start gap-3">
+              <span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-blue-500"></span>
+              <div class="flex flex-col">
+                <strong class="leading-tight text-lg">alephium.org website</strong>
+                <span class="text-sm text-gray-500 dark:text-gray-400">Owner</span>
+              </div>
             </li>
-            <li class="flex items-center gap-3">
-              <span class="h-2 w-2 rounded-full bg-blue-500"></span>
-              <strong>Bridge UI + published React widget</strong> — owner
+            <li class="flex items-start gap-3">
+              <span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-blue-500"></span>
+              <div class="flex flex-col">
+                <strong class="leading-tight text-lg">Bridge UI + published React widget</strong>
+                <span class="text-sm text-gray-500 dark:text-gray-400">Owner</span>
+              </div>
             </li>
-            <li class="flex items-center gap-3">
-              <span class="h-2 w-2 rounded-full bg-blue-500"></span>
-              <strong>PowFi frontend (Next.js)</strong> — owner
+            <li class="flex items-start gap-3">
+              <span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-blue-500"></span>
+              <div class="flex flex-col">
+                <strong class="leading-tight text-lg">PowFi frontend (Next.js)</strong>
+                <span class="text-sm text-gray-500 dark:text-gray-400">Owner</span>
+              </div>
             </li>
-            <li class="flex items-center gap-3">
-              <span class="h-2 w-2 rounded-full bg-purple-500"></span>
-              <strong>Frontend monorepo + shared packages</strong> — owner
+            <li class="flex items-start gap-3">
+              <span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-purple-500"></span>
+              <div class="flex flex-col">
+                <strong class="leading-tight text-lg">Frontend monorepo + shared packages</strong>
+                <span class="text-sm text-gray-500 dark:text-gray-400">Owner</span>
+              </div>
             </li>
           </ul>
         </div>
@@ -93,9 +114,15 @@ import { Link } from 'accessible-astro-components'
         <div>
           <h3 class="text-2xl font-semibold mb-4 text-primary">Role & Leadership</h3>
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-6 uppercase tracking-wider">How I operate</p>
-          <ul class="space-y-4">
-            <li><strong>Frontend lead</strong> — direct the frontend effort; mentor the team's other contributors; review code across the wallets, PowFi SDK/frontend, and @alephium/web3</li>
-            <li><strong>Cross-team frontend liaison</strong> — backend, blockchain/protocol, design, marketing</li>
+          <ul class="space-y-5">
+            <li class="flex flex-col">
+              <strong class="leading-tight text-lg mb-1">Frontend lead</strong>
+              <span class="text-gray-700 dark:text-gray-300">Direct the frontend effort; mentor the team's other contributors; review code across the wallets, PowFi SDK/frontend, and @alephium/web3</span>
+            </li>
+            <li class="flex flex-col">
+              <strong class="leading-tight text-lg mb-1">Cross-team frontend liaison</strong>
+              <span class="text-gray-700 dark:text-gray-300">Backend, blockchain/protocol, design, marketing</span>
+            </li>
           </ul>
         </div>
       </div>
