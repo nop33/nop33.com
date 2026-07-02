@@ -2,6 +2,7 @@
 import DefaultLayout from '@layouts/DefaultLayout.astro'
 import { Link } from 'accessible-astro-components'
 import Experience from '@components/Experience.astro'
+import KeyStrengths from '@components/KeyStrengths.astro'
 import { Icon } from 'astro-icon/components'
 ---
 
@@ -51,6 +52,13 @@ import { Icon } from 'astro-icon/components'
     <div class="narrow container">
       <h2 class="mb-12 text-4xl font-bold border-b pb-4">Work History</h2>
       <Experience />
+    </div>
+  </section>
+
+  <section class="my-24">
+    <div class="container">
+      <h2 class="mb-12 text-4xl font-bold">Key Strengths</h2>
+      <KeyStrengths />
     </div>
   </section>
 </DefaultLayout>

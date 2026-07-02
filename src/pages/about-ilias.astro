@@ -4,7 +4,6 @@ import { Image } from 'astro:assets'
 import booklet from '@assets/images/booklet.png'
 import certificate from '@assets/images/web-development.jpg'
 import { Link } from 'accessible-astro-components'
-import KeyStrengths from '@components/KeyStrengths.astro'
 ---
 
 <DefaultLayout title="About Ilias">
@@ -66,12 +65,12 @@ import KeyStrengths from '@components/KeyStrengths.astro'
           />
         </div>
         <div class="space-y-6 order-1 md:order-2">
-          <h2 class="text-3xl font-bold">Finding My Passion</h2>
+          <h2 class="text-3xl font-bold">When it clicked</h2>
           <p>
             While studying computer science at the Aristotle University of Thessaloniki, I felt a growing unrest. Most courses were very theoretical and simply weren't resonating with me. I found myself enjoying the classes that involved practical, hands-on projects much more.
           </p>
           <p>
-            Because of this, around the beginning of my 5th semester, I signed up for a free web and mobile app development seminar hosted by the Electrical Engineers department. It changed everything for me. I thoroughly enjoyed the course, often losing track of time while working on the assignments. The practical nature of it confirmed that building things is what I was meant to do.
+            Because of this, around the beginning of my 5th semester, I signed up for a free web and mobile app development seminar hosted by the Electrical Engineers department. Suddenly, the pieces fell into place. I thoroughly enjoyed the course, often losing track of time while working on the assignments. The practical nature of it confirmed that building things is what I was meant to do.
           </p>
         </div>
       </div>
@@ -99,16 +98,13 @@ import KeyStrengths from '@components/KeyStrengths.astro'
           <p>
             Since Tasos had applied in the past without success, I was extremely reluctant and doubtful that they would accept me. However, life has its ways of surprising you. I was accepted, and that is how my life in Switzerland began.
           </p>
+          <p class="mt-8 italic">
+            Curious about what happened next? You can check out my <a href="/experience" class="text-blue-600 dark:text-blue-400 hover:underline">Experience</a> to see where my career took me, or read my thoughts on software engineering on my <a href="/blog" class="text-blue-600 dark:text-blue-400 hover:underline">Blog</a>.
+          </p>
         </div>
       </div>
 
     </div>
   </section>
 
-  <section class="my-24">
-    <div class="container">
-      <h2 class="mb-12 text-4xl font-bold">Key Strengths</h2>
-      <KeyStrengths />
-    </div>
-  </section>
 </DefaultLayout>
