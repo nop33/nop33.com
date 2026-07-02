@@ -2,6 +2,7 @@
 import DefaultLayout from '@layouts/DefaultLayout.astro'
 import { Image } from 'astro:assets'
 import booklet from '@assets/images/booklet.png'
+import certificate from '@assets/images/web-development.jpg'
 import { Link } from 'accessible-astro-components'
 import KeyStrengths from '@components/KeyStrengths.astro'
 ---
@@ -19,29 +20,88 @@ import KeyStrengths from '@components/KeyStrengths.astro'
           I've been privileged to work most of my career on open-source projects. These days I work remotely as the lead
           maintainer of several user-facing apps at <Link href="https://alephium.org">Alephium</Link>.
         </p>
-        <h2 class="text-3xl">The beginning</h2>
-        <p>
-          My first experience with programming came at the age of 11. My parents sent me to a computer class after
-          school hours. There, I learned programming with Logo, a language similar to Lisp. We would draw shapes on the
-          screen by giving commands to a "turtle".
-        </p>
-        <p>
-          There, I also surfed the web for the fist time. When I’d finish my homework early, my teacher would allow me
-          to use the IE5. Oh boy, such fun! I had a tiny booklet with a catalogue of all the websites I knew.
-        </p>
-        <Image
-          src={booklet}
-          alt="Notebook with a catalogue of all the websites I knew"
-          width={600}
-          height={450}
-          class="h-auto w-full max-w-sm"
-          sizes="(min-width: 1024px) 20rem, (min-width: 768px) 18rem, 100vw"
-        />
-        <p>
-          In highschool, I picked the pseudo-programming class, and eventually decided to study computer science at the
-          Aristotle University of Thessaloniki.
-        </p>
       </div>
+    </div>
+  </section>
+
+  <section class="my-24">
+    <div class="container space-y-24">
+
+      <!-- Section 1: Early Encounters -->
+      <div class="grid grid-cols-1 gap-12 md:grid-cols-2 items-center">
+        <div class="space-y-6">
+          <h2 class="text-3xl font-bold">Early Encounters</h2>
+          <p>
+            My first experience with programming came at the age of 11. My parents sent me to a computer class after
+            school hours. There, I learned programming with Logo, a language similar to Lisp. We would draw shapes on the
+            screen by giving commands to a "turtle".
+          </p>
+          <p>
+            There, I also surfed the web for the first time. When I'd finish my homework early, my teacher would allow me
+            to use IE5. Oh boy, such fun! I had a tiny booklet with a catalogue of all the websites I knew. In high school, I picked the pseudo-programming class, and eventually decided to study computer science at the Aristotle University of Thessaloniki.
+          </p>
+        </div>
+        <div>
+          <Image
+            src={booklet}
+            alt="Notebook with a catalogue of all the websites I knew"
+            width={600}
+            height={450}
+            class="rounded-lg shadow-lg w-full h-auto mx-auto"
+            sizes="(min-width: 1024px) 30rem, (min-width: 768px) 25rem, 100vw"
+          />
+        </div>
+      </div>
+
+      <!-- Section 2: Finding My Passion -->
+      <div class="grid grid-cols-1 gap-12 md:grid-cols-2 items-center">
+        <div class="order-2 md:order-1">
+          <Image
+            src={certificate}
+            alt="Web and Mobile Development Seminar Certificate"
+            width={800}
+            height={600}
+            class="rounded-lg shadow-lg w-full h-auto mx-auto"
+            sizes="(min-width: 1024px) 30rem, (min-width: 768px) 25rem, 100vw"
+          />
+        </div>
+        <div class="space-y-6 order-1 md:order-2">
+          <h2 class="text-3xl font-bold">Finding My Passion</h2>
+          <p>
+            While studying computer science at the Aristotle University of Thessaloniki, I felt a growing unrest. Most courses were very theoretical and simply weren't resonating with me. I found myself enjoying the classes that involved practical, hands-on projects much more.
+          </p>
+          <p>
+            Because of this, around the beginning of my 5th semester, I signed up for a free web and mobile app development seminar hosted by the Electrical Engineers department. It changed everything for me. I thoroughly enjoyed the course, often losing track of time while working on the assignments. The practical nature of it confirmed that building things is what I was meant to do.
+          </p>
+        </div>
+      </div>
+
+      <!-- Section 3: The First Professional Steps -->
+      <div class="grid grid-cols-1 gap-12 md:grid-cols-2 items-center">
+        <div class="space-y-6 md:col-span-2">
+          <h2 class="text-3xl font-bold">The First Professional Steps</h2>
+          <p>
+            About half a year after completing the seminar, I decided to pause my studies and move to Germany for an internship. That internship in 2012 was my very first time working in a professional environment, and it was a revelation. For the first time, my work counted and actually saved the company thousands of euros.
+          </p>
+          <p>
+            I had a fantastic mentor who truly believed in me. The company was so happy with my contributions that they invited me to continue working for them remotely after my internship ended, allowing me to resume my university studies. This was around a decade before remote work became common practice during the COVID-19 pandemic!
+          </p>
+        </div>
+      </div>
+
+      <!-- Section 4: The Journey to CERN -->
+      <div class="grid grid-cols-1 gap-12 md:grid-cols-2 items-center">
+        <div class="space-y-6 md:col-span-2">
+          <h2 class="text-3xl font-bold">The Journey to CERN</h2>
+          <p>
+            Eventually, I left the company to pursue a dream opportunity at CERN, the birthplace of the web. It started thanks to a dear classmate and mentor of mine, Tasos, who is a very gifted and brilliant engineer. He believed in my skills and strongly encouraged me to apply to CERN's Technical Student program.
+          </p>
+          <p>
+            Since Tasos had applied in the past without success, I was extremely reluctant and doubtful that they would accept me. However, life has its ways of surprising you. I was accepted, and that is how my life in Switzerland began.
+          </p>
+        </div>
+      </div>
+
     </div>
   </section>
 
