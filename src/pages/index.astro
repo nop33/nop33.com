@@ -66,22 +66,42 @@ const latestPosts = posts.slice(0, 3)
         </div>
         <div class="hidden md:block">
           <div class="grid grid-cols-1 gap-4">
-            <div class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
-              <h3 class="text-xl font-bold">Desktop Wallet <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(Electron)</span></h3>
-              <p class="text-gray-500 dark:text-gray-400 mt-1">Owner, Core Maintainer</p>
-            </div>
-            <div class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
-              <h3 class="text-xl font-bold">Mobile Wallet <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(React Native / Expo)</span></h3>
-              <p class="text-gray-500 dark:text-gray-400 mt-1">Co-creator, Owner, Core Maintainer</p>
-            </div>
-            <div class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
-              <h3 class="text-xl font-bold">PowFi <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(Next.js)</span></h3>
-              <p class="text-gray-500 dark:text-gray-400 mt-1">Owner, Core Maintainer</p>
-            </div>
-            <div class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
-              <h3 class="text-xl font-bold">Frontend Monorepo <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(pnpm / Turborepo)</span></h3>
-              <p class="text-gray-500 dark:text-gray-400 mt-1">Creator, Core Maintainer</p>
-            </div>
+            <a href="/portfolio/alephium-desktop-wallet" class="!text-current no-underline group block rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" style="text-decoration: none;">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-xl font-bold">Desktop Wallet <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(Electron)</span></h3>
+                  <p class="text-gray-500 dark:text-gray-400 mt-1">Owner, Core Maintainer</p>
+                </div>
+                <Icon aria-hidden="true" name="lucide:arrow-right" size="1.5rem" class="text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" />
+              </div>
+            </a>
+            <a href="/portfolio/alephium-mobile-wallet" class="!text-current no-underline group block rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" style="text-decoration: none;">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-xl font-bold">Mobile Wallet <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(React Native / Expo)</span></h3>
+                  <p class="text-gray-500 dark:text-gray-400 mt-1">Co-creator, Owner, Core Maintainer</p>
+                </div>
+                <Icon aria-hidden="true" name="lucide:arrow-right" size="1.5rem" class="text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" />
+              </div>
+            </a>
+            <a href="https://powfi.alephium.org" target="_blank" rel="noopener noreferrer" class="!text-current no-underline group block rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" style="text-decoration: none;">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-xl font-bold">PowFi <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(Next.js)</span></h3>
+                  <p class="text-gray-500 dark:text-gray-400 mt-1">Owner, Core Maintainer</p>
+                </div>
+                <Icon aria-hidden="true" name="lucide:arrow-up-right" size="1.5rem" class="text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" />
+              </div>
+            </a>
+            <a href="https://github.com/alephium/alephium-frontend" target="_blank" rel="noopener noreferrer" class="!text-current no-underline group block rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" style="text-decoration: none;">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-xl font-bold">Frontend Monorepo <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(pnpm / Turborepo)</span></h3>
+                  <p class="text-gray-500 dark:text-gray-400 mt-1">Creator, Core Maintainer</p>
+                </div>
+                <Icon aria-hidden="true" name="lucide:arrow-up-right" size="1.5rem" class="text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" />
+              </div>
+            </a>
           </div>
         </div>
       </div>
