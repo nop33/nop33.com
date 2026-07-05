@@ -20,6 +20,12 @@
  * 7 in y. Each dot starts at its hop's source (cx/cy) and animates
  * `transform: translate(--dx, --dy)` to the destination.
  *
+ * Mobile: this is a dense 2D diagram with code snippets, so it can't shrink to
+ * phone widths and stay legible. Instead the stage keeps a desktop `min-width`
+ * and its wrapper (`.stage-scroll`) scrolls horizontally, so narrow screens get
+ * a swipeable window onto the full-size diagram. The pause control lives outside
+ * the scroll wrapper (in AnimatedFigure), so it stays put.
+ *
  * Note: in-box code/identifiers use <div>/<span>, NOT <pre>/<code>, so the
  * site's global prose styling for code blocks doesn't leak in.
  */
@@ -35,7 +41,8 @@ const code = `useEffect(() => {
   anim="redux-flow"
   label="The Redux-thunk data flow on app unlock, as a six-hop loop. localStorage seeds the addresses into the App; a useEffect dispatches the fetchAddressesBalances thunk; the thunk requests data from the server; the server responds; the thunk sets the Redux addressesSlice state; and that state update re-renders the App, which re-runs the effect."
 >
-  <div class="stage" aria-hidden="true">
+  <div class="stage-scroll">
+    <div class="stage" aria-hidden="true">
     <svg class="wires" viewBox="0 0 1000 700" preserveAspectRatio="none">
       <defs>
         <marker
@@ -114,6 +121,7 @@ const code = `useEffect(() => {
       <div class="node-title">Local Storage</div>
       <span class="mono">addresses: ["0x1…", "0x2…"]</span>
     </div>
+    </div>
   </div>
 
   <div slot="caption">
@@ -122,6 +130,14 @@ const code = `useEffect(() => {
 </AnimatedFigure>
 
 <style lang="scss">
+  /* On narrow screens the diagram keeps its desktop width (see .stage min-width)
+     and this wrapper scrolls horizontally, giving a swipeable window onto it. */
+  .stage-scroll {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .stage {
     --loop: 9s;
 
@@ -129,6 +145,7 @@ const code = `useEffect(() => {
     position: relative;
     aspect-ratio: 1000 / 700;
     width: 100%;
+    min-width: 780px;
     max-width: 880px;
     margin-inline: auto;
     font-family: system-ui, -apple-system, sans-serif;
