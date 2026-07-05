@@ -1,10 +1,9 @@
 ---
-title: 'Part 1: The Challenges of Async State'
+title: 'The Challenges of Async State - A Tanstack Query Case Study - Part 1'
 description: 'A case study, from two production Alephium crypto wallets, of the three async-state problems that pushed us off Redux thunks and toward TanStack Query: tangled request flows, a self-inflicted DDoS, and painfully slow data updates.'
 publishDate: 2026-06-12
 author: 'Ilias Trichopoulos'
 tags: ['TanStack Query', 'React', 'Redux', 'Architecture', 'Blockchain']
-draft: true
 ---
 
 import WalletDataFlow from '@components/animations/WalletDataFlow.astro'
@@ -84,7 +83,6 @@ This saved the day. The server could keep up, and the client slowly received all
 
 ### Rate-limit trade-offs
 
-- **One throttle bucket for two servers.** The explorer and node share a single 10-req/s budget, so when the explorer is failing and the node is the fallback, they contend exactly when I can least afford it. Per-host buckets would let each run at its own ceiling.
 - **FIFO with no priority.** On a cold load, the address a user is actually looking at might be 40th in the throttle queue. A priority lane for interactive fetches versus background polling would fix the perceived latency.
 - **The rate limit is a guess.** `10/1000` was chosen by feel; that the `429`s stopped tells me it is _at or under_ the server's real limit, not that it's optimal. The servers almost certainly return `Retry-After` and `X-RateLimit` headers, and honoring those would let the system self-tune instead of hard-coding a number.
 
