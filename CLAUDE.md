@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Personal portfolio/blog site (nop33.com) built on the Accessible Astro Starter theme. Static site (SSG) using Astro 5, Tailwind CSS 4, TypeScript (strict), and SCSS. Accessibility is a core requirement — WCAG 2.2 AA compliance throughout.
+Personal portfolio/blog site (nop33.com) built on the Accessible Astro Starter theme. Static site (SSG) using Astro 5, Tailwind CSS 4, TypeScript (strict), and SCSS. Accessibility is a core requirement - WCAG 2.2 AA compliance throughout.
 
 ## Commands
 
@@ -20,13 +20,13 @@ Node version: v20.5.1 (see .nvmrc)
 
 ## Architecture
 
-**Astro file-based routing** — pages in `src/pages/` map directly to routes. Dynamic routes use `[param].astro` and `[...param].astro` syntax.
+**Astro file-based routing** - pages in `src/pages/` map directly to routes. Dynamic routes use `[param].astro` and `[...param].astro` syntax.
 
-**Content Collections** — projects live as MDX files in `src/content/projects/` with schema defined in `src/content.config.ts`. Query with `getCollection('projects')`. Blog posts are `.astro` files in `src/pages/blog/`.
+**Content Collections** - projects live as MDX files in `src/content/projects/` with schema defined in `src/content.config.ts`. Query with `getCollection('projects')`. Blog posts are `.astro` files in `src/pages/blog/`.
 
-**Layouts** — `DefaultLayout.astro` is the main wrapper (header/footer). `MarkdownLayout.astro` for MDX content.
+**Layouts** - `DefaultLayout.astro` is the main wrapper (header/footer). `MarkdownLayout.astro` for MDX content.
 
-**Components** — two sources:
+**Components** - two sources:
 - `accessible-astro-components` package: `Button`, `Link`, `Card`, `Modal`, `Accordion`, `DarkMode`, form components, etc.
 - Custom components in `src/components/`: `Hero`, `PageHeader`, `CallToAction`, `FeaturedPosts`, `FeaturedProjects`, `Experience`, `Navigation`, `SiteMeta` (SEO), etc.
 
@@ -36,8 +36,8 @@ Node version: v20.5.1 (see .nvmrc)
 
 ## Styling
 
-- **Tailwind CSS v4** with Vite plugin — global styles in `src/styles/tailwind.css`
-- **SCSS** utilities in `src/assets/scss/` — custom properties, reset, typography
+- **Tailwind CSS v4** with Vite plugin - global styles in `src/styles/tailwind.css`
+- **SCSS** utilities in `src/assets/scss/` - custom properties, reset, typography
 - **OKLCH** color system with automatic palette generation
 - Use **logical properties** (e.g., `inline-start` not `left`)
 - Atkinson Hyperlegible font for readability
@@ -45,7 +45,7 @@ Node version: v20.5.1 (see .nvmrc)
 
 ## Accessibility
 
-- Semantic HTML elements (`<button>`, `<nav>`, `<main>`, etc.) — never use `<div>` for interactive elements
+- Semantic HTML elements (`<button>`, `<nav>`, `<main>`, etc.) - never use `<div>` for interactive elements
 - All interactive elements must be keyboard accessible
 - Never remove focus outlines without accessible alternatives
 - Respect `prefers-reduced-motion` for all animations

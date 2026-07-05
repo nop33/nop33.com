@@ -1,6 +1,6 @@
 ---
 title: 'Syncing Obsidian Across Devices with Syncthing and a Home Server'
-description: 'A step-by-step guide to setting up Syncthing on a Proxmox home server, macOS, and Android to sync an Obsidian vault — no cloud services required.'
+description: 'A step-by-step guide to setting up Syncthing on a Proxmox home server, macOS, and Android to sync an Obsidian vault - no cloud services required.'
 publishDate: 2026-04-10
 featuredImage: ./cover.webp
 tags: ['Syncthing', 'Obsidian', 'Self-hosting', 'Proxmox', 'Docker']
@@ -14,8 +14,8 @@ I use [Obsidian](https://obsidian.md) for all my notes: projects, recipes, finan
 
 My home server is an HP EliteDesk running [Proxmox VE](https://www.proxmox.com/en/proxmox-virtual-environment/overview). Inside it:
 
-- **LXC 100** — [Caddy](https://caddyserver.com) reverse proxy (`192.168.21.51`)
-- **VM 101** — `production-docker` (`192.168.21.52`) running Docker with a UFW firewall
+- **LXC 100** - [Caddy](https://caddyserver.com) reverse proxy (`192.168.21.51`)
+- **VM 101** - `production-docker` (`192.168.21.52`) running Docker with a UFW firewall
 
 I already use this setup to host [Calibre Web](https://github.com/janeczku/calibre-web) for my ebook library and [Umami](https://umami.is) for website analytics. A 40 GB virtual drive called "Dionysus" (thanks Yann), mounted at `/dionysus`, stores all persistent data.
 
@@ -173,9 +173,9 @@ After adding a DNS record in Cloudflare and reloading Caddy, the GUI was accessi
 
 I now have my Obsidian vault syncing across three devices with no cloud dependency:
 
-- **Home server** — always-on hub, stores the vault on a dedicated virtual drive
-- **MacBook** — full bidirectional sync
-- **Android phone** — full bidirectional sync
+- **Home server** - always-on hub, stores the vault on a dedicated virtual drive
+- **MacBook** - full bidirectional sync
+- **Android phone** - full bidirectional sync
 
 Editing a note on my phone while on the go, then picking up right where I left off on my laptop at home. It just works! And if anything goes wrong, staggered file versioning keeps old versions around for recovery.
 

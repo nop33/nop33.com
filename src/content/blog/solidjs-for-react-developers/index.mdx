@@ -20,14 +20,14 @@ This is the single most important thing to understand. In React, your component 
 But wait. I can write `.tsx` files? Noice.
 
 ```tsx
-// React — this function runs on EVERY render
+// React - this function runs on EVERY render
 const Counter = () => {
   const [count, setCount] = useState(0)
   console.log('rendering') // logs on every click
   return <button onClick={() => setCount(count + 1)}>{count}</button>
 }
 
-// Solid — this function runs ONCE
+// Solid - this function runs ONCE
 const Counter = () => {
   const [count, setCount] = createSignal(0)
   console.log('setup') // logs once, ever
@@ -51,7 +51,7 @@ console.log(count) // 0
 // Solid
 const [count, setCount] = createSignal(0)
 console.log(count) // [Function]
-console.log(count()) // 0 — note the ()
+console.log(count()) // 0 - note the ()
 ```
 
 The getter is a function because Solid uses it to track _where_ the signal is read. When you call `count()` inside JSX, Solid knows that specific DOM node depends on this signal. It's what makes the fine-grained updates possible.
@@ -63,18 +63,18 @@ I'll forget the parentheses a bunch of times and I'll stare at the UI that doesn
 In React, destructuring props is idiomatic:
 
 ```tsx
-// React — totally fine
+// React - totally fine
 const Greeting = ({ name }) => <p>Hello, {name}</p>
 ```
 
 In Solid, this **breaks reactivity**:
 
 ```tsx
-// Solid — BROKEN. name captures the value at setup time,
+// Solid - BROKEN. name captures the value at setup time,
 // and since setup only runs once, it never updates.
 const Greeting = ({ name }) => <p>Hello, {name}</p>
 
-// Solid — correct
+// Solid - correct
 const Greeting = (props) => <p>Hello, {props.name}</p>
 ```
 
@@ -87,7 +87,7 @@ This is the habit that takes longest to break if you're coming from React. Build
 In React, you render lists with `.map()`:
 
 ```tsx
-// React — map creates new elements, virtual DOM diffs them
+// React - map creates new elements, virtual DOM diffs them
 {
   items.map((item) => <div key={item.id}>{item.name}</div>)
 }
@@ -96,7 +96,7 @@ In React, you render lists with `.map()`:
 In Solid, you use the `<For>` component:
 
 ```tsx
-// Solid — For tracks each item and only updates what changed
+// Solid - For tracks each item and only updates what changed
 <For each={items()}>{(item) => <div>{item.name}</div>}</For>
 ```
 
@@ -107,7 +107,7 @@ Since Solid doesn't re-render, it needs to know _how_ to react when the list cha
 Same idea as `<For>`, but for conditional rendering:
 
 ```tsx
-// React — ternary, virtual DOM diffs anyway
+// React - ternary, virtual DOM diffs anyway
 {
   isLoggedIn ? <Dashboard /> : <Login />
 }
@@ -132,10 +132,10 @@ You _can_ use `{condition() && <Thing />}` for simple cases. In Solid, unlike Re
 Solid's `createMemo` caches a derived value and only recomputes when its dependencies change. Sound familiar? It's `useMemo`, except you don't pass a dependency array.
 
 ```tsx
-// React — manually list dependencies (miss one and enjoy stale data)
+// React - manually list dependencies (miss one and enjoy stale data)
 const total = useMemo(() => items.reduce((s, i) => s + i.price, 0), [items])
 
-// Solid — automatic tracking
+// Solid - automatic tracking
 const total = createMemo(() => items().reduce((s, i) => s + i.price, 0))
 ```
 
@@ -146,13 +146,13 @@ Solid tracks which signals are read inside the function and figures out the depe
 Not everything needs `createMemo`. In my expense tracker, I have category totals computed from a memo, and then summary aggregations derived from those totals:
 
 ```tsx
-// Memo — expensive, read in multiple places
+// Memo - expensive, read in multiple places
 const totals = createMemo(() => {
   // iterate all transactions, group by category, sort...
   return Array.from(map.values()).sort((a, b) => b.total - a.total)
 })
 
-// Plain functions — cheap one-liners, each reads totals()
+// Plain functions - cheap one-liners, each reads totals()
 const costOfLiving = () => tierTotal('need')
 const spentOnMe = () => costOfLiving() + tierTotal('want')
 ```
@@ -166,14 +166,14 @@ The rule of thumb: if a derived value is **expensive** or **read in multiple pla
 React's `useEffect` handles mount, update, and cleanup depending on what dependency array you pass. In Solid, these are separate functions with clear names:
 
 ```tsx
-// React — "empty deps means mount", you just have to know
+// React - "empty deps means mount", you just have to know
 useEffect(() => {
   fetchData()
   document.addEventListener('keydown', handler)
   return () => document.removeEventListener('keydown', handler)
 }, [])
 
-// Solid — explicit intent
+// Solid - explicit intent
 onMount(() => fetchData())
 
 onMount(() => document.addEventListener('keydown', handler))
@@ -205,10 +205,10 @@ The `!` (definite assignment assertion) tells TypeScript the variable will be as
 If you are used to the `classnames` library, that's exactly the same, but baked in:
 
 ```tsx
-// React — needs a library or template literals
+// React - needs a library or template literals
 <div className={`row ${isActive ? 'bg-green' : ''} ${isError ? 'bg-red' : ''}`}>
 
-// Solid — built-in
+// Solid - built-in
 <div classList={{ 'bg-green': isActive(), 'bg-red': isError() }}>
 ```
 

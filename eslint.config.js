@@ -33,7 +33,7 @@ export default [
   // ESLint recommended rules
   js.configs.recommended,
 
-  // Unused imports — all file types
+  // Unused imports - all file types
   {
     plugins: {
       'unused-imports': unusedImports,

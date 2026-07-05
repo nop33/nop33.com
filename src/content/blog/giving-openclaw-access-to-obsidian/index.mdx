@@ -17,7 +17,7 @@ Giving an AI agent filesystem access is a trust problem. If the agent can read a
 I needed two things:
 
 1. **Read access** to the entire vault, so the AI can learn about me and reference my notes
-2. **Write access** to a single folder (`Journal/`) — so it can create daily notes, monthly reviews, and annual reviews
+2. **Write access** to a single folder (`Journal/`) - so it can create daily notes, monthly reviews, and annual reviews
 
 And critically: the AI should have **no way** to escalate its access, even if it tries.
 
@@ -25,8 +25,8 @@ And critically: the AI should have **no way** to escalate its access, even if it
 
 My setup runs on [Proxmox VE](https://www.proxmox.com/en/proxmox-virtual-environment/overview) with two VMs:
 
-- **VM 101** (`production-docker`) — stores the Obsidian vault on disk, runs Syncthing
-- **VM 102** (`openclaw`) — runs the AI assistant
+- **VM 101** (`production-docker`) - stores the Obsidian vault on disk, runs Syncthing
+- **VM 102** (`openclaw`) - runs the AI assistant
 
 The vault lives at `/dionysus/obsidian/vault` on VM 101. The key insight is to use **two separate channels** for read and write, each with different permissions:
 
@@ -119,9 +119,9 @@ fi
 
 Three checks:
 
-1. **Path restriction** — filename must start with `Journal/` and cannot contain `..` (no path traversal)
-2. **Extension restriction** — only `.md` files
-3. **No delete capability** — the script can only create or update files, there's no delete operation
+1. **Path restriction** - filename must start with `Journal/` and cannot contain `..` (no path traversal)
+2. **Extension restriction** - only `.md` files
+3. **No delete capability** - the script can only create or update files, there's no delete operation
 
 The `--append` flag is important. If I've already written something in my daily note manually, the AI appends its summary below without replacing my content.
 
@@ -151,12 +151,12 @@ Once written, [Syncthing](/blog/syncing-obsidian-with-syncthing) propagates the 
 
 | Threat                           | Protection                                                           |
 | -------------------------------- | -------------------------------------------------------------------- |
-| Delete all notes                 | Can't — NFS mount is read-only, write script has no delete operation |
-| Overwrite notes outside Journal/ | Can't — script rejects any path not starting with `Journal/`         |
-| Modify the write script itself   | Can't — script lives on VM 101, outside the AI's reach               |
-| Get a shell on VM 101            | Can't — SSH key has forced command and `no-pty`                      |
-| Bypass SSH and write directly    | Can't — NFS mount is read-only                                       |
-| Corrupt a journal entry          | Recoverable — Syncthing keeps old versions in `.stversions/`         |
+| Delete all notes                 | Can't - NFS mount is read-only, write script has no delete operation |
+| Overwrite notes outside Journal/ | Can't - script rejects any path not starting with `Journal/`         |
+| Modify the write script itself   | Can't - script lives on VM 101, outside the AI's reach               |
+| Get a shell on VM 101            | Can't - SSH key has forced command and `no-pty`                      |
+| Bypass SSH and write directly    | Can't - NFS mount is read-only                                       |
+| Corrupt a journal entry          | Recoverable - Syncthing keeps old versions in `.stversions/`         |
 
 The layered approach means there's no single point of failure. The AI would need to compromise both the NFS protocol _and_ the SSH forced command mechanism to do real damage. Both are enforced at the OS/protocol level, not the application level.
 
@@ -166,9 +166,9 @@ All AI-written entries go into `Journal/` with date-based naming:
 
 | Type           | Filename        | Trigger                                                          |
 | -------------- | --------------- | ---------------------------------------------------------------- |
-| Daily note     | `2026-04-16.md` | Every evening — AI asks what I did, writes a summary             |
-| Monthly review | `2026-04.md`    | End of month — AI reads that month's daily notes and synthesizes |
-| Annual review  | `2026.md`       | End of year — AI reads the 12 monthly reviews and reflects       |
+| Daily note     | `2026-04-16.md` | Every evening - AI asks what I did, writes a summary             |
+| Monthly review | `2026-04.md`    | End of month - AI reads that month's daily notes and synthesizes |
+| Annual review  | `2026.md`       | End of year - AI reads the 12 monthly reviews and reflects       |
 
 Daily notes follow the same format as my Obsidian Daily Notes plugin template, so they integrate seamlessly with the rest of my vault.
 
@@ -176,10 +176,10 @@ Daily notes follow the same format as my Obsidian Daily Notes plugin template, s
 
 A REST API with authentication would work too, but the SSH forced command approach has advantages for a home server:
 
-- **No additional service to run** — SSH is already there
-- **No authentication code to write** — SSH keys handle it
-- **Battle-tested security** — SSH forced commands have been used for decades (think `git` over SSH, `rsync` backup scripts)
-- **Simple to audit** — one script, one key, one `authorized_keys` line
+- **No additional service to run** - SSH is already there
+- **No authentication code to write** - SSH keys handle it
+- **Battle-tested security** - SSH forced commands have been used for decades (think `git` over SSH, `rsync` backup scripts)
+- **Simple to audit** - one script, one key, one `authorized_keys` line
 
 ## Takeaway
 

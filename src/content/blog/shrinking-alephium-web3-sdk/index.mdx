@@ -1,6 +1,6 @@
 ---
 title: 'How I Shrunk a Blockchain SDK by 88%: Modernizing @alephium/web3'
-description: 'A deep dive into modernizing the @alephium/web3 TypeScript SDK — replacing polyfills, consolidating crypto libraries, fixing the build system, and cutting bundle size from 742 kB to 207 kB.'
+description: 'A deep dive into modernizing the @alephium/web3 TypeScript SDK - replacing polyfills, consolidating crypto libraries, fixing the build system, and cutting bundle size from 742 kB to 207 kB.'
 publishDate: 2026-04-09
 featuredImage: ./cover.webp
 tags: ['TypeScript', 'SDK', 'Blockchain', 'Performance', 'Tree-shaking']
@@ -16,11 +16,11 @@ A developer who imported a single function from our SDK, say, `isValidAddress`, 
 
 The root causes were typical of TypeScript libraries built a few years ago:
 
-- **No ESM output** — strictly CommonJS, defeating tree-shaking
-- **Monolithic UMD browser bundle** — webpack squashed everything into one opaque file
-- **Heavy Node.js polyfills** — `crypto-browserify`, `stream-browserify`, `buffer` shipped as dependencies
-- **Redundant crypto libraries** — both `elliptic` and `@noble/secp256k1`
-- **A global side effect** — `BigInt.prototype.toJSON` was monkey-patched on import, making `"sideEffects": false` impossible
+- **No ESM output** - strictly CommonJS, defeating tree-shaking
+- **Monolithic UMD browser bundle** - webpack squashed everything into one opaque file
+- **Heavy Node.js polyfills** - `crypto-browserify`, `stream-browserify`, `buffer` shipped as dependencies
+- **Redundant crypto libraries** - both `elliptic` and `@noble/secp256k1`
+- **A global side effect** - `BigInt.prototype.toJSON` was monkey-patched on import, making `"sideEffects": false` impossible
 
 ## Before I touched any code: benchmarking
 
@@ -79,7 +79,7 @@ That's quite a smart a clean approach 🧠
 
 All files use `.js` extension. The nested `package.json` determines interpretation. No extension confusion, no resolver hacks.
 
-But I hit one more issue: strict ESM resolvers (Vitest, Node.js with `"type": "module"`) require explicit `.js` extensions in import paths. tsc doesn't rewrite import specifiers — `from './api'` stays as `from './api'` in the output, which fails in strict ESM because there's no `./api.js` file (it's `./api/index.js`). The solution to this woudl require a massive refactoring of all import statements around the code base. It didn't feel right to me to have a TS codebase full of .js imports (even though that's what viem does).
+But I hit one more issue: strict ESM resolvers (Vitest, Node.js with `"type": "module"`) require explicit `.js` extensions in import paths. tsc doesn't rewrite import specifiers - `from './api'` stays as `from './api'` in the output, which fails in strict ESM because there's no `./api.js` file (it's `./api/index.js`). The solution to this woudl require a massive refactoring of all import statements around the code base. It didn't feel right to me to have a TS codebase full of .js imports (even though that's what viem does).
 
 **My solution: I decided to use `tsc-alias`** as a post-build tool that rewrites the ESM output to add `.js` extensions (`./api` → `./api/index.js`). Source TS files stay clean. CJS output doesn't need it. One line added to the build script.
 
@@ -153,6 +153,6 @@ A colleague rightfully questioned the need for an empty `fs` shim. The reason it
 ## What's next
 
 - **Drop CJS or bump to Node 22+**. This will unlock `@noble` v2 / `@scure` v2 (ESM-only packages), currently blocked by the CJS build's `--moduleResolution node`
-- **Sub-path exports** — `@alephium/web3/codec`, `@alephium/web3/address`, etc. for even more granular tree-shaking
+- **Sub-path exports** - `@alephium/web3/codec`, `@alephium/web3/address`, etc. for even more granular tree-shaking
 
 The full roadmap, benchmark data, and reference apps are available in the [web3-rewrite repo](https://github.com/nop33/web3-rewrite). Lastly, I wrote a [migration guide](https://github.com/alephium/alephium-web3/blob/94400aae1542255233f253629bc76873f5e81876/packages/web3/MIGRATION.md) that explains how to go from v2 to v3.

@@ -145,7 +145,7 @@
   --kbd-color-border: light-dark(var(--color-gray-700), var(--color-gray-300));
   --kbd-color-background: light-dark(var(--color-gray-1000), var(--color-gray-200));
 
-  // inline code — a faint brand-tinted chip so it reads as code without
+  // inline code - a faint brand-tinted chip so it reads as code without
   // competing with link colours; text stays foreground for guaranteed AA contrast
   --code-color-text: var(--foreground-color);
   --code-color-background: light-dark(

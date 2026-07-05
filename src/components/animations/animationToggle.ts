@@ -5,7 +5,7 @@
 // animated element reads via `animation-play-state: var(--anim-play)`.
 //
 // Visitors who prefer reduced motion get the figure paused on its resolved
-// (data-loaded) frame — the CSS handles that and hides the control — so here we
+// (data-loaded) frame - the CSS handles that and hides the control - so here we
 // just start those figures in the paused state for consistency.
 
 const setup = () => {

@@ -104,7 +104,7 @@ Two things to notice:
 
 **1. The error-first convention.** When there's no error, we pass `null` as the first argument: `cb(null, user)`. When there is an error, we pass only the error: `cb(err)`. The callback always checks `err` first. This convention is baked into Node.js and every library that uses callbacks. Ugly af.
 
-**2. The output order.** The error prints first even though `fetchUser(-5)` is the second call. Why? Because `process.nextTick` callbacks run before `setTimeout` callbacks in the event loop. The error (deferred via `nextTick`) fires before either success callback (deferred via `setTimeout`). The order isn't "order of invocation" — it's "order of event-loop scheduling."
+**2. The output order.** The error prints first even though `fetchUser(-5)` is the second call. Why? Because `process.nextTick` callbacks run before `setTimeout` callbacks in the event loop. The error (deferred via `nextTick`) fires before either success callback (deferred via `setTimeout`). The order isn't "order of invocation" - it's "order of event-loop scheduling."
 
 Simple exercise, but the foundation for everything that follows. If this is solid, the rest builds on top.
 
@@ -184,7 +184,7 @@ Five sequential fetches, each averaging ~250ms. Total: ~1.5s. Remember this numb
 
 ### Style note: "done" check at the top
 
-Putting the `if (index === ids.length)` check at the **top** of `iterate` (rather than checking "is this the last one?" after fetching) handles the edge case of an empty array naturally. If `ids` is `[]`, `iterate(0)` immediately sees `0 === 0` and calls `finalCb(null, [])`. With the check at the bottom, you'd call `fetchUser(undefined, ...)` — a latent bug.
+Putting the `if (index === ids.length)` check at the **top** of `iterate` (rather than checking "is this the last one?" after fetching) handles the edge case of an empty array naturally. If `ids` is `[]`, `iterate(0)` immediately sees `0 === 0` and calls `finalCb(null, [])`. With the check at the bottom, you'd call `fetchUser(undefined, ...)` - a latent bug.
 
 ## Exercise 3: Unlimited parallel execution
 
@@ -295,11 +295,11 @@ In Exercise 3, we ran 5 fetches in parallel. That's fine. But what if you had 10
 
 Every concurrent operation holds real resources:
 
-- **File descriptors** — each open socket, file, or pipe is a file descriptor in Unix. Your process has a hard cap (`ulimit -n`, commonly 1024, for my MacBook it's 2048). Opening one past the limit crashes with `EMFILE`.
-- **Database connections** — each connection is a live TCP socket plus a backend process/thread on the DB server. Postgres defaults to `max_connections = 100`. Hit that limit and your next connection attempt fails (and you're not the only client).
-- **Memory** — each in-flight operation has buffers, closures, and intermediate state sitting in RAM.
-- **Remote rate limits** — the server you're talking to has its own caps. Hammer it hard enough and you get 429s, 503s, or bans.
-- **Bandwidth** — 1000 concurrent downloads through a shared pipe each get 1/1000th of the bandwidth, so they all finish slowly.
+- **File descriptors** - each open socket, file, or pipe is a file descriptor in Unix. Your process has a hard cap (`ulimit -n`, commonly 1024, for my MacBook it's 2048). Opening one past the limit crashes with `EMFILE`.
+- **Database connections** - each connection is a live TCP socket plus a backend process/thread on the DB server. Postgres defaults to `max_connections = 100`. Hit that limit and your next connection attempt fails (and you're not the only client).
+- **Memory** - each in-flight operation has buffers, closures, and intermediate state sitting in RAM.
+- **Remote rate limits** - the server you're talking to has its own caps. Hammer it hard enough and you get 429s, 503s, or bans.
+- **Bandwidth** - 1000 concurrent downloads through a shared pipe each get 1/1000th of the bandwidth, so they all finish slowly.
 
 There's also a less obvious reason: **throughput is not a monotonic function of concurrency.** For most real workloads, throughput rises as you add concurrency up to some optimum (where your bottleneck resource is fully utilized), then _falls_ as contention overhead outpaces the gains. A hundred workers fighting over one lock get less done than ten workers doing the same job.
 
@@ -314,10 +314,10 @@ Write `fetchUsersWithConcurrency(ids, concurrency, finalCb)`, same contract as b
 
 You need four state variables:
 
-- `results` — pre-allocated `new Array(ids.length)`
-- `nextIndex` — the index of the next id to fetch (starts at 0)
-- `running` — how many fetches are currently in flight (starts at 0)
-- `completed` — how many have finished successfully (starts at 0)
+- `results` - pre-allocated `new Array(ids.length)`
+- `nextIndex` - the index of the next id to fetch (starts at 0)
+- `running` - how many fetches are currently in flight (starts at 0)
+- `completed` - how many have finished successfully (starts at 0)
 
 And one internal helper, `tryNext()`, with a `while` loop:
 
@@ -398,7 +398,7 @@ You can see the rhythm: exactly 3 `→ start` lines before any `← done`, then 
 - Fully sequential (concurrency = 1): ~5s
 - Limited parallel (concurrency = 3): ~1.8s
 
-Limited parallel sits between the two — trading throughput for resource bounds. Real systems use this every day.
+Limited parallel sits between the two - trading throughput for resource bounds. Real systems use this every day.
 
 ### What I learned: `nextIndex` vs `completed`
 

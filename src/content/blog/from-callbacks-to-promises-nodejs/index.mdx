@@ -24,7 +24,7 @@ In this post, I rebuild all four exercises with promises and async/await. Every 
 
 Before I could use promises, I needed to bridge the callback-based `fetchUser` into the promise world. There are two ways to do this:
 
-**Option A — rewrite from scratch:**
+**Option A - rewrite from scratch:**
 
 ```js
 const fetchUserP = (id) => {
@@ -40,7 +40,7 @@ const fetchUserP = (id) => {
 }
 ```
 
-**Option B — wrap the existing function:**
+**Option B - wrap the existing function:**
 
 ```js
 const promisify = (fn) => {
@@ -67,7 +67,7 @@ Look at Option A's error path:
 if (id < 0) return reject(new Error('Invalid id'))
 ```
 
-I'm calling `reject` **synchronously**, inside the executor, on the same tick as `fetchUserP(-5)` itself. In Part 1, this was exactly the "releasing Zalgo" sin — a function that sometimes calls its continuation synchronously and sometimes asynchronously. I had to wrap the error path in `process.nextTick` to fix it.
+I'm calling `reject` **synchronously**, inside the executor, on the same tick as `fetchUserP(-5)` itself. In Part 1, this was exactly the "releasing Zalgo" sin - a function that sometimes calls its continuation synchronously and sometimes asynchronously. I had to wrap the error path in `process.nextTick` to fix it.
 
 Here, I didn't wrap it. And it works fine. Why?
 
@@ -87,7 +87,7 @@ after sync code
 catch: Invalid id
 ```
 
-The `catch` handler runs **after** `console.log('after sync code')`, even though the promise was already rejected when `.catch` was attached. That's not luck — it's a language guarantee.
+The `catch` handler runs **after** `console.log('after sync code')`, even though the promise was already rejected when `.catch` was attached. That's not luck - it's a language guarantee.
 
 **You cannot release Zalgo from a promise, even if you try.** This is one of the most important reasons promises exist.
 
@@ -96,14 +96,14 @@ Here's how the five callback-discipline rules from Part 1 map to promise guarant
 | Callback discipline (manual)                         | Promise equivalent (automatic)                                                       |
 | ---------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | `process.nextTick` to avoid sync/async inconsistency | Handlers always run as microtasks, even if the executor settled synchronously        |
-| `return` after `finalCb(err)` to prevent double-fire | A promise settles exactly once — extra `resolve`/`reject` calls are silently ignored |
+| `return` after `finalCb(err)` to prevent double-fire | A promise settles exactly once - extra `resolve`/`reject` calls are silently ignored |
 | `hasError` flag + guard at top of callback           | `Promise.all` / `Promise.race` handle this internally                                |
 | `nextIndex` bookkeeping for scheduling               | Built into `Promise.all`; manual only for limited concurrency                        |
 | `finalCb` fires exactly once                         | A promise can only resolve or reject once, by specification                          |
 
 ## Exercise 5: Sequential with async/await
 
-The callback version of sequential iteration (Part 1, Exercise 2) required a recursive `iterate(index)` helper — 20 lines of code managing a results array, a termination check, error propagation, and the recursive call.
+The callback version of sequential iteration (Part 1, Exercise 2) required a recursive `iterate(index)` helper - 20 lines of code managing a results array, a termination check, error propagation, and the recursive call.
 
 The async/await version:
 
@@ -117,7 +117,7 @@ const fetchUsersSequentiallyAsync = async (ids) => {
 
 Three lines.
 
-That's not a compressed version of something bigger. That **is** the function. The `for...of` loop replaces the recursive iterator. `results.push()` replaces the closure variable and index tracking. `return results` replaces `finalCb(null, results)`. And error handling? There is none — if `await fetchUserP(id)` rejects, the `await` throws, the throw exits the loop, the throw exits the function, and the returned promise rejects. The caller catches it with `try`/`catch`.
+That's not a compressed version of something bigger. That **is** the function. The `for...of` loop replaces the recursive iterator. `results.push()` replaces the closure variable and index tracking. `return results` replaces `finalCb(null, results)`. And error handling? There is none - if `await fetchUserP(id)` rejects, the `await` throws, the throw exits the loop, the throw exits the function, and the returned promise rejects. The caller catches it with `try`/`catch`.
 
 ```js
 console.time('sequential')
@@ -142,9 +142,9 @@ Got user: 5 - User 5
 sequential: 1.466s
 ```
 
-**1.466s** — identical to the callback version's 1.472s. Async/await is not a speedup. It's a clarity improvement. The underlying work happens at exactly the same pace.
+**1.466s** - identical to the callback version's 1.472s. Async/await is not a speedup. It's a clarity improvement. The underlying work happens at exactly the same pace.
 
-### Short-circuit on error — for free
+### Short-circuit on error - for free
 
 With `[1, 2, -3, 4, 5]`:
 
@@ -168,7 +168,7 @@ Compare to the callback version: there, I needed `if (err) { finalCb(err); retur
 One common mistake: using `.forEach` instead of `for...of`:
 
 ```js
-// DOES NOT work — all fetches run in parallel
+// DOES NOT work - all fetches run in parallel
 ids.forEach(async (id) => {
   const user = await fetchUserP(id)
   results.push(user)
@@ -179,7 +179,7 @@ The `async` callback returns a promise that `.forEach` ignores. The loop doesn't
 
 ## Exercise 6: Parallel with `Promise.all`
 
-The callback version of unlimited parallel (Part 1, Exercise 3) was 25 lines — `new Array(ids.length)`, a `completed` counter, a `hasError` flag with a guard at the top of every callback, and `results[i] = result` for order-preserving writes.
+The callback version of unlimited parallel (Part 1, Exercise 3) was 25 lines - `new Array(ids.length)`, a `completed` counter, a `hasError` flag with a guard at the top of every callback, and `results[i] = result` for order-preserving writes.
 
 The `Promise.all` version:
 
@@ -187,7 +187,7 @@ The `Promise.all` version:
 const fetchUsersInParallelAsync = (ids) => Promise.all(ids.map((id) => fetchUserP(id)))
 ```
 
-One line. `Promise.all` takes an array of promises and returns a single promise that resolves with an array of results **in the same order as the input** — regardless of which one settled first. On the first rejection, it rejects immediately.
+One line. `Promise.all` takes an array of promises and returns a single promise that resolves with an array of results **in the same order as the input** - regardless of which one settled first. On the first rejection, it rejects immediately.
 
 Everything I hand-coded in the callback version is built in:
 
@@ -223,7 +223,7 @@ Caught: Invalid id
   ← done   fetch 1
 ```
 
-Notice the four `← done` lines **after** the `Caught:` line. Those `setTimeout` callbacks still fired — the timers were not cancelled. `Promise.all` short-circuits on the first rejection, but it **cannot cancel in-flight work**. The other promises keep running, consuming resources, until they naturally complete. Their results are silently discarded.
+Notice the four `← done` lines **after** the `Caught:` line. Those `setTimeout` callbacks still fired - the timers were not cancelled. `Promise.all` short-circuits on the first rejection, but it **cannot cancel in-flight work**. The other promises keep running, consuming resources, until they naturally complete. Their results are silently discarded.
 
 JavaScript promises have no built-in cancellation. In this toy example with 300ms timers, that's harmless. In a real system where each in-flight operation holds a database connection or an HTTP socket, this is why limited concurrency matters even more with promises.
 
@@ -249,15 +249,15 @@ ids.map((element, index, array) => fetchUserP(element, index, array))
 fetchUser(1, 0, [1,2,3,4,5], (err, result) => { ... })
 ```
 
-`fetchUser` takes `(id, cb)` — so `id = 1`, `cb = 0` (the index!). When the `setTimeout` fires and tries to call `cb(null, user)`, it calls `0(null, user)`. A number, not a function. Crash.
+`fetchUser` takes `(id, cb)` - so `id = 1`, `cb = 0` (the index!). When the `setTimeout` fires and tries to call `cb(null, user)`, it calls `0(null, user)`. A number, not a function. Crash.
 
-The fix: `ids.map(id => fetchUserP(id))` — wrap it so only the element is forwarded.
+The fix: `ids.map(id => fetchUserP(id))` - wrap it so only the element is forwarded.
 
-This is the same family of bugs as the classic `['1', '2', '3'].map(parseInt)` returning `[1, NaN, NaN]` — `parseInt` receives the index as its radix parameter. The rule: **never pass a multi-argument function directly to `.map` unless you're certain the extra arguments are harmless.**
+This is the same family of bugs as the classic `['1', '2', '3'].map(parseInt)` returning `[1, NaN, NaN]` - `parseInt` receives the index as its radix parameter. The rule: **never pass a multi-argument function directly to `.map` unless you're certain the extra arguments are harmless.**
 
 ## Exercise 7: Limited concurrency with promises
 
-This is the capstone exercise — the hardest pattern from chapter 4, rebuilt with promises. I implemented it two ways.
+This is the capstone exercise - the hardest pattern from chapter 4, rebuilt with promises. I implemented it two ways.
 
 ### Approach 1: Port the callback version
 
@@ -306,9 +306,9 @@ fetchUserP(ids[i])
   .finally(() => running--) // decrement runs AFTER tryNext
 ```
 
-The problem: `.then()`, `.catch()`, and `.finally()` handlers chain as sequential microtasks. `.then()` runs first, and `.finally()` runs **after** it. So when `tryNext()` runs inside `.then()`, `running` hasn't been decremented yet — it's still at the concurrency cap. The `while (running < concurrency)` check fails, no new task starts, and the system effectively runs at **concurrency - 1**.
+The problem: `.then()`, `.catch()`, and `.finally()` handlers chain as sequential microtasks. `.then()` runs first, and `.finally()` runs **after** it. So when `tryNext()` runs inside `.then()`, `running` hasn't been decremented yet - it's still at the concurrency cap. The `while (running < concurrency)` check fails, no new task starts, and the system effectively runs at **concurrency - 1**.
 
-My output confirmed it: with concurrency 3, the timing was 2.458s (matching concurrency 2's theoretical `ceil(20/2) × 250ms ≈ 2.5s`), not the expected ~1.7s. After moving `running--` to the top of `.then()` — before `tryNext()` — the timing dropped to 1.765s.
+My output confirmed it: with concurrency 3, the timing was 2.458s (matching concurrency 2's theoretical `ceil(20/2) × 250ms ≈ 2.5s`), not the expected ~1.7s. After moving `running--` to the top of `.then()` - before `tryNext()` - the timing dropped to 1.765s.
 
 The lesson: **in promise chains, the order of handlers matters.** State mutations that affect scheduling logic must happen before the scheduling call, not in a later handler in the chain.
 
@@ -338,7 +338,7 @@ const fetchUsersWithConcurrencyAsync = async (ids, concurrency) => {
 
 The idea: maintain a `Set` of currently-running promises. The `for` loop spins through ids, adding promises to the pool. When the pool hits capacity, `await Promise.race(pool)` suspends the loop until one promise settles, freeing a slot. After the loop, `await Promise.all(pool)` drains any remaining in-flight work.
 
-Notice that `.finally()` is used correctly here — for cleanup (removing a promise from the pool set), not for control-flow state. The scheduling isn't driven by a counter; it's driven by `await Promise.race`, which naturally resumes the `for` loop **after** the `.then()` and `.finally()` microtasks have both run. By the time the loop continues, the settled promise has already been removed from the pool.
+Notice that `.finally()` is used correctly here - for cleanup (removing a promise from the pool set), not for control-flow state. The scheduling isn't driven by a counter; it's driven by `await Promise.race`, which naturally resumes the `for` loop **after** the `.then()` and `.finally()` microtasks have both run. By the time the loop continues, the settled promise has already been removed from the pool.
 
 Comparing the two approaches:
 
@@ -347,7 +347,7 @@ Comparing the two approaches:
 | State variables        | `running`, `completed`, `nextIndex`, `results`     | `results`, `pool`                                     |
 | Scheduling             | Manual `tryNext()` with `while` loop               | `await Promise.race(pool)`                            |
 | "All done" detection   | `completed === ids.length` then `resolve(results)` | `await Promise.all(pool)` then `return results`       |
-| Error propagation      | `.catch(reject)`                                   | Automatic — `Promise.race` throws, `await` propagates |
+| Error propagation      | `.catch(reject)`                                   | Automatic - `Promise.race` throws, `await` propagates |
 | Lines of function body | ~20                                                | ~10                                                   |
 
 Both produce the same output:
@@ -374,17 +374,17 @@ Here are all eight exercises across both posts, mapped side by side:
 
 | #   | Pattern            | Concurrency | Tools                      | What you handle manually                                     |
 | --- | ------------------ | ----------- | -------------------------- | ------------------------------------------------------------ |
-| 1   | Basic callback     | —           | `fetchUser(id, cb)`        | Zalgo prevention, error-first convention                     |
+| 1   | Basic callback     | -           | `fetchUser(id, cb)`        | Zalgo prevention, error-first convention                     |
 | 2   | Sequential         | 1           | Recursive `iterate()`      | Recursion, termination check, error short-circuit            |
 | 3   | Unlimited parallel | N           | Counter + `hasError` flag  | Flag placement, order-preserving, exactly-once callback      |
 | 4   | Limited parallel   | k           | `tryNext()` + `while` loop | 4 state variables, scheduling guard, phantom-task prevention |
-| 5   | Promisify          | —           | `new Promise` wrapper      | Nothing — the bridge is mechanical                           |
-| 6   | Sequential         | 1           | `for...of` + `await`       | Nothing — loop + await + throw handle everything             |
-| 7   | Unlimited parallel | N           | `Promise.all`              | Nothing — order, counting, and error handling are built in   |
+| 5   | Promisify          | -           | `new Promise` wrapper      | Nothing - the bridge is mechanical                           |
+| 6   | Sequential         | 1           | `for...of` + `await`       | Nothing - loop + await + throw handle everything             |
+| 7   | Unlimited parallel | N           | `Promise.all`              | Nothing - order, counting, and error handling are built in   |
 | 8   | Limited parallel   | k           | `Promise.race` pool        | Pool management (10 lines vs 30)                             |
 
-The arc is clear. As you move down the table, the "What you handle manually" column empties out. The patterns don't change — sequential, parallel, limited parallel are the same problems in both halves. What changes is **how much of the bookkeeping the language does for you**.
+The arc is clear. As you move down the table, the "What you handle manually" column empties out. The patterns don't change - sequential, parallel, limited parallel are the same problems in both halves. What changes is **how much of the bookkeeping the language does for you**.
 
-Async/await doesn't make your code faster. The timings are identical: ~1.5s sequential, ~300ms parallel, ~1.7s limited parallel, regardless of whether you use callbacks or promises. What it does is make the **mental model tractable**. You stop having to reason about "which set of things are true at the exact moment each callback fires" and start writing code that reads like synchronous logic — with `for`, `if`, `try`/`catch`, and `return` — where the only new concept is that `await` suspends until a promise settles.
+Async/await doesn't make your code faster. The timings are identical: ~1.5s sequential, ~300ms parallel, ~1.7s limited parallel, regardless of whether you use callbacks or promises. What it does is make the **mental model tractable**. You stop having to reason about "which set of things are true at the exact moment each callback fires" and start writing code that reads like synchronous logic - with `for`, `if`, `try`/`catch`, and `return` - where the only new concept is that `await` suspends until a promise settles.
 
 That's the whole arc of chapters 4 and 5 of the book. If you've worked through these exercises, you've internalized it. Happy coding.
