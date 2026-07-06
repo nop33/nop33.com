@@ -2,7 +2,6 @@
 import DefaultLayout from '@layouts/DefaultLayout.astro'
 import { Link, Media } from 'accessible-astro-components'
 import { Icon } from 'astro-icon/components'
-import CallToAction from '@components/CallToAction.astro'
 import { getCollection } from 'astro:content'
 import imgDesktopWallet from '@content/projects/alephium-desktop-wallet/19shots_so.png'
 import imgFlatwise from '@content/projects/flatwise/flatwise-iphone-left.png'
@@ -42,64 +41,111 @@ const latestPosts = posts.slice(0, 3)
     </div>
   </section>
 
-  <section class="my-48 bg-gray-50 dark:bg-gray-900 py-24">
+  <section class="my-48 bg-gray-50 py-24 dark:bg-gray-900">
     <div class="container">
       <div class="grid grid-cols-1 items-center gap-12 md:grid-cols-2">
         <div>
-          <div class="mb-4 inline-block rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-800 dark:bg-green-900 dark:text-green-100">
+          <div
+            class="mb-4 inline-block rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-800 dark:bg-green-900 dark:text-green-100"
+          >
             Current Focus
           </div>
           <h2 class="mb-6 text-5xl">Frontend Lead @Alephium</h2>
           <p class="mb-8 text-2xl dark:text-neutral-500">
-            Core maintainer and frontend lead for Alephium's entire user-facing surface  -  self-custody mobile & desktop wallets, blockchain explorer, and bridging infrastructure.
+            Core maintainer and frontend lead for Alephium's entire user-facing surface - self-custody mobile & desktop
+            wallets, blockchain explorer, and bridging infrastructure.
           </p>
-          <Link
-            href="/experience/alephium"
-            isButton
-            variant="primary"
-            animateOnHover
-            animationType="nudge"
-          >
+          <Link href="/experience/alephium" isButton variant="primary" animateOnHover animationType="nudge">
             Read the Alephium deep dive
             <Icon aria-hidden="true" name="lucide:arrow-right" size="1.5rem" />
           </Link>
         </div>
         <div class="hidden md:block">
           <div class="grid grid-cols-1 gap-4">
-            <a href="/portfolio/alephium-desktop-wallet" class="!text-current no-underline group block rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" style="text-decoration: none;">
+            <a
+              href="/portfolio/alephium-desktop-wallet"
+              class="group block rounded-xl bg-white p-6 !text-current no-underline shadow-sm transition-colors hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
+              style="text-decoration: none;"
+            >
               <div class="flex items-center justify-between">
                 <div>
-                  <h3 class="text-xl font-bold">Desktop Wallet <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(Electron)</span></h3>
-                  <p class="text-gray-500 dark:text-gray-400 mt-1">Owner, Core Maintainer</p>
+                  <h3 class="text-xl font-bold">
+                    Desktop Wallet <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(Electron)</span>
+                  </h3>
+                  <p class="mt-1 text-gray-500 dark:text-gray-400">Owner, Core Maintainer</p>
                 </div>
-                <Icon aria-hidden="true" name="lucide:arrow-right" size="1.5rem" class="text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" />
+                <Icon
+                  aria-hidden="true"
+                  name="lucide:arrow-right"
+                  size="1.5rem"
+                  class="text-gray-400 transition-colors group-hover:text-gray-900 dark:group-hover:text-white"
+                />
               </div>
             </a>
-            <a href="/portfolio/alephium-mobile-wallet" class="!text-current no-underline group block rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" style="text-decoration: none;">
+            <a
+              href="/portfolio/alephium-mobile-wallet"
+              class="group block rounded-xl bg-white p-6 !text-current no-underline shadow-sm transition-colors hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
+              style="text-decoration: none;"
+            >
               <div class="flex items-center justify-between">
                 <div>
-                  <h3 class="text-xl font-bold">Mobile Wallet <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(React Native / Expo)</span></h3>
-                  <p class="text-gray-500 dark:text-gray-400 mt-1">Co-creator, Owner, Core Maintainer</p>
+                  <h3 class="text-xl font-bold">
+                    Mobile Wallet <span class="text-sm font-normal text-gray-500 dark:text-gray-400"
+                      >(React Native / Expo)</span>
+                  </h3>
+                  <p class="mt-1 text-gray-500 dark:text-gray-400">Co-creator, Owner, Core Maintainer</p>
                 </div>
-                <Icon aria-hidden="true" name="lucide:arrow-right" size="1.5rem" class="text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" />
+                <Icon
+                  aria-hidden="true"
+                  name="lucide:arrow-right"
+                  size="1.5rem"
+                  class="text-gray-400 transition-colors group-hover:text-gray-900 dark:group-hover:text-white"
+                />
               </div>
             </a>
-            <a href="https://powfi.alephium.org" target="_blank" rel="noopener noreferrer" class="!text-current no-underline group block rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" style="text-decoration: none;">
+            <a
+              href="https://powfi.alephium.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group block rounded-xl bg-white p-6 !text-current no-underline shadow-sm transition-colors hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
+              style="text-decoration: none;"
+            >
               <div class="flex items-center justify-between">
                 <div>
-                  <h3 class="text-xl font-bold">PowFi <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(Next.js)</span></h3>
-                  <p class="text-gray-500 dark:text-gray-400 mt-1">Owner, Core Maintainer</p>
+                  <h3 class="text-xl font-bold">
+                    PowFi <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(Next.js)</span>
+                  </h3>
+                  <p class="mt-1 text-gray-500 dark:text-gray-400">Owner, Core Maintainer</p>
                 </div>
-                <Icon aria-hidden="true" name="lucide:arrow-up-right" size="1.5rem" class="text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" />
+                <Icon
+                  aria-hidden="true"
+                  name="lucide:arrow-up-right"
+                  size="1.5rem"
+                  class="text-gray-400 transition-colors group-hover:text-gray-900 dark:group-hover:text-white"
+                />
               </div>
             </a>
-            <a href="https://github.com/alephium/alephium-frontend" target="_blank" rel="noopener noreferrer" class="!text-current no-underline group block rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" style="text-decoration: none;">
+            <a
+              href="https://github.com/alephium/alephium-frontend"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group block rounded-xl bg-white p-6 !text-current no-underline shadow-sm transition-colors hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
+              style="text-decoration: none;"
+            >
               <div class="flex items-center justify-between">
                 <div>
-                  <h3 class="text-xl font-bold">Frontend Monorepo <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(pnpm / Turborepo)</span></h3>
-                  <p class="text-gray-500 dark:text-gray-400 mt-1">Creator, Core Maintainer</p>
+                  <h3 class="text-xl font-bold">
+                    Frontend Monorepo <span class="text-sm font-normal text-gray-500 dark:text-gray-400"
+                      >(pnpm / Turborepo)</span>
+                  </h3>
+                  <p class="mt-1 text-gray-500 dark:text-gray-400">Creator, Core Maintainer</p>
                 </div>
-                <Icon aria-hidden="true" name="lucide:arrow-up-right" size="1.5rem" class="text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" />
+                <Icon
+                  aria-hidden="true"
+                  name="lucide:arrow-up-right"
+                  size="1.5rem"
+                  class="text-gray-400 transition-colors group-hover:text-gray-900 dark:group-hover:text-white"
+                />
               </div>
             </a>
           </div>
@@ -203,5 +249,4 @@ const latestPosts = posts.slice(0, 3)
       </div>
     </div>
   </section>
-  <CallToAction />
 </DefaultLayout>

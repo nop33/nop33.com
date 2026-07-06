@@ -29,6 +29,7 @@ const formattedDate = post.data.publishDate.toLocaleDateString('en-US', {
 ---
 
 <DefaultLayout
+  showCallToAction={false}
   title={post.data.title}
   description={post.data.description}
   url={`/blog/${post.id}`}

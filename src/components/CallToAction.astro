@@ -28,45 +28,51 @@ interface Props {
 const { title = "Let's build something together!" } = Astro.props
 ---
 
-<div class="container">
-  <div class="call-to-action mt-24 mb-32 flex flex-col items-center gap-12 rounded-xl px-12 py-20 md:px-24">
-    <Heading level="h2" class="text-center text-3xl md:text-6xl">{title}</Heading>
-    <p class="text-center text-2xl md:text-left dark:text-neutral-500">
-      Feel free to reach out if you have any questions, want to collaborate, or just want to connect.
-    </p>
-    <div class="flex flex-col gap-4 md:flex-row">
-      <Link
-        href="https://www.linkedin.com/in/iliastrichopoulos/"
-        isButton
-        size="lg"
-        variant="outlined"
-        animateOnHover
-        animationType="nudge"
-        rel="noopener noreferrer"
-        target="_blank"
-      >
-        LinkedIn
-        <Icon aria-hidden="true" name="lucide:linkedin" size="1.5rem" />
-      </Link>
-      <Link
-        href="https://github.com/nop33"
-        isButton
-        size="lg"
-        variant="outlined"
-        animateOnHover
-        animationType="nudge"
-        rel="noopener noreferrer"
-        target="_blank"
-      >
-        GitHub
-        <Icon aria-hidden="true" name="lucide:github" size="1.5rem" />
-      </Link>
+<section class="call-to-action-section">
+  <div class="container">
+    <div class="call-to-action mt-24 mb-32 flex flex-col items-center gap-12 rounded-xl px-12 py-20 md:px-24">
+      <Heading level="h2" class="text-center text-3xl md:text-6xl">{title}</Heading>
+      <p class="text-center text-2xl md:text-left dark:text-neutral-500">
+        Feel free to reach out if you have any questions, want to collaborate, or just want to connect.
+      </p>
+      <div class="flex flex-col gap-4 md:flex-row">
+        <Link
+          href="https://www.linkedin.com/in/iliastrichopoulos/"
+          isButton
+          size="lg"
+          variant="outlined"
+          animateOnHover
+          animationType="nudge"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          LinkedIn
+          <Icon aria-hidden="true" name="lucide:linkedin" size="1.5rem" />
+        </Link>
+        <Link
+          href="https://github.com/nop33"
+          isButton
+          size="lg"
+          variant="outlined"
+          animateOnHover
+          animationType="nudge"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          GitHub
+          <Icon aria-hidden="true" name="lucide:github" size="1.5rem" />
+        </Link>
+      </div>
     </div>
   </div>
-</div>
+</section>
 
 <style lang="scss">
   @use '../assets/scss/base/mixins' as *;
+
+  .call-to-action-section {
+    border-top: 1px solid var(--border-color-subtle);
+  }
 
   .call-to-action {
     position: relative;

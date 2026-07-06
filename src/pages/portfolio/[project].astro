@@ -3,7 +3,6 @@ import DefaultLayout from '@layouts/DefaultLayout.astro'
 import PageHeader from '@components/PageHeader.astro'
 import { getCollection, render } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
-import CallToAction from '@components/CallToAction.astro'
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects')
@@ -60,7 +59,6 @@ const { Content } = await render(project)
       <Content />
     </div>
   </section>
-  <CallToAction />
 </DefaultLayout>
 
 <style lang="scss" is:global>
