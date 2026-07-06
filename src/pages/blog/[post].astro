@@ -39,12 +39,7 @@ const subtitle = `${formattedDate} · ${remarkPluginFrontmatter.minutesRead}`
   imageWidth={post.data.featuredImage?.width}
   imageHeight={post.data.featuredImage?.height}
 >
-  <PageHeader
-    class={post.data.featuredImage ? undefined : 'no-featured-image'}
-    title={post.data.title}
-    subtitle={subtitle}
-    bgType="bordered"
-  />
+  <PageHeader title={post.data.title} subtitle={subtitle} bgType="bordered" />
   {
     post.data.featuredImage && (
       <div class="container my-12">
@@ -65,17 +60,11 @@ const subtitle = `${formattedDate} · ${remarkPluginFrontmatter.minutesRead}`
     max-width: 65ch;
   }
 
-  // When a post has no featured image, let the title span the header's full
-  // width (the grid otherwise reserves a second column for the image) and
-  // balance its line lengths.
-  .page-header.no-featured-image {
-    .grid > div {
-      grid-column: 1 / -1;
-    }
-
-    h1 {
-      text-wrap: balance;
-    }
+  // Title width is handled by PageHeader (it only splits into two columns when
+  // a side image is present). Here we just let long titles fill each line to
+  // the edge, adjusting only the last line to avoid an orphan word.
+  .page-header h1 {
+    text-wrap: pretty;
   }
 
   // Smaller in-article headings for blog posts (the global scale is sized for page titles).
