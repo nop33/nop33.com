@@ -8,6 +8,7 @@ import mdx from '@astrojs/mdx'
 import sitemap from '@astrojs/sitemap'
 import tailwindcss from '@tailwindcss/vite'
 import yeskunallumami from '@yeskunall/astro-umami'
+import { remarkReadingTime } from './remark-reading-time.mjs'
 // import { watch } from 'fs'
 
 // Check if we're using a symlinked/workspace setup
@@ -89,6 +90,9 @@ const viteConfig = {
 export default defineConfig({
   compressHTML: true,
   site: 'https://www.nop33.com',
+  markdown: {
+    remarkPlugins: [remarkReadingTime],
+  },
   integrations: [
     compress(),
     icon(),

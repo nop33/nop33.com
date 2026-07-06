@@ -19,13 +19,15 @@ interface Props {
 }
 
 const { post } = Astro.props
-const { Content } = await render(post)
+const { Content, remarkPluginFrontmatter } = await render(post)
 
 const formattedDate = post.data.publishDate.toLocaleDateString('en-US', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
 })
+
+const subtitle = `${formattedDate} · ${remarkPluginFrontmatter.minutesRead}`
 ---
 
 <DefaultLayout
@@ -40,7 +42,7 @@ const formattedDate = post.data.publishDate.toLocaleDateString('en-US', {
   <PageHeader
     class={post.data.featuredImage ? undefined : 'no-featured-image'}
     title={post.data.title}
-    subtitle={formattedDate}
+    subtitle={subtitle}
     bgType="bordered"
   />
   {
