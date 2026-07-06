@@ -1,0 +1,62 @@
+---
+const testimonials = [
+  {
+    name: 'Konrad Seifert',
+    title: 'Co-founder',
+    relationship: 'Client · 2021',
+    quote: [
+      'Ilias went above and beyond his contractual obligations to make sure everything adhered to his high standards. He delivered a beautiful, fast custom-made website in an extremely short time frame. His communication is concise, proactive and reliable. Our calls focused on the essentials, and daily written progress updates ensured everything was explicit and went according to our wishes. His documentation and support are incredibly helpful for maintenance. Out of all the designers and web developers I have worked with, Ilias is the outlier I was hoping for.',
+    ],
+  },
+  {
+    name: 'Thomas Droxler',
+    title: 'Software Engineer',
+    relationship: 'Teammate at Alephium · 5 years',
+    quote: [
+      "Ilias is truly an amazing engineer and coworker. For the past 5 years I had the chance to work with him at Alephium. On the engineering side, Ilias is like a swiss knife and can adapt to every situation. Give him a task and you know it will be done, properly, fully tested and ready to be deployed (if not already). He's passionate and fully dedicated to the project way further than his tasks, always here to help. We had great tips exchange on various subjects, especially Git and CLI advanced tips.",
+      "On the human side, Ilias is probably even better. Social relationships can be complicated in a company, but have him in your team and you'll know everything will be fine.",
+    ],
+  },
+  {
+    name: 'Vladimir Moshnyager',
+    title: 'CMO',
+    relationship: 'Worked together at Alephium',
+    quote: [
+      "I had the pleasure of working with Ilias during my time at Alephium. Ilias combines precision, care, and a strong sense of ownership. He is someone who wants things to be done well, who pays attention to details, and who is always willing to go the extra mile when the work requires it (sometimes even when it doesn't). His contributions were all over Alephium's frontend products.",
+      'Beyond the quality of his work, Ilias is simply a great person to work with. He is kind, thoughtful, constructive, fun and consistently brings good energy to the team. I have never seen him be dismissive or negative. On the contrary, he is one of the genuinely nice people I have had the chance to work with.',
+      'I learned a lot from working with him, and I would gladly recommend him to any team looking for someone talented, reliable, and deeply committed to doing great work (and who needs a great DJ for parties).',
+    ],
+  },
+]
+---
+
+<div class="columns-1 gap-8 md:columns-2 [&>figure]:mb-8 [&>figure]:break-inside-avoid">
+  {
+    testimonials.map((testimonial) => (
+      <figure class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <blockquote class="space-y-3 text-gray-700 dark:text-gray-300">
+          {testimonial.quote.map((paragraph) => (
+            <p>{paragraph}</p>
+          ))}
+        </blockquote>
+        <figcaption class="mt-5 flex items-center gap-3 border-t border-gray-100 pt-4 dark:border-gray-700">
+          <div
+            aria-hidden="true"
+            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 font-bold text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+          >
+            {testimonial.name
+              .split(' ')
+              .map((part) => part[0])
+              .join('')}
+          </div>
+          <div class="flex flex-col">
+            <span class="font-bold text-gray-900 dark:text-white">{testimonial.name}</span>
+            <span class="text-sm text-gray-500 dark:text-gray-400">
+              {testimonial.title} · {testimonial.relationship}
+            </span>
+          </div>
+        </figcaption>
+      </figure>
+    ))
+  }
+</div>

@@ -1,6 +1,7 @@
 ---
 import DefaultLayout from '@layouts/DefaultLayout.astro'
 import { Link } from 'accessible-astro-components'
+import CallToAction from '@components/CallToAction.astro'
 
 const responsibilities = [
   {
@@ -63,7 +64,7 @@ const responsibilities = [
         <Link href="/experience" class="text-sm font-bold tracking-wider uppercase">← Back to Experience</Link>
         <h1 class="text-4xl font-bold md:text-5xl">My work at Petro-Logistics</h1>
         <p class="text-xl text-gray-600 dark:text-gray-300">
-          Software Engineer · Jun 2019 – Oct 2021 · Geneva, Switzerland
+          Software Engineer · Jun 2019 – Oct 2021 · Remote, Switzerland
         </p>
         <div class="space-y-4 text-lg">
           <p>
@@ -206,4 +207,6 @@ const responsibilities = [
       </div>
     </div>
   </section>
+
+  <CallToAction />
 </DefaultLayout>
