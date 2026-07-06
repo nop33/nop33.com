@@ -1,0 +1,209 @@
+---
+import DefaultLayout from '@layouts/DefaultLayout.astro'
+import { Link } from 'accessible-astro-components'
+
+const responsibilities = [
+  {
+    tag: 'Web',
+    color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
+    body: '<strong>Built & shipped the company website</strong> (<a href="https://www.petro-logistics.com" target="_blank" rel="noopener">petro-logistics.com</a>) - owned its updates and deployments, and coordinated a cross-functional team of designers, developers, and content creators.',
+  },
+  {
+    tag: 'Security',
+    color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100',
+    body: '<strong>Set up an internal PKI</strong> - a Public Key Infrastructure with a private Certificate Authority built on smallstep, giving the company self-managed, trusted certificates.',
+  },
+  {
+    tag: 'Security',
+    color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100',
+    body: '<strong>Automated certificate provisioning</strong> - wrote a Windows executable in Go that automatically requests and fetches certificates from the CA, removing a manual, error-prone step.',
+  },
+  {
+    tag: 'Reliability',
+    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100',
+    body: '<strong>Designed an encrypted offsite backup system</strong> - bash scripting + duplicity, with S3 offsite encrypted storage for disaster recovery.',
+  },
+  {
+    tag: 'Infrastructure',
+    color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100',
+    body: '<strong>Authored 4 custom Ansible roles</strong> to provision and deploy services on Linux machines - reproducible, version-controlled infrastructure.',
+  },
+  {
+    tag: 'Observability',
+    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100',
+    body: '<strong>Built a full observability stack</strong> - metrics and logs via Prometheus, Grafana, Loki, and Promtail, provisioned end-to-end with Ansible.',
+  },
+  {
+    tag: 'CI/CD',
+    color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100',
+    body: '<strong>Set up autoscaling GitLab Runners</strong> - CI infrastructure that scaled runner capacity with demand.',
+  },
+  {
+    tag: 'Systems',
+    color: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-100',
+    body: "<strong>Migrated the company's email</strong> to a new mail server, with no loss of accounts or continuity.",
+  },
+  {
+    tag: 'Product',
+    color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
+    body: '<strong>Led requirements research for a new company-wide system</strong> - interviewed staff and clients to shape the client- and staff-facing tools, database, and API infrastructure.',
+  },
+  {
+    tag: 'Ops',
+    color: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-100',
+    body: "<strong>Improved the company's documentation</strong> of its tools and processes, making the toolchain easier for the team to operate.",
+  },
+]
+---
+
+<DefaultLayout title="Experience: Petro-Logistics - Ilias">
+  <section class="hero my-24">
+    <div class="container">
+      <div class="flex flex-col gap-8">
+        <Link href="/experience" class="text-sm font-bold tracking-wider uppercase">← Back to Experience</Link>
+        <h1 class="text-4xl font-bold md:text-5xl">My work at Petro-Logistics</h1>
+        <p class="text-xl text-gray-600 dark:text-gray-300">
+          Software Engineer · Jun 2019 – Oct 2021 · Geneva, Switzerland
+        </p>
+        <div class="space-y-4 text-lg">
+          <p>
+            Petro-Logistics is where I operated as a full-stack engineer in the widest sense of the term, owning
+            everything from the public website down to the Linux servers it ran on. Over 2+ years I was the
+            engineer who built the product surface and, at the same time, set up the infrastructure backbone behind
+            it.
+          </p>
+          <p>
+            On the product side, I built and shipped the company website, owned its updates and deployments, and
+            coordinated a cross-functional team of designers, developers, and content creators. On the infrastructure
+            side, I designed and automated the systems most companies hire a dedicated platform team for: encrypted
+            offsite backups, configuration management, a full observability stack, autoscaling CI, and an internal
+            certificate authority.
+          </p>
+          <p>
+            Beyond building, I led the requirements research for a new company-wide system, interviewing staff and
+            clients to shape the client- and staff-facing tools, database, and API infrastructure, and kept the
+            toolchain documented so the rest of the team could operate it.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="my-24 bg-gray-50 py-16 dark:bg-gray-900">
+    <div class="container">
+      <h2 class="mb-4 border-b pb-4 text-3xl font-bold">Scope</h2>
+      <p class="mb-12 text-gray-600 dark:text-gray-400">
+        One engineer, the full stack - from the website to the servers, security, and CI beneath it.
+      </p>
+      <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <div class="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+          <h3 class="mb-2 text-lg font-bold">Full-Stack Web</h3>
+          <p class="text-sm">
+            Company website, updates & deployments, coordinating designers, developers, and content creators.
+          </p>
+        </div>
+        <div class="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+          <h3 class="mb-2 text-lg font-bold">Infrastructure as Code</h3>
+          <p class="text-sm">4 custom Ansible roles provisioning and deploying services across Linux machines.</p>
+        </div>
+        <div class="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+          <h3 class="mb-2 text-lg font-bold">Observability</h3>
+          <p class="text-sm">Metrics & logs via Prometheus, Grafana, Loki, and Promtail.</p>
+        </div>
+        <div class="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+          <h3 class="mb-2 text-lg font-bold">CI/CD</h3>
+          <p class="text-sm">Autoscaling GitLab Runners infrastructure.</p>
+        </div>
+        <div class="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+          <h3 class="mb-2 text-lg font-bold">Security & PKI</h3>
+          <p class="text-sm">
+            Private Certificate Authority (smallstep), Go certificate automation, encrypted offsite backups.
+          </p>
+        </div>
+        <div class="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+          <h3 class="mb-2 text-lg font-bold">Systems & Product</h3>
+          <p class="text-sm">Mail-server migration, requirements research, database & API design, documentation.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="my-24">
+    <div class="container">
+      <h2 class="mb-12 border-b pb-4 text-3xl font-bold">Responsibilities & Impact</h2>
+      <div class="space-y-8">
+        {
+          responsibilities.map((item) => (
+            <div class="flex flex-col items-start gap-4 md:flex-row">
+              <div class="pt-1 md:w-1/4">
+                <span class={`rounded-full px-3 py-1 text-sm font-medium ${item.color}`}>{item.tag}</span>
+              </div>
+              <div class="md:w-3/4">
+                <p set:html={item.body} />
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="my-24 bg-gray-50 py-16 dark:bg-gray-900">
+    <div class="container">
+      <figure class="mx-auto max-w-3xl">
+        <blockquote
+          class="border-primary border-l-4 pl-6 text-xl leading-relaxed text-gray-700 italic dark:text-gray-300"
+        >
+          "Ilias showed great dedication and care in his work. He showed strong organisational and critical-thinking
+          skills, as well as leadership qualities, and is able to work both autonomously and in a team. [...] Ilias
+          carried out his responsibilities to our full satisfaction."
+        </blockquote>
+        <figcaption class="mt-4 pl-6 text-sm text-gray-600 dark:text-gray-400">
+          <strong>Daniel Gerber</strong>, CEO, Petro-Logistics SA <span class="text-gray-400"
+            >· Work Certificate, Oct 2021</span
+          >
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="my-24">
+    <div class="container">
+      <h2 class="mb-12 border-b pb-4 text-3xl font-bold">Tech & Tooling</h2>
+      <div class="grid grid-cols-1 gap-10 md:grid-cols-2">
+        <div>
+          <h3 class="mb-4 text-xl font-bold">🛠️ Languages & Web</h3>
+          <ul class="ml-5 list-disc space-y-2 text-gray-700 dark:text-gray-300">
+            <li>Go (certificate-automation executable)</li>
+            <li>Bash scripting</li>
+            <li>Static website build & deployment</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="mb-4 text-xl font-bold">⚙️ Infrastructure & CI/CD</h3>
+          <ul class="ml-5 list-disc space-y-2 text-gray-700 dark:text-gray-300">
+            <li>Ansible (4 custom roles)</li>
+            <li>GitLab CI with autoscaling runners</li>
+            <li>Linux service provisioning</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="mb-4 text-xl font-bold">📊 Observability</h3>
+          <ul class="ml-5 list-disc space-y-2 text-gray-700 dark:text-gray-300">
+            <li>Prometheus (metrics)</li>
+            <li>Grafana (dashboards)</li>
+            <li>Loki + Promtail (log aggregation)</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="mb-4 text-xl font-bold">🔐 Security & Reliability</h3>
+          <ul class="ml-5 list-disc space-y-2 text-gray-700 dark:text-gray-300">
+            <li>Public Key Infrastructure & private CA (smallstep)</li>
+            <li>Encrypted offsite backups (duplicity + AWS S3)</li>
+            <li>Mail-server migration & administration</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</DefaultLayout>
