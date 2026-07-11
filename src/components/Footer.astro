@@ -1,6 +1,4 @@
 ---
-import { Media } from 'accessible-astro-components'
-
 /**
  * Footer Component
  *
@@ -84,7 +82,7 @@ import { Media } from 'accessible-astro-components'
   </section> -->
   <section class="py-8">
     <div class="container">
-      <Media src="/nop33-favicon.svg" class="max-w-10" width="10" height="10" />
+      <span class="footer-logo" aria-hidden="true"></span>
     </div>
   </section>
 </footer>
@@ -92,5 +90,16 @@ import { Media } from 'accessible-astro-components'
 <style>
   section {
     border-top: 1px solid var(--border-color-subtle);
+  }
+
+  /* Render the logo as a mask filled with the theme foreground colour so it
+     stays visible on both the light and dark themes (the source SVG is white). */
+  .footer-logo {
+    display: block;
+    inline-size: 2.5rem;
+    aspect-ratio: 1;
+    background-color: var(--foreground-color);
+    mask: url('/nop33-favicon.svg') center / contain no-repeat;
+    -webkit-mask: url('/nop33-favicon.svg') center / contain no-repeat;
   }
 </style>
