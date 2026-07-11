@@ -28,6 +28,11 @@ const {
     <!-- favicon -->
     <link rel="icon" type="image/svg+xml" href="/nop33-favicon.svg" />
 
+    <!-- Preload above-the-fold font weights to prevent a flash of unstyled text (FOUT) -->
+    <link rel="preload" href="/fonts/AtkinsonHyperlegibleNext-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/AtkinsonHyperlegibleNext-SemiBold.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/AtkinsonHyperlegibleNext-Bold.woff2" as="font" type="font/woff2" crossorigin />
+
     <SiteMeta
       title={title}
       description={description.substring(0, 100)}

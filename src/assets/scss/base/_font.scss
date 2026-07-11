@@ -9,7 +9,8 @@
     local('AtkinsonHyperlegible-Regular'),
     url('/fonts/AtkinsonHyperlegibleNext-Regular.woff2') format('woff2');
   font-family: 'Atkinson Hyperlegible';
-  font-display: swap;
+  // preloaded above-the-fold weight: `optional` avoids the swap-in flicker (FOUT)
+  font-display: optional;
 }
 
 @font-face {
@@ -31,7 +32,8 @@
     local('AtkinsonHyperlegible-Bold'),
     url('/fonts/AtkinsonHyperlegibleNext-Bold.woff2') format('woff2');
   font-family: 'Atkinson Hyperlegible';
-  font-display: swap;
+  // preloaded above-the-fold weight: `optional` avoids the swap-in flicker (FOUT)
+  font-display: optional;
 }
 
 @font-face {
@@ -98,7 +100,8 @@
     local('AtkinsonHyperlegible-SemiBold'),
     url('/fonts/AtkinsonHyperlegibleNext-SemiBold.woff2') format('woff2');
   font-family: 'Atkinson Hyperlegible';
-  font-display: swap;
+  // preloaded above-the-fold weight: `optional` avoids the swap-in flicker (FOUT)
+  font-display: optional;
 }
 
 @layer base {
