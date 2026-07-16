@@ -1,0 +1,115 @@
+---
+title: 'Cut Wallet API Calls with Change Detection in TanStack Query (Part 3)'
+description: 'Gate expensive wallet queries behind a cheap "latest transaction" poll so balances refetch only when an address actually changes.'
+publishDate: 2026-06-26
+author: 'Ilias Trichopoulos'
+tags: ['TanStack Query', 'React', 'Architecture', 'Performance', 'Blockchain']
+series: 'tanstack-query-case-study'
+seriesOrder: 3
+seriesLabel: 'Change Detection for Fewer Requests'
+draft: false
+---
+
+
+import SeriesNav from '@components/SeriesNav.astro'
+import DraftNote from '@components/DraftNote.astro'
+import TLDR from '@components/TLDR.astro'
+import BreakoutSection from '@components/BreakoutSection.astro'
+
+<SeriesNav series="tanstack-query-case-study" current={3} />
+
+[Part 1](/blog/tanstack-query-wallet-async-state) laid out the three problems that made the old architecture untenable: a request flow that was hard to reason about, a self-inflicted request flood, and painfully slow data updates. [Part 2](/blog/redux-to-tanstack-query-migration) moved the whole async layer off Redux thunks and into the TanStack Query cache, which untangled that flow. This part addresses the root cause of the request flood. The trick is to stop polling the expensive endpoints altogether and gate every one of them behind a single cheap query per address.
+
+<TLDR>
+
+- A wallet with N addresses fans out into hundreds of requests just to render: measured on the last pre-TanStack release, my 42-address wallet fired 1,709 in one 43-second session. Polling all of them on a short `staleTime` would keep hammering the backend.
+- I gate every expensive query behind one cheap "latest transaction" poll per address. If the latest-transaction hash has not changed, balances cannot have changed, so nothing downstream refetches.
+- A new transaction hash triggers an ordered invalidation cascade. Every balance and token query uses `staleTime: Infinity`. Freshness is event-driven, not time-driven.
+- This is hand-built change detection and not the [docs' dependent-query pattern](https://tanstack.com/query/v5/docs/framework/react/guides/dependent-queries).
+- The end state, measured: relaunching that same wallet today costs **seven backend requests** and zero `429`s.
+
+</TLDR>
+
+As we covered in [Part 1](/blog/tanstack-query-wallet-async-state), the fan-out was brutal: measured on the last pre-TanStack release, my 42-address wallet fired 1,709 requests in a single 43-second session, six endpoints per address plus retries, with 61% of them rejected as `429`. The naive approach is to put a short `staleTime` on every query and let TanStack refetch whenever a component mounts. That, however, would not bring us any closer to the goal of reducing the number of requests.
+
+## Change detection
+
+The key insight that unlocks everything is that **an address's balances cannot change unless a new transaction touches that address.** So instead of polling the expensive endpoints, I poll one cheap thing, the latest transaction hash for each address, and treat it as a gate. If the hash has not changed, nothing downstream can have changed, so I do not fetch any of it. It essentially asks:
+
+> Has this address sent or received any transactions since the last time I checked?
+
+The gate is a single, small query per address. Its `queryFn` fetches the latest transaction, compares the new hash against the previously cached one, and, only on a change, imperatively invalidates everything that depends on it:
+
+<BreakoutSection>
+```ts
+export const addressLatestTransactionQuery = ({ addressHash, networkId, isExplorerOnline, skip }) =>
+  queryOptions({
+    queryKey: ['address', addressHash, 'transaction', 'latest', { networkId }],
+    ...getQueryConfig({ staleTime: ONE_MINUTE_MS, gcTime: FIVE_MINUTES_MS, networkId }),
+    queryFn: shouldSkip(isExplorerOnline, skip)
+      ? skipToken
+      : async ({ queryKey }) => {
+          const latestTx = await throttledClient.explorer.addresses.getAddressesAddressLatestTransaction(addressHash)
+          const cached = queryClient.getQueryData(queryKey)
+
+          if (latestTx !== undefined && latestTx.hash !== cached?.latestTx?.hash) {
+            await invalidateAddressQueries(addressHash)
+            await invalidateWalletQueries()
+            await invalidateTokenPrices()
+          }
+
+          return {
+            addressHash,
+            latestTx: latestTx ? {
+              hash: latestTx.hash,
+              timestamp: latestTx.timestamp,
+            } : undefined,
+          }
+        }
+  })
+```
+</BreakoutSection>
+
+Source: [`transactionQueries.ts`](https://github.com/alephium/alephium-frontend/blob/4d85289ce20d1b2eea5a3960ec2800750cefe7ca/packages/shared-react/src/api/queries/transactionQueries.ts)
+
+The gate is polled per address by a single hook mounted at the root of the authenticated app, with `notifyOnChangeProps: []` so the polling instances never trigger a re-render. They exist purely to keep the cache warm and run that side effect:
+
+```ts
+useQueries({
+  queries: frequentlyUsedAddressHashes.map((addressHash) => ({
+    ...addressLatestTransactionQuery({ addressHash, networkId, isExplorerOnline }),
+    refetchInterval: FREQUENT_ADDRESSES_TRANSACTIONS_REFRESH_INTERVAL, // 60s
+    notifyOnChangeProps: []
+  }))
+})
+```
+
+Source: [`useAddressesDataPolling.ts`](https://github.com/alephium/alephium-frontend/blob/4d85289ce20d1b2eea5a3960ec2800750cefe7ca/packages/shared-react/src/features/dataPolling/useAddressesDataPolling.ts)
+
+### Side note: A polling strategy per address
+
+Polling every address on one fixed interval is wasteful: most addresses in a wallet are dormant, and a dormant address does not need to be checked every minute. So rather than a single hard-coded interval, the polling rate is chosen per address by a small **strategy pattern**: each address is assigned a polling strategy based on how recently it transacted. I considered an address that transacted in the last 30 days as "frequent" and polls every 60 seconds. A dormant one polls every 5 minutes. This is about to go away, however, with the introduction of the [explorer API's new "latest activity for many addresses" endpoint](https://github.com/alephium/explorer-backend/issues/669).
+
+## Freshness without staleTime
+
+The consequence of all this is that every balance, token, and NFT query is configured with `staleTime: Infinity` and `gcTime: Infinity`. They are fetched once and then never refetch on their own. The only thing that makes them refetch is the gate detecting a new transaction. Freshness is event-driven, not time-driven.
+
+Here is what that buys, measured on today's build with the same 42-address wallet: relaunching the app with a warm cache (how the cache survives restarts is [Part 5](/blog/tanstack-query-persist-cache-cold-start)'s subject) costs **seven backend requests**: four latest-transaction gate polls, because only four of the 42 addresses are in the frequent tier, plus three price refreshes. Zero `429`s. The same wallet on the pre-TanStack build fired 1,595.
+
+## Where this diverges from the docs (and why that matters)
+
+It is easy to wave at the TanStack ["request waterfalls"](https://tanstack.com/query/v5/docs/framework/react/guides/request-waterfalls) guide and claim this is just dependent queries. It is not.
+
+The docs' dependent-query pattern gates on **data availability**, do not fetch a user's projects until you know the user's ID, and they are blunt that even this "by definition constitutes a form of request waterfall, which hurts performance." My gate is different: it gates on **change detection**, do not refetch B unless A changed. TanStack Query has no native concept for "refetch B only if A changed"; the idiomatic tools are `staleTime` and `invalidateQueries`, and I have hand-built a change detector on top of them.
+
+That is a perfectly legitimate thing to do, but it means **cache coherence is now my responsibility, not the library's.** The whole model rests on one invariant, balances change if and only if the latest transaction hash changes, and the interesting bugs all live where that invariant leaks.
+
+## Trade-offs and what I would improve
+
+- **The gate is O(addresses) with no batching.** A 50-address hot wallet emits roughly 50 latest-transaction polls per minute, forever, even when nothing changes. The single highest-leverage change would be a batched endpoint that collapses those N polls into one request. Which is something [I am working on together with my colleague](https://github.com/alephium/explorer-backend/issues/669).
+- **The locked-balance coherence hole.** Alephium supports time-locked outputs. When a lockup expires, the balance moves from locked to available at a block height, with no new transaction. The gate keys on transaction hashes, so it never fires, and the locked/available split silently goes stale. The clean fix is event-driven ([#1672](https://github.com/alephium/alephium-frontend/issues/1672)): when a balance carries a lock, read the UTXO's `lockTime` and schedule a one-shot invalidation at exactly that moment.
+- **The side effect lives inside the `queryFn`.** Reading the previous value via `getQueryData` to diff against the new one is neat. It gets the old hash at exactly the right moment without a side map. But it couples the gate's loading state to the entire downstream cascade. A `queryCache.subscribe` observer would decouple detection from fetching, at the cost of tracking the previous hash myself.
+
+## What comes next
+
+With the flood metered down to one cheap poll per address, the next bottleneck stopped being the network and started being the CPU, a bottleneck the migration itself had introduced. [Part 4](/blog/tanstack-query-derived-state-performance) is about composing all this cached data into the shapes components actually render, the wallet's worth, the tokens split by type, without re-deriving it in every component and melting the main thread.

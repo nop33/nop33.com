@@ -1,0 +1,55 @@
+---
+/**
+ * TLDR
+ *
+ * A visually distinct summary box for the key takeaways of a post, shown
+ * before the article body so skimmers get the whole argument up front.
+ * Pass the bullet list as children.
+ */
+---
+
+<aside class="tldr" aria-label="Summary">
+  <span class="tldr__badge">
+    <span aria-hidden="true">⚡</span>
+    TL;DR
+  </span>
+  <div class="tldr__body"><slot /></div>
+</aside>
+
+<style lang="scss">
+  .tldr {
+    margin-block: var(--space-m);
+    padding: var(--space-s) var(--space-m);
+    border: 1px solid
+      light-dark(oklch(from var(--brand-secondary) 82% 0.06 h), oklch(from var(--brand-secondary) 45% 0.06 h));
+    border-radius: 10px;
+    background: light-dark(
+      oklch(from var(--brand-secondary) 96% 0.025 h),
+      oklch(from var(--brand-secondary) 28% 0.035 h)
+    );
+  }
+
+  .tldr__badge {
+    display: inline-flex;
+    gap: 0.4em;
+    align-items: center;
+    margin-block-end: 0.5rem;
+    color: light-dark(oklch(from var(--brand-secondary) 35% 0.08 h), oklch(from var(--brand-secondary) 88% 0.06 h));
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .tldr__body {
+    color: var(--foreground-color);
+
+    :global(> :first-child) {
+      margin-block-start: 0;
+    }
+
+    :global(> :last-child) {
+      margin-block-end: 0;
+    }
+  }
+</style>
