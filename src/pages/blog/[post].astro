@@ -78,5 +78,22 @@ const subtitle = `${formattedDate} · ${remarkPluginFrontmatter.minutesRead}`
       font-size: var(--font-size-2);
       line-height: var(--font-size-3);
     }
+
+    blockquote {
+      margin-block: var(--space-m);
+      padding-block: var(--space-3xs);
+      padding-inline-start: var(--space-s);
+      border-inline-start: 4px solid light-dark(var(--color-primary-400), var(--color-primary-300));
+      color: light-dark(var(--color-neutral-700), var(--color-neutral-300));
+      font-style: italic;
+
+      > :first-child {
+        margin-block-start: 0;
+      }
+
+      > :last-child {
+        margin-block-end: 0;
+      }
+    }
   }
 </style>

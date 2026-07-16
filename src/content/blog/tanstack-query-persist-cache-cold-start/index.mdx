@@ -1,0 +1,138 @@
+---
+title: 'Instant Cold Starts with a Persisted TanStack Query Cache (Part 5)'
+description: 'Persist the TanStack Query cache per wallet for instant cold starts, with sync writes at lifecycle edges plus batching and retries under rate limits.'
+publishDate: 2026-07-10
+author: 'Ilias Trichopoulos'
+tags: ['TanStack Query', 'React', 'React Native', 'Electron', 'Performance']
+series: 'tanstack-query-case-study'
+seriesOrder: 5
+seriesLabel: 'Persisting Cache for Cold Starts'
+draft: false
+---
+
+import SeriesNav from '@components/SeriesNav.astro'
+import DraftNote from '@components/DraftNote.astro'
+import TLDR from '@components/TLDR.astro'
+
+<SeriesNav series="tanstack-query-case-study" current={5} />
+
+[Part 4](/blog/tanstack-query-derived-state-performance) improved performance: requests gated, derivations cached and shared. But one path none of that touches is the cold start. When the app launches with an empty cache, a big wallet still has to fetch everything before it can paint a single balance. This final part is about persisting the cache.
+
+<TLDR>
+
+- Cold launches were slow because a big wallet refetches everything. I persist the cache per wallet and restore it on launch.
+- I write synchronously, only at lifecycle edges (background on mobile, before-quit on desktop).
+- The end state, measured: a warm relaunch of a 42-address wallet costs **7 backend requests** and under two seconds of total blocking time. The pre-TanStack baseline: 1,595 requests, 61% of them rejected with `429`.
+
+</TLDR>
+
+## Persisting the cache for instant cold starts
+
+Even with the gate and the compute-once layer, a fresh launch is brutal: a big wallet has to refetch everything before it can render. The fix is to persist the TanStack cache to disk and restore it on launch, so the app paints from last session's data instantly and only refetches what the gate says is stale.
+
+Measured on today's build with a 42-address wallet: a launch with an empty cache fires **165 backend requests** before the dashboard is fully live. A launch with a restored cache fires **seven**: four latest-transaction gate polls and three price refreshes. The dashboard paints from last session's data immediately, and the gate revalidates in the background. (The full before-and-after table, including the pre-TanStack baseline, closes this post and brings this series to a conclusion.)
+
+The interesting part is when to write. The obvious approach, persist on every cache change, felt wrong, and the stock persisters throttle the write to once per second. But the throttle is also a trap: it defers the write, so when the app is backgrounded or the wallet is switched, the write loses the race against process suspension and you restore nothing. So I hand-rolled the persisters to write **synchronously, only at lifecycle edges.** Here is the mobile one, on top of MMKV:
+
+```ts
+import { MMKV } from 'react-native-mmkv'
+import { stringify } from '@alephium/web3'
+
+// We deliberately DON'T use createSyncStoragePersister: its 1000ms throttle defers the write,
+// so the actual MMKV write is lost when the app is backgrounded or the wallet is switched.
+export const createTanstackAsyncStoragePersister = (key) => {
+  const storage = new MMKV({ id: key })
+  return {
+    persistClient: (client) => storage.set(CACHE_KEY, stringify(client)),
+    restoreClient: () => { const s = storage.getString(CACHE_KEY); return s ? JSON.parse(s) : undefined },
+    removeClient: () => storage.delete(CACHE_KEY)
+  }
+}
+```
+
+Source: [`tanstackAsyncStoragePersister.ts`](https://github.com/alephium/alephium-frontend/blob/4d85289ce20d1b2eea5a3960ec2800750cefe7ca/apps/mobile-wallet/src/persistent-storage/tanstackAsyncStoragePersister.ts)
+
+The trigger is a single `AppState` listener that fires the write on the transition to background:
+
+```ts
+useEffect(() => {
+  const sub = AppState.addEventListener('change', (next) => {
+    if (next.match(/inactive|background/) && appState.current === 'active' && walletId) {
+      persistQueryCache(walletId)
+    }
+    appState.current = next
+  })
+  return () => sub.remove()
+}, [persistQueryCache, walletId])
+```
+
+Source: [`usePersistQueryCacheOnBackground.ts`](https://github.com/alephium/alephium-frontend/blob/4d85289ce20d1b2eea5a3960ec2800750cefe7ca/apps/mobile-wallet/src/features/persistQueryCache/usePersistQueryCacheOnBackground.ts)
+
+The desktop equivalent is an Electron `before-quit` dance: the main process intercepts the quit, sends an IPC message to the renderer, the renderer awaits the (async, IndexedDB) write, and only then lets the app actually exit.
+
+One honest correction worth stating plainly: I used to justify this design with performance, but the real justification is correctness, avoiding data loss on suspend. When I profiled the pre-optimization build sitting idle on the dashboard, the throttled persister did turn out to be the single largest CPU consumer of a wallet at rest, re-serializing the entire cache on every poll tick, roughly 4% CPU spent persisting data in which nothing had visibly changed. Wasteful, then. But never the jank I used to blame on it: the main thread was 92% idle throughout. The data-loss reasoning is airtight; the performance reasoning was mostly a phantom.
+
+### Design choices
+
+```ts
+await persistQueryClientSave({
+  queryClient,
+  persister: createPersister(getPersisterKey(walletId)), // one cache file per wallet
+  dehydrateOptions: {
+    // Never write testnet/devnet data to disk.
+    shouldDehydrateQuery: (query) =>
+      query.meta?.isMainnet === false ? false : defaultShouldDehydrateQuery(query)
+  }
+})
+```
+
+Source: [`persistQueryClientContext.tsx`](https://github.com/alephium/alephium-frontend/blob/4d85289ce20d1b2eea5a3960ec2800750cefe7ca/packages/shared-react/src/api/persistQueryClientContext.tsx)
+
+- **Per-wallet namespacing.** Each wallet gets its own cache blob, restored on unlock, so switching wallets never bleeds data across.
+- **Amounts as strings.** Every balance is stored as a string, not a `bigint`, because `bigint` is not JSON-serializable. This keeps the persisted payload plain JSON and is the invariant the whole persistence layer quietly depends on.
+- **`maxAge: Infinity`, and a deliberate asymmetry.** Desktop wipes its cache on a version mismatch; mobile does not, because mobile updates ship silently and clearing the cache on every update would force a full refetch and a visibly slow launch for infrequent users. The right fix is not a time-based `maxAge` (which punishes the once-a-month user) but a hand-bumped `buster` schema version that only changes when the shape of cached data changes, keeping the cache across normal updates and invalidating it precisely when it would otherwise be unsafe.
+
+### The cold-start payoff
+
+Here is the scenario that justifies persisting computed data, not just raw responses. A user connects to a dApp in their browser, which launches the desktop wallet. The wallet rehydrates and immediately opens a "select an address to connect" modal, which needs the per-address search strings so the user can filter. If those search strings are not already in the restored cache, they recompute on the main thread the instant the modal mounts, and the UI janks.
+
+This is why "persist sources, derive on read", the tidy principle jotai would nudge me toward, is wrong for this path. Cold-start-critical derived data must be persisted already computed, so it is there the microsecond the modal opens. My architecture already does the right thing here, and it is the most concrete argument against the lazier alternative.
+
+### Persistence trade-offs
+
+- **No size guard.** Because the balance and token queries are `gcTime: Infinity`, they are never garbage-collected, so a heavily-used whale wallet's persisted blob grows unbounded, and on mobile it is `stringify`-d synchronously on the JS thread at the exact moment the OS is suspending the app. If this ever bites, the surgical fix is to trim persisted infinite-transaction history to its first page on dehydrate (the biggest contributor, and not cold-start-critical), not to drop the derived queries the connect modal depends on.
+- **Serialization fidelity differs across platforms.** Mobile round-trips through JSON; desktop's IndexedDB uses structured clone, which natively handles `bigint`, `Map`, and `Set`. Today this is moot because everything is a string, but it is an undocumented invariant one refactor away from a hard-to-reproduce corruption bug.
+
+## Summary
+
+**Batching** cuts the request count, **throttling** caps the rate of what is left, **retrying** recovers the residue, **persistence** eliminates most cold-start requests entirely, and **the gate** ([Part 3](/blog/tanstack-query-change-detection-polling)) kills steady-state requests. Each layer covers the failure mode of the one below it.
+
+## The series, measured
+
+One table to close the series. Same 42-address wallet (203 tokens, 360 NFTs), same machine, same four actions (unlock, wait for it to settle, open the Addresses page, return to the Overview), development builds throughout. Three eras: the Redux architecture whose problems started this series in [Part 1](/blog/tanstack-query-wallet-async-state), the naive TanStack migration that [Part 4](/blog/tanstack-query-derived-state-performance) profiled, and today's architecture with the gate, the compute-once layer, and persistence.
+
+| | Redux (v2.3.6) | Naive TanStack | Today, cold start | Today, warm start |
+| --- | --- | --- | --- | --- |
+| Backend requests | 1,595 | 210 | 165 | **7** |
+| `429` responses | 981 (61%) | 0 | 0 | 0 |
+| Total blocking time | 2.4s | 207.9s | 3.8s | **1.9s** |
+| Worst single main-thread task | 0.5s | 65.4s | 0.7s | 0.8s |
+| Main thread busy | 38% | 86% | 25% | **8%** |
+| Balances visible | after a ~40s trickle | after the freezes | ~5s to first, ~15s to all | instantly, from the restored cache |
+
+The arc is honest: the Redux era was never CPU-bound. It drowned the network and starved the user of data. The naive TanStack migration fixed the network in one shot, request deduplication and batching cut the flood to 210 requests and killed the `429`s outright, but it melted the CPU instead. The architecture of Parts 3, 4, and 5 holds both at once: a main thread quieter than the Redux era ever managed (25% busy on a cold start versus Redux's 38%, with balances arriving in seconds instead of a 40-second trickle), warm-relaunch requests down 228x (1,595 to 7), blocking time down 107x against the naive migration (207.9s to 1.9s), and not a single `429`.
+
+## Final words
+
+If you are deep in TanStack Query and any of this makes you wince, especially the side-effect-in-`queryFn` gate or the manual coherence model, I would genuinely like to hear it. The best architectures get sharper under exactly that kind of scrutiny.
+
+This wraps up the series. It started with [three problems](/blog/tanstack-query-wallet-async-state), a tangled flow, a request flood, and slow updates, and closed with a layered TanStack Query architecture that answers all three. Thanks for reading.
+
+Useful resources:
+
+- [TanStack Query, Request Waterfalls guide](https://tanstack.com/query/v5/docs/framework/react/guides/request-waterfalls)
+- [TanStack Query, `persistQueryClient`](https://tanstack.com/query/v5/docs/framework/react/plugins/persistQueryClient)
+- [TkDodo, React Query Selectors, Supercharged](https://tkdodo.eu/blog/react-query-selectors-supercharged)
+- [TkDodo, React Query as a State Manager](https://tkdodo.eu/blog/react-query-as-a-state-manager)
+- [TkDodo, React Query and React Context](https://tkdodo.eu/blog/react-query-and-react-context)
+- [Derived queries discussion (#2178)](https://github.com/TanStack/query/discussions/2178)

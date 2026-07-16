@@ -19,6 +19,12 @@ const blog = defineCollection({
       featuredImage: image().optional(),
       author: z.string().default('Ilias Trichopoulos'),
       tags: z.array(z.string()).default([]),
+      // Multi-part series metadata. Posts sharing a `series` id are grouped by
+      // <SeriesNav />; `seriesOrder` sets their position and `seriesLabel` is the
+      // short title shown in the navigation (falls back to `title`).
+      series: z.string().optional(),
+      seriesOrder: z.number().optional(),
+      seriesLabel: z.string().optional(),
       // Drafts are hidden from production builds but still visible in `npm run dev`.
       draft: z.boolean().default(false),
     }),

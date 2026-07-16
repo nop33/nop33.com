@@ -1,0 +1,184 @@
+---
+title: 'Migrating Redux Server State to TanStack Query (Part 2)'
+description: 'How I moved server state from Redux Toolkit into TanStack Query in two production wallets, one query at a time, without a big-bang rewrite.'
+publishDate: 2026-06-19
+author: 'Ilias Trichopoulos'
+tags: ['TanStack Query', 'React', 'Redux', 'Architecture', 'State Management']
+series: 'tanstack-query-case-study'
+seriesOrder: 2
+seriesLabel: 'Migrating Redux to TanStack Query'
+draft: false
+---
+
+import BreakoutSection from '@components/BreakoutSection.astro'
+import SeriesNav from '@components/SeriesNav.astro'
+import DraftNote from '@components/DraftNote.astro'
+import TLDR from '@components/TLDR.astro'
+
+<SeriesNav series="tanstack-query-case-study" current={2} />
+
+[Part 1](/blog/tanstack-query-wallet-async-state) of the series focused on explaining the problems:
+1. tangled request flow
+2. self-inflicted DDoS
+3. slow app launch and data updates.
+
+We were using Redux as an async-state manager, a job it was never designed for. This part is the migration to a tool that _was_ designed for that job: TanStack Query. The migration was not an one-shotted rewrite, but a months-long effort, with incremental shipments.
+
+<TLDR>
+
+- The old architecture stored **server state** (balances, tokens, prices, transactions) in Redux and hand-managed loading, error, and refetching for every slice. That is why the request flow in Part 1 was so hard to follow.
+- The mental shift was to realize that **server state is not client state.** TanStack Query owns the server cache and Redux keeps what the user and the device own (theme, open modals, settings, wallet metadata).
+- Redux's own **RTK Query** got a real trial first. It shipped to production, then lost a same-branch, head-to-head migration attempt to TanStack Query.
+- I migrated **incrementally**, one domain at a time, with TanStack Query running next to Redux for the better part of a year.
+- Components stopped selecting from a global store and started asking for exactly what they need through thin `useFetch*` hooks. One hesitation almost stopped me: those hooks re-derive computed data _per observer_, not once. That is the cliffhanger into [Part 4](/blog/tanstack-query-derived-state-performance).
+
+</TLDR>
+
+## Redux was doing a job it was never built for
+
+Redux is an excellent client-state manager. But we were using it as a network cache. Every resource the wallet read from the backend, ALPH balances, token balances, token metadata, prices, transactions, had a slice, a handful of async thunks, a status flag or two, a set of selectors, and a `useEffect` somewhere that decided when to fire the thunk.
+
+Here is what that looked like for address data. A thunk fanned out into more thunks and toggled a "syncing" flag so it could not re-enter:
+
+```ts
+// before: server state modeled as Redux actions. One thunk orchestrates three more,
+// and a "syncing" flag guards against overlapping runs.
+export const syncAddressesData = createAsyncThunk(
+  'addresses/syncAddressesData',
+  async (payload, { getState, dispatch }) => {
+    dispatch(syncingAddressDataStarted())
+    const addresses = payload ?? (getState() as RootState).addresses.ids
+
+    await dispatch(syncAddressesBalances(addresses))
+    await dispatch(syncAddressesTokens(addresses))
+    return await dispatch(syncAddressesTransactions(addresses)).unwrap()
+  }
+)
+```
+
+The trigger was pulled by a `useEffect` in `App.tsx`, reading a pile of selectors, nested a few conditionals deep, deciding on behalf of the whole app when it was time to sync:
+
+```tsx
+// before: App.tsx is the fetch orchestrator. A pile of selectors feeds one nested effect.
+const addressHashes = useAppSelector(selectAddressIds)
+const addressesStatus = useAppSelector((s) => s.addresses.status)
+const isSyncingAddressData = useAppSelector((s) => s.addresses.syncingAddressData)
+const isLoadingTokensMetadata = useAppSelector((s) => s.assetsInfo.loading)
+// ...a dozen more selectors...
+
+useEffect(() => {
+  if (network.status !== 'online') return
+
+  if (assetsInfo.status === 'uninitialized' && !isLoadingTokensMetadata) {
+    dispatch(syncNetworkTokensInfo())
+  }
+  if (addressesStatus === 'uninitialized' && !isSyncingAddressData && addressHashes.length > 0) {
+    dispatch(syncAddressesData())
+  }
+}, [addressHashes.length, addressesStatus, isSyncingAddressData, assetsInfo.status, isLoadingTokensMetadata])
+```
+
+The component that renders an address balance is nowhere near this code.
+- The decision to fetch lives in `App.tsx`.
+- The fetch lives in a thunk.
+- The result lands in a slice.
+- The component reads it through a selector.
+
+To trace one balance from screen to network you hop through four files and an effect dependency array. This is the "hard to reason about" flow from [Part 1](/blog/tanstack-query-wallet-async-state). That's what you get when you model server state as client state. You end up re-implementing caching, deduplication, background refetching, and loading and error tracking by hand, on top of a library that does none of it for you.
+
+## Server state is not client state
+
+The idea that unlocked the whole migration is one I first saw articulated in [TkDodo's "React Query as a State Manager"](https://tkdodo.eu/blog/react-query-as-a-state-manager): most apps do not have one kind of state, they have two, and those two want very different things.
+
+- **Client state** is synchronous, you own it, and it is the single source of truth. Which modal is open, the current theme, the user's settings. Redux is superb at this.
+- **Server state** is asynchronous, you do _not_ own it, and you only ever hold a snapshot of a truth that lives somewhere else. The balances, token metadata, prices, transactions, etc, live on the Alephium explorer backend and node and can change at any time.
+
+TanStack Query offers caching, request deduplication, background refetching, stale tracking, loading and error states, retries, all of it out of the box. So the migration was really one decision applied everywhere:
+- if the source of truth is the **blockchain**, it belongs in the **query cache**
+- if the source of truth is the **user or the device**, it stays in **Redux**.
+
+"Move everything to React Query" is not the right approach. To make the above lines more concrete:
+
+| Moved to TanStack Query (server state) | Stayed in Redux (client state) |
+| --- | --- |
+| ALPH and token balances | Which modals are open |
+| Token metadata and token type | Settings: theme, language, region |
+| Token prices | Network settings |
+| Transactions | Address labels and contacts (user-authored metadata) |
+
+## The detour: we tried RTK Query first
+
+Accepting that server state needs its own tool does not automatically point at TanStack Query. We were already deep in the Redux ecosystem, so the obvious first candidate was [RTK Query](https://redux-toolkit.js.org/rtk-query/overview), Redux Toolkit's own answer to server state.
+
+We did not just evaluate it on paper: the desktop wallet had been fetching the ALPH price through RTK Query since late 2022, [NFT collection data moved to it](https://github.com/alephium/alephium-frontend/pull/493) in April 2024, both shipped to production, and we were [planning to adopt its retry machinery](https://github.com/alephium/alephium-frontend/issues/497) next.
+
+The full migration attempt is where it fell apart. We tried to move the wallet's whole fan-out onto RTK Query's endpoint-centric `createApi` model and ran straight into its gap: there is no `useQueries`, no first-class way to fire a _dynamic list_ of queries, which is the one thing a wallet with N addresses does all day. We caught ourselves hand-rolling a `useLoopedQueries` hook, rebuilding the exact machinery we were trying to stop building. We pivoted to TanStack Query. Our explorer app had been running TanStack Query in production [since mid-2023](https://github.com/alephium/explorer/pull/210), `useQueries` fit the fan-out natively, and the cache persistence we had already tried there became a pillar of the final architecture. We didn't reject RTK Query in the abstract. We tried it, shipped it, but it was out-competed on our hardest use case.
+
+## The after: the component asks for what it needs
+
+On the TanStack side, a resource is one `queryOptions` object: its key, its fetcher, and its config, together, with no slice, no thunk, and no status flag to maintain.
+
+<BreakoutSection>
+```ts
+// after: the entire definition of a resource, key + fetch + config in one object.
+export const addressBalancesQuery = ({ addressHash, networkId }) =>
+  queryOptions({
+    queryKey: ['address', addressHash, 'balance', { networkId }],
+    queryFn: () => throttledClient.explorer.addresses.getAddressesAddressBalance(addressHash)
+  })
+```
+</BreakoutSection>
+
+The real queries carry more than this, cache lifetimes, skip conditions, and the derived-data keys that [Part 4](/blog/tanstack-query-derived-state-performance) leans on, but the shape is always this: one object per resource. Components never touch it directly. They call a thin hook, and the hook hands back exactly the async state Redux made us track by hand:
+
+
+```ts
+// after: no selector, no dispatch, no effect. Ask for the token, get back { data, isLoading }.
+export const useFetchToken = (id: TokenId) => {
+  const networkId = useNetworkId()
+
+  const { data, isLoading } = useQuery(tokenQuery({ id, networkId }))
+
+  return { data, isLoading }
+}
+```
+
+
+Source: [`useFetchToken.ts`](https://github.com/alephium/alephium-frontend/blob/4d85289ce20d1b2eea5a3960ec2800750cefe7ca/packages/shared-react/src/api/apiDataHooks/token/useFetchToken.ts)
+
+Two things changed at once here:
+
+1. The trigger moved _down_ the tree. Instead of `App.tsx` deciding when to fetch on behalf of the whole app, each component asks for its own data where it renders it, and TanStack deduplicates so a hundred components asking for the same token still make one request. This is [state colocation](https://kentcdodds.com/blog/state-colocation-will-make-your-react-app-faster) applied to server state: keep the request next to the thing that needs it, and lift it up only when you must.
+2. `App.tsx` was massively simplified. The fetch-orchestration hub, the dozen selectors and the nested effect, are now gone leaving `App.tsx` with simple lifecycle wiring.
+
+## Migrating without stopping the world
+
+TanStack Query and Redux ran side by side for the better part of a year. The migration was tracked as [one epic](https://github.com/alephium/alephium-frontend/issues/712) with three explicit goals, quoted here because they are a good summary of _why_ you would take this on at all:
+
+> Reduce load on explorer backend (less requests).
+> Improve devX by having to manage less async operations through side-effects.
+> Improve app performance.
+
+The path across was deliberately gradual:
+
+1. **Start at the leaves.** The first queries were isolated reads with no Redux entanglement.
+2. **Convert domain by domain.** Slice by slice, the Redux state moved to Tanstack Query.
+3. **Do the hardest domain last.** Transactions, with infinite pagination and pending mempool state, are the hardest thing to model as a cache, so they went last. I opened the [pull request that finished them](https://github.com/alephium/alephium-frontend/pull/861) with the line:
+
+  > "This PR is the final boss of the migration from Redux data fetching to TanStack Query."
+
+4. **Extract, then reuse.** Once the desktop patterns were proven, they moved into a shared package so the React Native wallet could adopt the same query factories and hooks, which is how the mobile migration wrapped up in mid-2025.
+
+## The hesitation that almost kept me on Redux
+
+Truth be told, I was not a big fan of migrating to Tanstack Query in the beginning. After the initial investigation through the docs and some prototyping, I worried that it will be hard to combine data from multiple sources into a single data model.
+
+With everything in Redux, derived state was computed **once**, at the request flow. As raw data arrived from the API, the Redux thunks calculated the derived values and wrote them into the store for all components to consume. That calculation happened once, and the result was cached.
+
+The TanStack model inverts that. There is no store to write the derived value into, so each component's hook re-derives it from the cached raw API responses, and TanStack's `select` and `combine` run **once per observer**, not once per app. A dashboard where thirty components need the same computed shape is thirty recomputations on every refresh. For a while this looked like a genuine reason not to migrate. I would be trading a tangled-but-compute-efficient store for a clean-but-wasteful one.
+
+The solution to this comes in [Part 4](/blog/tanstack-query-derived-state-performance), where I push composition into cached queries and hoist the expensive fan-outs so the derivation runs once again, this time without giving up the clean model.
+
+## What comes next
+
+The async layer now lives in a **cache** instead of a **store**. That untangles the flow from Part 1, but it does nothing yet for the flood. In fact, a naive cache, as the defaults of TanStack Query, will cheerfully refetch all the time. [Part 3 is where the flood finally gets solved](/blog/tanstack-query-change-detection-polling), by gating every expensive query behind a single cheap "latest transaction" poll per address, so balances refetch only when a transaction actually touches them.

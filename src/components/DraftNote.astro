@@ -1,0 +1,67 @@
+---
+/**
+ * DraftNote
+ *
+ * A clearly-marked placeholder callout for work-in-progress posts: measurements
+ * to capture, screenshots to take, diagrams to build. Because drafts only render
+ * in `npm run dev`, these never reach production, they are reminders to the author
+ * of what still needs to be produced before publishing.
+ */
+interface Props {
+  /** Picks the leading icon/label. */
+  type?: 'number' | 'screenshot' | 'diagram' | 'note'
+}
+
+const { type = 'note' } = Astro.props
+
+const META: Record<NonNullable<Props['type']>, { icon: string; label: string }> = {
+  number: { icon: '📊', label: 'Number to add' },
+  screenshot: { icon: '📸', label: 'Screenshot to add' },
+  diagram: { icon: '🖼️', label: 'Diagram to add' },
+  note: { icon: '📝', label: 'Draft note' },
+}
+
+const { icon, label } = META[type]
+---
+
+<aside class="draft-note" role="note">
+  <span class="draft-note__badge">
+    <span aria-hidden="true">{icon}</span>
+    {label}
+  </span>
+  <div class="draft-note__body"><slot /></div>
+</aside>
+
+<style lang="scss">
+  .draft-note {
+    margin-block: 1.75rem;
+    padding: 1rem 1.25rem;
+    border: 1px dashed light-dark(var(--color-neutral-500), var(--color-neutral-600));
+    border-radius: 10px;
+    background: light-dark(var(--color-neutral-200), var(--color-neutral-800));
+  }
+
+  .draft-note__badge {
+    display: inline-flex;
+    gap: 0.4em;
+    align-items: center;
+    margin-block-end: 0.5rem;
+    color: light-dark(var(--color-neutral-700), var(--color-neutral-300));
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .draft-note__body {
+    color: var(--foreground-color);
+
+    :global(> :first-child) {
+      margin-block-start: 0;
+    }
+
+    :global(> :last-child) {
+      margin-block-end: 0;
+    }
+  }
+</style>
