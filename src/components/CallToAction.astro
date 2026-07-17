@@ -30,12 +30,14 @@ const { title = "Let's build something together!" } = Astro.props
 
 <section class="call-to-action-section">
   <div class="container">
-    <div class="call-to-action mt-24 mb-32 flex flex-col items-center gap-12 rounded-xl px-12 py-20 md:px-24">
-      <Heading level="h2" class="text-center text-3xl md:text-6xl">{title}</Heading>
-      <p class="text-center text-2xl md:text-left dark:text-neutral-500">
+    <div
+      class="call-to-action my-16 flex flex-col items-center gap-12 rounded-xl px-6 py-16 md:my-32 md:px-24 md:py-20"
+    >
+      <Heading level="h2" class="text-center">{title}</Heading>
+      <p class="text-center text-xl md:text-2xl dark:text-neutral-500">
         Feel free to reach out if you have any questions, want to collaborate, or just want to connect.
       </p>
-      <div class="flex flex-col gap-4 md:flex-row">
+      <div class="flex flex-col items-center gap-4 md:flex-row">
         <Link
           href="https://www.linkedin.com/in/iliastrichopoulos/"
           isButton

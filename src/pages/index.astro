@@ -13,27 +13,28 @@ const latestPosts = posts.slice(0, 3)
 ---
 
 <DefaultLayout title="nop33">
-  <section class="my-24">
+  <section class="my-16 md:my-32">
     <div class="container grid grid-cols-1 items-center gap-12 md:grid-cols-2">
       <div>
-        <h1 class="text-center text-6xl md:text-left">
-          nop33 <span class="text-neutral-500 dark:text-neutral-700">on the web</span>
+        <h1 class="text-center md:text-left text-4xl md:text-5xl">
+          <span class="block">
+            nop33 <span class="text-neutral-500 dark:text-neutral-700">on the web</span>
+          </span>
+          <span class="block">
+            Ilias Trichopoulos <span class="text-neutral-500 dark:text-neutral-700">irl</span>
+          </span>
         </h1>
-        <p class="text-center text-5xl md:text-left">
-          Ilias Trichopoulos <span class="text-neutral-500 dark:text-neutral-700">irl</span>
-        </p>
-        <p class="mt-4 text-center text-2xl md:text-left dark:text-neutral-500">
+        <p class="mt-4 text-center text-xl md:text-left md:text-2xl dark:text-neutral-500">
           Software engineer with focus on <span class="font-bold">frontend</span>,<br /> minimalist, and life-long learner.
         </p>
       </div>
       <Media src="/notion-avatar-v2.png" class="mx-auto max-w-sm" />
     </div>
   </section>
-  <section class="my-32">
+  <section class="my-16 md:my-32">
     <div class="container">
-      <h2 class="mb-6 text-center text-6xl md:text-left">About me</h2>
-      <p class="text-center text-2xl font-bold md:text-left dark:text-neutral-500">I went online in 2001.</p>
-      <p class="text-center text-2xl md:text-left dark:text-neutral-500">
+      <p class="text-center text-xl font-bold md:text-left md:text-2xl dark:text-neutral-500">I went online in 2001.</p>
+      <p class="text-center text-xl md:text-left md:text-2xl dark:text-neutral-500">
         Since my early days on the web, I've grown into building alongside talented designers and engineers who have
         raised my standards of what building good software means. A journey that eventually took me to work at the web's
         birthplace, <Link href="/about-ilias">CERN</Link>.
@@ -41,7 +42,7 @@ const latestPosts = posts.slice(0, 3)
     </div>
   </section>
 
-  <section class="my-48 bg-gray-50 py-24 dark:bg-gray-900">
+  <section class="my-16 bg-gray-50 py-16 md:my-32 md:py-24 dark:bg-gray-900">
     <div class="container">
       <div class="grid grid-cols-1 items-center gap-12 md:grid-cols-2">
         <div>
@@ -50,8 +51,8 @@ const latestPosts = posts.slice(0, 3)
           >
             Current Focus
           </div>
-          <h2 class="mb-6 text-5xl">Frontend Lead @Alephium</h2>
-          <p class="mb-8 text-2xl dark:text-neutral-500">
+          <h2 class="mb-6">Frontend Lead @Alephium</h2>
+          <p class="mb-8 text-xl md:text-2xl dark:text-neutral-500">
             Core maintainer and frontend lead for Alephium's entire user-facing surface - self-custody mobile & desktop
             wallets, blockchain explorer, and bridging infrastructure.
           </p>
@@ -162,10 +163,10 @@ const latestPosts = posts.slice(0, 3)
     </div>
   </section>
 
-  <section class="my-48">
+  <section class="my-16 md:my-32">
     <div class="container">
-      <h2 class="mb-6 text-center text-6xl md:text-left">Projects</h2>
-      <p class="mb-12 text-center text-2xl md:text-left dark:text-neutral-500">
+      <h2 class="mb-6 text-center md:text-left">Projects</h2>
+      <p class="mb-12 text-center text-xl md:text-left md:text-2xl dark:text-neutral-500">
         There is always a project in the works, whether professional or personal, and an endless list of ideas. Here are
         some of the projects I've spent most of my time on and am most proud of.
       </p>
@@ -173,8 +174,8 @@ const latestPosts = posts.slice(0, 3)
         <div class="grid grid-cols-1 gap-12 md:grid-cols-2">
           <Media src={imgDesktopWallet.src} />
           <div class="space-content md:mt-24">
-            <h3 class="md:text-left">Alephium Desktop Wallet</h3>
-            <p class="text-2xl md:text-left dark:text-neutral-500">
+            <h3>Alephium Desktop Wallet</h3>
+            <p class="text-xl md:text-2xl dark:text-neutral-500">
               Electron React app for securely storing and managing assets on the Alephium blockchain.
             </p>
             <Link
@@ -191,12 +192,12 @@ const latestPosts = posts.slice(0, 3)
         </div>
       </div>
 
-      <div class="mt-48 md:mt-24">
+      <div class="mt-24">
         <div class="grid grid-cols-1 gap-12 md:grid-cols-3">
           <Media src={imgFlatwise.src} class="order-1 md:order-2 md:col-span-1" />
           <div class="space-content order-2 md:order-1 md:col-span-2 md:mt-24">
-            <h3 class="md:text-left">Flatwise</h3>
-            <p class="text-2xl md:text-left dark:text-neutral-500">
+            <h3>Flatwise</h3>
+            <p class="text-xl md:text-2xl dark:text-neutral-500">
               A web app that fairly redistributes furniture costs when flatmates move in or out, using depreciation
               instead of an awkward conversation. Built with Vue.js & Material UI. Used in a real Zurich flatshare since
               2019.
@@ -208,12 +209,12 @@ const latestPosts = posts.slice(0, 3)
           </div>
         </div>
       </div>
-      <div class="mt-48 md:mt-24">
+      <div class="mt-24">
         <div class="grid grid-cols-1 gap-12 md:grid-cols-2">
           <Media src={imgMobileWallet.src} />
           <div class="space-content md:mt-24">
-            <h3 class="md:text-left">Alephium Mobile Wallet</h3>
-            <p class="text-2xl md:text-left dark:text-neutral-500">
+            <h3>Alephium Mobile Wallet</h3>
+            <p class="text-xl md:text-2xl dark:text-neutral-500">
               React Native app completing the Alephium Desktop Wallet, built for everyday use.
             </p>
             <Link
@@ -231,20 +232,20 @@ const latestPosts = posts.slice(0, 3)
       </div>
     </div>
   </section>
-  <section class="my-64">
+  <section class="my-16 md:my-32">
     <div class="container">
-      <h2 class="mb-6 text-center text-6xl md:text-left">Blog</h2>
-      <p class="mb-12 text-center text-2xl md:text-left dark:text-neutral-500">
+      <h2 class="mb-6 text-center md:text-left">Blog</h2>
+      <p class="mb-12 text-center text-xl md:text-left md:text-2xl dark:text-neutral-500">
         Writing about the things I learn along the way.
       </p>
       <ul class="space-y-8">
         {
           latestPosts.map((post) => (
             <li>
-              <h3 class="md:text-left">
+              <h3>
                 <Link href={`/blog/${post.id}`}>{post.data.title}</Link>
               </h3>
-              <p class="mt-2 text-2xl md:text-left dark:text-neutral-500">{post.data.description}</p>
+              <p class="mt-2 text-xl md:text-2xl dark:text-neutral-500">{post.data.description}</p>
             </li>
           ))
         }

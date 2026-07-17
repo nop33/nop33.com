@@ -193,7 +193,7 @@ const sanitizedSubtitle: string = subtitle
       <div class:list={['grid grid-cols-1 gap-4', featuredImage2 && 'md:grid-cols-2 md:gap-16']}>
         <div class="order-2 flex flex-col justify-center md:order-1">
           <h1 class="leading-none">{title}</h1>
-          {sanitizedSubtitle && <p class="mt-4 text-2xl" set:html={sanitizedSubtitle} />}
+          {sanitizedSubtitle && <p class="mt-4 text-xl md:text-2xl" set:html={sanitizedSubtitle} />}
         </div>
 
         {

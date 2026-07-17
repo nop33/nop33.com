@@ -40,7 +40,7 @@ This created a few clear problems:
 I wanted a solution that was transparent, fair, and easy to apply every time.
 
 <BreakoutSection>
-  <div class="container my-60">
+  <div class="container my-20 md:my-32">
     <div class="grid grid-cols-1 gap-24 md:grid-cols-[1fr_2fr] items-center">
       <Media
         src={imgBalances.src}
@@ -73,7 +73,7 @@ I wanted a solution that was transparent, fair, and easy to apply every time.
 </BreakoutSection>
 
 <div>
-  <div class="my-60 space-content">
+  <div class="my-20 md:my-32 space-content">
     ## Technical implementation
 
     _Learning a modern frontend framework by building something real._
@@ -114,7 +114,7 @@ Once the app was in active, day-to-day use, the main challenge shifted from buil
 At that point, treating the app like a “side project” was no longer acceptable.
 
 <BreakoutSection>
-  <div class="my-20">
+  <div class="my-12 md:my-20">
     <Media src={imgFirebase.src} />
   </div>
 </BreakoutSection>
@@ -151,22 +151,14 @@ At that point, treating the app like a “side project” was no longer acceptab
 </BreakoutSection>
 
 <div>
-  <div class="my-60 flex flex-col items-center justify-center gap-24 sm:flex-row sm:gap-2">
-    <Media
-      src={imgItem.src}
-      class="mx-auto h-auto w-full max-w-[280px] md:mx-0"
-      ratio="auto"
-    />
-    <Media
-      src={imgMoveout.src}
-      class="mx-auto h-auto w-full max-w-[280px] md:mx-0"
-      ratio="auto"
-    />
+  <div class="my-20 flex flex-col items-center justify-center gap-24 sm:flex-row sm:gap-2 md:my-32">
+    <Media src={imgItem.src} class="mx-auto h-auto w-full max-w-[280px] md:mx-0" ratio="auto" />
+    <Media src={imgMoveout.src} class="mx-auto h-auto w-full max-w-[280px] md:mx-0" ratio="auto" />
   </div>
 </div>
 
 <div>
-  <div class="my-60 space-content">
+  <div class="my-20 md:my-32 space-content">
     ## What I learned
 
     _Deepening frontend experience._
@@ -184,7 +176,7 @@ At that point, treating the app like a “side project” was no longer acceptab
     I learned far more by shipping and maintaining this app than I would have by following tutorials alone. It pushed me beyond “just frontend” and forced me to think about authentication, authorization, and data integrity from the start.
 
     <div>
-      <div class="my-20">
+      <div class="my-12 md:my-20">
         <BreakoutSection>
         ```
         service cloud.firestore {
@@ -203,7 +195,7 @@ At that point, treating the app like a “side project” was no longer acceptab
 </div>
 
 <div>
-  <div class="my-60 space-content">
+  <div class="my-20 md:my-32 space-content">
     ## Real world impact
 
     _Quiet success over seven years._

@@ -7,10 +7,10 @@ import { Link } from 'accessible-astro-components'
 ---
 
 <DefaultLayout title="About Ilias">
-  <section class="hero my-24">
+  <section class="hero my-16 md:my-24">
     <div class="narrow container">
       <div class="flex flex-col items-center gap-8 md:items-start">
-        <h1 class="text-center text-6xl md:text-left">Ilias says hi! 👋</h1>
+        <h1 class="text-center md:text-left">Ilias says hi! 👋</h1>
         <p>
           I was born 11 months after the web, and it took me a decade to discover it. Thirteen years later, I found
           myself working at the web's birthplace, CERN.
@@ -23,20 +23,21 @@ import { Link } from 'accessible-astro-components'
     </div>
   </section>
 
-  <section class="my-24">
-    <div class="container space-y-24">
-
-      <div class="grid grid-cols-1 gap-12 md:grid-cols-2 items-center">
+  <section class="my-16 md:my-24">
+    <div class="container space-y-16 md:space-y-24">
+      <div class="grid grid-cols-1 items-center gap-12 md:grid-cols-2">
         <div class="space-y-6">
           <h2 class="text-3xl font-bold">Getting started</h2>
           <p>
             My first experience with programming came at the age of 11. My parents sent me to a computer class after
-            school hours. There, I learned programming with Logo, a language similar to Lisp. We would draw shapes on the
-            screen by giving commands to a "turtle".
+            school hours. There, I learned programming with Logo, a language similar to Lisp. We would draw shapes on
+            the screen by giving commands to a "turtle".
           </p>
           <p>
-            There, I also surfed the web for the first time. When I'd finish my homework early, my teacher would allow me
-            to use IE5. Oh boy, such fun! I had a tiny booklet with a catalogue of all the websites I knew. In high school, I picked the pseudo-programming class, and eventually decided to study computer science at the Aristotle University of Thessaloniki.
+            There, I also surfed the web for the first time. When I'd finish my homework early, my teacher would allow
+            me to use IE5. Oh boy, such fun! I had a tiny booklet with a catalogue of all the websites I knew. In high
+            school, I picked the pseudo-programming class, and eventually decided to study computer science at the
+            Aristotle University of Thessaloniki.
           </p>
         </div>
         <div>
@@ -45,62 +46,75 @@ import { Link } from 'accessible-astro-components'
             alt="Notebook with a catalogue of all the websites I knew"
             width={600}
             height={450}
-            class="rounded-lg shadow-lg w-full h-auto mx-auto"
+            class="mx-auto h-auto w-full rounded-lg shadow-lg"
             sizes="(min-width: 1024px) 30rem, (min-width: 768px) 25rem, 100vw"
           />
         </div>
       </div>
 
-      <div class="grid grid-cols-1 gap-12 md:grid-cols-2 items-center">
+      <div class="grid grid-cols-1 items-center gap-12 md:grid-cols-2">
         <div class="order-2 md:order-1">
           <Image
             src={certificate}
             alt="Web and Mobile Development Seminar Certificate"
             width={800}
             height={600}
-            class="rounded-lg shadow-lg w-full h-auto mx-auto"
+            class="mx-auto h-auto w-full rounded-lg shadow-lg"
             sizes="(min-width: 1024px) 30rem, (min-width: 768px) 25rem, 100vw"
           />
         </div>
-        <div class="space-y-6 order-1 md:order-2">
+        <div class="order-1 space-y-6 md:order-2">
           <h2 class="text-3xl font-bold">When it clicked</h2>
           <p>
-            While studying computer science at the Aristotle University of Thessaloniki, I felt a growing unrest. Most courses were very theoretical and simply weren't resonating with me. I found myself enjoying the classes that involved practical, hands-on projects much more.
+            While studying computer science at the Aristotle University of Thessaloniki, I felt a growing unrest. Most
+            courses were very theoretical and simply weren't resonating with me. I found myself enjoying the classes
+            that involved practical, hands-on projects much more.
           </p>
           <p>
-            Because of this, around the beginning of my 5th semester, I signed up for a free web and mobile app development seminar hosted by the Electrical Engineers department. Suddenly, the pieces fell into place. I thoroughly enjoyed the course, often losing track of time while working on the assignments. The practical nature of it confirmed that building things is what I was meant to do.
+            Because of this, around the beginning of my 5th semester, I signed up for a free web and mobile app
+            development seminar hosted by the Electrical Engineers department. Suddenly, the pieces fell into place. I
+            thoroughly enjoyed the course, often losing track of time while working on the assignments. The practical
+            nature of it confirmed that building things is what I was meant to do.
           </p>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 gap-12 md:grid-cols-2 items-center">
+      <div class="grid grid-cols-1 items-center gap-12 md:grid-cols-2">
         <div class="space-y-6 md:col-span-2">
           <h2 class="text-3xl font-bold">N00b steps</h2>
           <p>
-            About half a year after completing the seminar, I decided to pause my studies and move to Germany for an internship. That internship in 2012 was my very first time working in a professional environment, and it was a revelation. For the first time, my work counted and actually saved the company thousands of euros.
+            About half a year after completing the seminar, I decided to pause my studies and move to Germany for an
+            internship. That internship in 2012 was my very first time working in a professional environment, and it was
+            a revelation. For the first time, my work counted and actually saved the company thousands of euros.
           </p>
           <p>
-            I had a fantastic mentor who truly believed in me. The company was so happy with my contributions that they invited me to continue working for them remotely after my internship ended, allowing me to resume my university studies. This was around a decade before remote work became common practice during the COVID-19 pandemic!
+            I had a fantastic mentor who truly believed in me. The company was so happy with my contributions that they
+            invited me to continue working for them remotely after my internship ended, allowing me to resume my
+            university studies. This was around a decade before remote work became common practice during the COVID-19
+            pandemic!
           </p>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 gap-12 md:grid-cols-2 items-center">
+      <div class="grid grid-cols-1 items-center gap-12 md:grid-cols-2">
         <div class="space-y-6 md:col-span-2">
           <h2 class="text-3xl font-bold">The move to Switzerland</h2>
           <p>
-            Eventually, I left the company to pursue a dream opportunity at CERN, the birthplace of the web. It started thanks to a dear classmate and mentor of mine, Tasos, who is a very gifted and brilliant engineer. He believed in my skills and strongly encouraged me to apply to CERN's Technical Student program.
+            Eventually, I left the company to pursue a dream opportunity at CERN, the birthplace of the web. It started
+            thanks to a dear classmate and mentor of mine, Tasos, who is a very gifted and brilliant engineer. He
+            believed in my skills and strongly encouraged me to apply to CERN's Technical Student program.
           </p>
           <p>
-            Since Tasos had applied in the past without success, I was extremely reluctant and doubtful that they would accept me. However, life has its ways of surprising you. I was accepted, and that is how my life in Switzerland began.
+            Since Tasos had applied in the past without success, I was extremely reluctant and doubtful that they would
+            accept me. However, life has its ways of surprising you. I was accepted, and that is how my life in
+            Switzerland began.
           </p>
           <p class="mt-8 italic">
-            Curious about what happened next? You can check out my <a href="/experience" class="text-blue-600 dark:text-blue-400 hover:underline">Experience</a> to see where my career took me, or read my thoughts on software engineering on my <a href="/blog" class="text-blue-600 dark:text-blue-400 hover:underline">Blog</a>.
+            Curious about what happened next? You can check out my <a href="/experience">Experience</a> to see where my career
+            took me, or read my thoughts on software engineering on my <a href="/blog">Blog</a>.
           </p>
         </div>
       </div>
-
     </div>
   </section>
-
 </DefaultLayout>

@@ -34,19 +34,19 @@ It is a security-critical, long-lived product that has been in active developmen
 I worked on the wallet as a core frontend engineer, contributing both to product features and to foundational architectural decisions together with my colleague [Mikael Vraivre](https://x.com/mikalph). The project was at its infancy when I joined and over time it evolved from a relatively simple Electron app into a highly modular, performance-sensitive system that balances UX, security, and scalability.
 
 <BreakoutSection>
-  <div class="my-30">
+  <div class="my-12 md:my-20">
     <Media src={imgDesktopWallet2.src} />
   </div>
 </BreakoutSection>
 
 <div>
-  <div class="my-60 text-center">
+  <div class="my-20 md:my-32 text-center">
     ## What the wallet does
 
     At a high level, the Desktop Wallet enables users to securely create, manage, and use Alephium wallets on their local machine, while integrating deeply with the Alephium ecosystem.
 
     <BreakoutSection>
-      <div class="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3 my-30 text-left">
+      <div class="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3 my-12 md:my-20 text-left">
         <Feature title="Multiple seeds">Create and manage multiple encrypted and locally stored Alephium wallets.</Feature>
         <Feature title="Multiple addresses">Supports multiple addresses per wallet with deterministic restoration.</Feature>
         <Feature title="Send transactions">Send multiple assets and NFTs per tx, with optional unlock dates.</Feature>
@@ -65,7 +65,7 @@ I worked on the wallet as a core frontend engineer, contributing both to product
 </div>
 
 <BreakoutSection>
-  <div class="container my-60">
+  <div class="container my-20 md:my-32">
     <div class="grid grid-cols-1 gap-24 md:grid-cols-[1fr_2fr] items-center">
       <div class="flex flex-col gap-12 items-center md:items-start">
         <ElectronLogoBadge />
@@ -103,13 +103,13 @@ I worked on the wallet as a core frontend engineer, contributing both to product
 </BreakoutSection>
 
 <BreakoutSection>
-  <div class="my-20">
+  <div class="my-12 md:my-20">
     <Media src={imgArchitectureDiagram.src} />
   </div>
 </BreakoutSection>
 
 <BreakoutSection>
-  <div class="my-20 space-content">
+  <div class="my-12 md:my-20 space-content">
     ## Architecture
 
     The app can be described in the following subsystems:
@@ -155,7 +155,7 @@ I worked on the wallet as a core frontend engineer, contributing both to product
 </BreakoutSection>
 
 <BreakoutSection>
-  <div class="my-60">
+  <div class="my-20 md:my-32">
     <Media src={imgDesktopWallet1.src} />
   </div>
 </BreakoutSection>
@@ -189,7 +189,7 @@ The app persists minimal address metadata (such as index, key type, settings) an
 Address metadata such as the index (used for deterministic regeneration) as well as name and color are stored in persisted storage. This allows for a better UX: the user can tag their addresses so they can identify them easier. It also allows persisting the generated addresses between app unlocks. An exception to this is passphrase-enabled wallets. Those wallets do not store anything in persisted storage. This decision was taken for security reasons in order to achieve plausible deniability: An attacker will have no way of knowing whether you have funds in passphrase-enabled wallets and no way to prove it since there are no evidence in the storage of the app. The cost for this security feature is, once again, UX: Passphrase wallet users need to regenerate their addresses on every unlock, and they cannot persist metadata such as name and color for each address. This is an acceptable trade-off considering that it is an advanced feature.
 
 <BreakoutSection>
-  <div class="my-60">
+  <div class="my-20 md:my-32">
     <Media src={imgDesktopWallet4.src} />
   </div>
 </BreakoutSection>
@@ -230,7 +230,7 @@ Each step reduced load and improved UX, especially for power users with large wa
 Persisted caches solved cold-start slowness, but continuous throttled persistence had problems of its own: it wastefully re-serialized the entire cache on every poll tick, and, more importantly, its deferred writes could lose the race against process suspension and drop data. The final solution was to persist the cache synchronously at well-defined lifecycle points (before quit), rather than continuously. I cover the reasoning in [Part 5 of my TanStack Query series](/blog/tanstack-query-persist-cache-cold-start).
 
 <div>
-  <div class="my-60 space-content">
+  <div class="my-20 md:my-32 space-content">
     ## What this project says about me
 
     This project reflects how I approach complex, long-lived software:
