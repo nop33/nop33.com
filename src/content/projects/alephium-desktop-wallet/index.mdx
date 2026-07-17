@@ -141,8 +141,8 @@ I worked on the wallet as a core frontend engineer, contributing both to product
         ### Wallet engine
         The wallet engine consists of three main components:
         - **Key management**: storing encrypted mnemonics and decrypting for signing.
-        - **Signing**: signing with stored mnemonic of with hardware wallets.
-        - **Address generation**: discovering active addresses and deterministically regenerating addresses from stored MediaMetadata.
+        - **Signing**: signing with stored mnemonic or with hardware wallets.
+        - **Address generation**: discovering active addresses and deterministically regenerating addresses from stored metadata.
       </div>
 
       <div class="space-content">
@@ -164,13 +164,13 @@ I worked on the wallet as a core frontend engineer, contributing both to product
 
 ### Process boundary: Electron main vs renderer
 
-The Electron main process focuses on OS integration (window lifecycle, deep links, updater, native theme) whereas the product logic runs in the React renderer. This is the recommended choice for Electron apps so that UI logic stays web-native and OS privileges are centralized and easier to audit. Only a curated API is exposed via the `contextBridge` to reduces accidental privilege escalation. It enforces a security boundary with the cost of additional boilerplate code for IPC (Inter-Process Communication) surface design.
+The Electron main process focuses on OS integration (window lifecycle, deep links, updater, native theme) whereas the product logic runs in the React renderer. This is the recommended choice for Electron apps so that UI logic stays web-native and OS privileges are centralized and easier to audit. Only a curated API is exposed via the `contextBridge` to reduce accidental privilege escalation. It enforces a security boundary with the cost of additional boilerplate code for IPC (Inter-Process Communication) surface design.
 
 ### Renderer state model: Redux Toolkit + TanStack Query
 
 The app has evolved over the last 5 years. The UI state as well as server-derived data state was initially stored in React.Context while API requests were made using `fetch` in simple React hooks. This proved to be very limiting regarding performance and reasoning so soon after I joined the team I initiated a project to migrate it to Redux using Redux Toolkit. Redux Toolkit was chosen due to its wide use and available resources and documentation. It turned out to be a success. The async logic was moved into Redux thunks, while the state now lived in Redux slices. Each component could request the data they needed through selectors and avoid lots of the performance issues we had with React.Context.
 
-The current architecture includes Redux for UI state and Tanstack Query for server state. We migrated the server state from Redux to Tanstack Query to benefit from several feature such an async library provides such as a request retry mechanism and caching. This has improved the performance of the app even further. It also disentangled the logic of how and when API requests are fired, something that it was quite challenging to achieve with Redux thunks. On the downside, the developer now has to maintain two mental modals and two debugging interfaces. All read-flows are now declarative through the Tanstack Query hooks, but the write flows remain imperative.
+The current architecture includes Redux for UI state and Tanstack Query for server state. We migrated the server state from Redux to Tanstack Query to benefit from several features such an async library provides, such as a request retry mechanism and caching. This has improved the performance of the app even further. It also disentangled the logic of how and when API requests are fired, something that it was quite challenging to achieve with Redux thunks. On the downside, the developer now has to maintain two mental models and two debugging interfaces. All read-flows are now declarative through the Tanstack Query hooks, but the write flows remain imperative. I documented the whole migration, with before-and-after profiling data, in my [five-part TanStack Query case study](/blog/tanstack-query-wallet-async-state).
 
 ### Persistence strategy: localStorage for durable user config, IndexedDB for query cache
 
@@ -178,7 +178,7 @@ Settings and wallet metadata are stored in localStorage to benefit from persiste
 
 ### Wallet security posture: decrypt in memory, clear on lock
 
-We decided to treat decrypted secrets as in-memory only, by clearing on lock and on idle. This aligns with desktop thread modal (walk-away/background exposure). It also simplifies UX: The user enters their password to unlock their wallet. For as long as the wallet is unlocked, the user does not need to re-enter their password to sign transactions. When the user locks their wallet (or when the app detects an idle state), the secrets are cleared from memory, and the user needs to re-enter their password to decrypt them. Ideally, the user would need to confirm with their password every time they would have to send a transaction (a feature that can be enabled through the app settings) so that no secrets would need to be kept in-memory. This is a UX/security trade-off.
+We decided to treat decrypted secrets as in-memory only, by clearing on lock and on idle. This aligns with the desktop threat model (walk-away/background exposure). It also simplifies UX: The user enters their password to unlock their wallet. For as long as the wallet is unlocked, the user does not need to re-enter their password to sign transactions. When the user locks their wallet (or when the app detects an idle state), the secrets are cleared from memory, and the user needs to re-enter their password to decrypt them. Ideally, the user would need to confirm with their password every time they would have to send a transaction (a feature that can be enabled through the app settings) so that no secrets would need to be kept in-memory. This is a UX/security trade-off.
 
 ### Address management: metadata-first restore + network-driven discovery
 
@@ -196,11 +196,11 @@ Address metadata such as the index (used for deterministic regeneration) as well
 
 ## Challenges & lessons learned
 
-This project has its fair share of challenges and lessons learned. From secrets management in process memory to API rate limiting, throttling and caching, there was and still is a lot to learn from this project. I am planning to write a series of blog posts to cover the challenges and lessons learned.
+This project has its fair share of challenges and lessons learned. From [secrets management in process memory](/blog/clearing-secrets-from-memory) to API rate limiting, throttling and caching, there was and still is a lot to learn from this project. I cover the async-state journey in depth in my [five-part TanStack Query case study](/blog/tanstack-query-wallet-async-state).
 
 ### Early misuse of React Context
 
-Storing API data in React Context led to excessive re-renders. The defined `Map` object deemed to be not the appropiate data structure to store the remote addresses data, since a new object would be defined for every data change of any address of the wallet, causing components to re-render even though they didn't have to. The solution was to migrate the data layer to Redux.
+Storing API data in React Context led to excessive re-renders. The defined `Map` object turned out not to be the appropriate data structure to store the remote addresses data, since a new object would be defined for every data change of any address of the wallet, causing components to re-render even though they didn't have to. The solution was to migrate the data layer to Redux.
 
 ### Blocking auto-update due to GitHub API rate limiting
 
@@ -214,20 +214,20 @@ As Alephium grew, the naive "poll everything" strategy collapsed:
 - Too many addresses.
 - Too many tokens and NFTs.
 
-The solution came in many stages, each of which deserves its own blog post:
+The solution came in many stages, each covered in detail in my [TanStack Query case study](/blog/tanstack-query-wallet-async-state):
 
-- Backend and frontend rate limiting.
+- Backend and frontend [rate limiting](/blog/tanstack-query-wallet-async-state).
 - Smarter retry handling.
-- Proper caching with TanStack Query.
-- A "latest transaction" sentinel query to control when other queries should refresh.
-- Limiting background refreshes to the most active addresses.
-- Persisting query caches across sessions.
+- [Proper caching with TanStack Query](/blog/redux-to-tanstack-query-migration).
+- A ["latest transaction" sentinel query](/blog/tanstack-query-change-detection-polling) to control when other queries should refresh.
+- [Limiting background refreshes](/blog/tanstack-query-change-detection-polling) to the most active addresses.
+- [Persisting query caches across sessions](/blog/tanstack-query-persist-cache-cold-start).
 
 Each step reduced load and improved UX, especially for power users with large wallets.
 
 ### Startup performance
 
-Persisted caches solved cold-start slowness, but introduced new problems: constantly syncing the cache caused rendering stalls, blocking the UI thread. The final solution was to persist the cache only at well-defined lifecycle points (before quit), rather than continuously.
+Persisted caches solved cold-start slowness, but continuous throttled persistence had problems of its own: it wastefully re-serialized the entire cache on every poll tick, and, more importantly, its deferred writes could lose the race against process suspension and drop data. The final solution was to persist the cache synchronously at well-defined lifecycle points (before quit), rather than continuously. I cover the reasoning in [Part 5 of my TanStack Query series](/blog/tanstack-query-persist-cache-cold-start).
 
 <div>
   <div class="my-60 space-content">

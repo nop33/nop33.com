@@ -30,7 +30,7 @@ import BreakoutSection from '@components/BreakoutSection.astro'
 
 </TLDR>
 
-As we covered in [Part 1](/blog/tanstack-query-wallet-async-state), the fan-out was brutal: measured on the last pre-TanStack release, my 42-address wallet fired 1,709 requests in a single 43-second session, six endpoints per address plus retries, with 61% of them rejected as `429`. The naive approach is to put a short `staleTime` on every query and let TanStack refetch whenever a component mounts. That, however, would not bring us any closer to the goal of reducing the number of requests.
+As we covered in [Part 1](/blog/tanstack-query-wallet-async-state), the fan-out was brutal: measured on the last pre-TanStack release, my 42-address wallet fired 1,709 requests in a single 43-second session, six endpoints per address plus retries, and 61% of the 1,595 that reached our backend were rejected as `429`. The naive approach is to put a short `staleTime` on every query and let TanStack refetch whenever a component mounts. That, however, would not bring us any closer to the goal of reducing the number of requests.
 
 ## Change detection
 

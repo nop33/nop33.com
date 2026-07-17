@@ -74,10 +74,8 @@ import { Link } from 'accessible-astro-components'
           </p>
         </div>
         <div class="text-center">
-          <div class="text-primary text-4xl font-bold md:text-5xl">26×</div>
-          <p class="mt-2 text-sm tracking-wider text-gray-600 uppercase dark:text-gray-400">
-            Faster desktop cold start
-          </p>
+          <div class="text-primary text-4xl font-bold md:text-5xl">10-228×</div>
+          <p class="mt-2 text-sm tracking-wider text-gray-600 uppercase dark:text-gray-400">Fewer backend requests</p>
         </div>
         <div class="text-center">
           <div class="text-primary text-4xl font-bold md:text-5xl">~40%</div>
@@ -274,7 +272,9 @@ import { Link } from 'accessible-astro-components'
           </div>
           <div class="md:w-3/4">
             <p>
-              <strong>Re-architected async state</strong> - React state → Redux Toolkit → TanStack Query (+ SWR on Powfi)
+              <strong>Re-architected async state</strong> - React state → Redux Toolkit → <a
+                href="/blog/redux-to-tanstack-query-migration">TanStack Query</a
+              > (+ SWR on Powfi)
             </p>
           </div>
         </div>
@@ -287,9 +287,14 @@ import { Link } from 'accessible-astro-components'
           </div>
           <div class="md:w-3/4">
             <p>
-              <strong>Performance program</strong> - desktop wallet 26× faster cold start, 10× overall; <a
-                href="/blog/improving-react-native-cold-start">React Native cold-start</a
-              >; frontend↔backend request-reduction.
+              <strong>Performance program</strong> - re-architected both wallets' async layer so <a
+                href="/blog/tanstack-query-change-detection-polling"
+                >backend load scales with wallet activity, not wallet size</a
+              >: up to 228× fewer backend requests on relaunch and ~10× on cold start, rate-limit errors eliminated,
+              while main-thread load dropped below the old Redux baseline and balances paint instantly instead of
+              trickling in for ~40 seconds. Documented in a <a href="/blog/tanstack-query-wallet-async-state"
+                >5-part TanStack Query case study</a
+              >; also: <a href="/blog/improving-react-native-cold-start">React Native cold-start</a>.
             </p>
           </div>
         </div>
