@@ -241,21 +241,39 @@ const sanitizedSubtitle: string = subtitle
       <div class="flex flex-wrap gap-4">
         {
           github && (
-            <Link href={github} target="_blank">
+            <Link
+              href={github}
+              target="_blank"
+              data-umami-event="project-link-click"
+              data-umami-event-project={title}
+              data-umami-event-type="github"
+            >
               GitHub
             </Link>
           )
         }
         {
           live && (
-            <Link href={live} target="_blank">
+            <Link
+              href={live}
+              target="_blank"
+              data-umami-event="project-link-click"
+              data-umami-event-project={title}
+              data-umami-event-type="live"
+            >
               Live
             </Link>
           )
         }
         {
           download && (
-            <Link href={download} target="_blank">
+            <Link
+              href={download}
+              target="_blank"
+              data-umami-event="project-link-click"
+              data-umami-event-project={title}
+              data-umami-event-type="download"
+            >
               Download
             </Link>
           )
@@ -264,7 +282,13 @@ const sanitizedSubtitle: string = subtitle
           links && (
             <div class="flex flex-wrap gap-4">
               {links.map((link) => (
-                <Link href={link.href} target="_blank">
+                <Link
+                  href={link.href}
+                  target="_blank"
+                  data-umami-event="project-link-click"
+                  data-umami-event-project={title}
+                  data-umami-event-type={link.label}
+                >
                   {link.label}
                 </Link>
               ))}
