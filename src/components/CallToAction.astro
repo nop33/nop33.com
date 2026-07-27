@@ -2,27 +2,8 @@
 import { Heading, Link } from 'accessible-astro-components'
 import { Icon } from 'astro-icon/components'
 
-/**
- * CallToAction Component
- *
- * @description A prominent call-to-action section with a title and link
- */
 interface Props {
-  /**
-   * The title text to display
-   * @default "Get this theme on GitHub"
-   */
   title?: string
-  /**
-   * The URL the button should link to
-   * @default "https://github.com/incluud/accessible-astro-starter"
-   */
-  link?: string
-  /**
-   * The text to display on the button
-   * @default "Get Started"
-   */
-  linkText?: string
 }
 
 const { title = "Let's build something together!" } = Astro.props
