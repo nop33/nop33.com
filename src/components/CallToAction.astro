@@ -2,27 +2,8 @@
 import { Heading, Link } from 'accessible-astro-components'
 import { Icon } from 'astro-icon/components'
 
-/**
- * CallToAction Component
- *
- * @description A prominent call-to-action section with a title and link
- */
 interface Props {
-  /**
-   * The title text to display
-   * @default "Get this theme on GitHub"
-   */
   title?: string
-  /**
-   * The URL the button should link to
-   * @default "https://github.com/incluud/accessible-astro-starter"
-   */
-  link?: string
-  /**
-   * The text to display on the button
-   * @default "Get Started"
-   */
-  linkText?: string
 }
 
 const { title = "Let's build something together!" } = Astro.props
@@ -67,6 +48,22 @@ const { title = "Let's build something together!" } = Astro.props
         >
           GitHub
           <Icon aria-hidden="true" name="lucide:github" size="1.5rem" />
+        </Link>
+        <Link
+          href="https://x.com/_nop33"
+          isButton
+          size="lg"
+          variant="outlined"
+          animateOnHover
+          animationType="nudge"
+          rel="noopener noreferrer"
+          target="_blank"
+          ariaLabel="@_nop33 on X"
+          data-umami-event="x-click"
+          data-umami-event-location="cta"
+        >
+          @_nop33
+          <Icon aria-hidden="true" name="x" size="1.25rem" />
         </Link>
       </div>
     </div>
