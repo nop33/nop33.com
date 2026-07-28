@@ -1,0 +1,53 @@
+---
+import { Image } from 'astro:assets'
+import type { ImageMetadata } from 'astro'
+
+interface Props {
+  class?: string
+  src: ImageMetadata
+  alt?: string
+  loading?: 'lazy' | 'eager'
+  fetchpriority?: 'high' | 'low' | 'auto'
+  widths?: number[]
+  sizes?: string
+  [key: string]: unknown
+}
+
+const {
+  class: className,
+  src,
+  alt = '',
+  loading = 'lazy',
+  fetchpriority = 'auto',
+  widths,
+  sizes,
+  ...rest
+} = Astro.props
+---
+
+<div class:list={['media-wrapper', className]} {...rest}>
+  <Image
+    src={src}
+    alt={alt}
+    loading={loading}
+    decoding="async"
+    fetchpriority={fetchpriority}
+    widths={widths}
+    sizes={sizes}
+  />
+</div>
+
+<style>
+  :where(.media-wrapper) {
+    position: relative;
+    border-radius: 0.5rem;
+    inline-size: 100%;
+    overflow: hidden;
+  }
+
+  :where(.media-wrapper) :global(img) {
+    border-radius: inherit;
+    inline-size: 100%;
+    block-size: auto;
+  }
+</style>

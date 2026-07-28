@@ -1,8 +1,10 @@
 ---
 import DefaultLayout from '@layouts/DefaultLayout.astro'
-import { Link, Media } from 'accessible-astro-components'
+import { Link } from 'accessible-astro-components'
+import Media from '@components/Media.astro'
 import { Icon } from 'astro-icon/components'
 import { getCollection } from 'astro:content'
+import imgAvatar from '@assets/images/notion-avatar-v2.png'
 import imgDesktopWallet from '@content/projects/alephium-desktop-wallet/19shots_so.png'
 import imgFlatwise from '@content/projects/flatwise/flatwise-iphone-left.png'
 import imgMobileWallet from '@content/projects/alephium-mobile-wallet/63shots_so.png'
@@ -16,7 +18,7 @@ const latestPosts = posts.slice(0, 3)
   <section class="my-16 md:my-32">
     <div class="container grid grid-cols-1 items-center gap-12 md:grid-cols-2">
       <div>
-        <h1 class="text-center md:text-left text-4xl md:text-5xl">
+        <h1 class="text-center text-4xl md:text-left md:text-5xl">
           <span class="block">
             nop33 <span class="text-neutral-500 dark:text-neutral-700">on the web</span>
           </span>
@@ -28,7 +30,14 @@ const latestPosts = posts.slice(0, 3)
           Software engineer with focus on <span class="font-bold">frontend</span>,<br /> minimalist, and life-long learner.
         </p>
       </div>
-      <Media src="/notion-avatar-v2.png" class="mx-auto max-w-sm" />
+      <Media
+        src={imgAvatar}
+        class="mx-auto max-w-sm"
+        loading="eager"
+        fetchpriority="high"
+        widths={[384, 768]}
+        sizes="384px"
+      />
     </div>
   </section>
   <section class="my-16 md:my-32">
@@ -172,7 +181,7 @@ const latestPosts = posts.slice(0, 3)
       </p>
       <div>
         <div class="grid grid-cols-1 gap-12 md:grid-cols-2">
-          <Media src={imgDesktopWallet.src} />
+          <Media src={imgDesktopWallet} />
           <div class="space-content md:mt-24">
             <h3>Alephium Desktop Wallet</h3>
             <p class="text-xl md:text-2xl dark:text-neutral-500">
@@ -194,7 +203,7 @@ const latestPosts = posts.slice(0, 3)
 
       <div class="mt-24">
         <div class="grid grid-cols-1 gap-12 md:grid-cols-3">
-          <Media src={imgFlatwise.src} class="order-1 md:order-2 md:col-span-1" />
+          <Media src={imgFlatwise} class="order-1 md:order-2 md:col-span-1" />
           <div class="space-content order-2 md:order-1 md:col-span-2 md:mt-24">
             <h3>Flatwise</h3>
             <p class="text-xl md:text-2xl dark:text-neutral-500">
@@ -211,7 +220,7 @@ const latestPosts = posts.slice(0, 3)
       </div>
       <div class="mt-24">
         <div class="grid grid-cols-1 gap-12 md:grid-cols-2">
-          <Media src={imgMobileWallet.src} />
+          <Media src={imgMobileWallet} />
           <div class="space-content md:mt-24">
             <h3>Alephium Mobile Wallet</h3>
             <p class="text-xl md:text-2xl dark:text-neutral-500">

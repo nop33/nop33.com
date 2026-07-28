@@ -17,7 +17,7 @@ links:
   ]
 ---
 
-import { Media } from 'accessible-astro-components'
+import Media from '@components/Media.astro'
 import imgMobileWallet1 from './mobile-wallet-1.png'
 import imgMobileWallet2 from './mobile-wallet-2.png'
 import imgMobileWallet3 from './mobile-wallet-3.png'
@@ -52,12 +52,12 @@ As the Desktop Wallet reached maturity and adoption increased, the Alephium comm
 <div>
   <div class="my-12 grid grid-cols-2 gap-2 md:my-20 md:grid-cols-2 md:gap-12">
     <div class="flex flex-col gap-6 md:gap-12">
-      <Media src={imgMobileWallet1.src} class="mx-auto max-w-[280px] md:max-w-none" ratio="auto" />
-      <Media src={imgMobileWallet4.src} class="mx-auto max-w-[280px] md:max-w-none" ratio="auto" />
+      <Media src={imgMobileWallet1} class="mx-auto max-w-[280px] md:max-w-none" />
+      <Media src={imgMobileWallet4} class="mx-auto max-w-[280px] md:max-w-none" />
     </div>
     <div class="mt-62 flex flex-col gap-6 md:gap-12">
-      <Media src={imgMobileWallet3.src} class="mx-auto max-w-[280px] md:max-w-none" ratio="auto" />
-      <Media src={imgMobileWallet2.src} class="mx-auto max-w-[280px] md:max-w-none" ratio="auto" />
+      <Media src={imgMobileWallet3} class="mx-auto max-w-[280px] md:max-w-none" />
+      <Media src={imgMobileWallet2} class="mx-auto max-w-[280px] md:max-w-none" />
     </div>
   </div>
 </div>

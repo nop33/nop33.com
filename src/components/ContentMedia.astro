@@ -1,5 +1,6 @@
 ---
-import { Media } from 'accessible-astro-components'
+import Media from '@components/Media.astro'
+import type { ImageMetadata } from 'astro'
 
 /**
  * ContentMedia Component
@@ -8,9 +9,9 @@ import { Media } from 'accessible-astro-components'
  */
 interface Props {
   /**
-   * The source URL for the image
+   * The image to display
    */
-  imgSrc: string
+  imgSrc: ImageMetadata
   /**
    * Whether to display the image on the right side instead of the left
    * @default false

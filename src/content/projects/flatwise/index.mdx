@@ -10,9 +10,8 @@ github: 'https://github.com/nop33/flatwise'
 live: 'https://flatwise.netlify.app'
 ---
 
-import ContentMedia from '@components/ContentMedia.astro'
 import BreakoutSection from '@components/BreakoutSection.astro'
-import { Media } from 'accessible-astro-components'
+import Media from '@components/Media.astro'
 import imgBalances from './flatwise-iphone-balances-portrait.png'
 import imgFirebase from './flatwise-firebase.png'
 import imgItem from './flatwise-item.png'
@@ -42,11 +41,7 @@ I wanted a solution that was transparent, fair, and easy to apply every time.
 <BreakoutSection>
   <div class="container my-20 md:my-32">
     <div class="grid grid-cols-1 gap-24 md:grid-cols-[1fr_2fr] items-center">
-      <Media
-        src={imgBalances.src}
-        class="max-w-[280px] w-full h-auto mx-auto md:mx-0"
-        ratio="auto"
-      />
+      <Media src={imgBalances} class="max-w-[280px] w-full h-auto mx-auto md:mx-0" />
       <div class="space-content flex flex-col justify-center">
 
         ## The idea
@@ -115,7 +110,7 @@ At that point, treating the app like a “side project” was no longer acceptab
 
 <BreakoutSection>
   <div class="my-12 md:my-20">
-    <Media src={imgFirebase.src} />
+    <Media src={imgFirebase} />
   </div>
 </BreakoutSection>
 
@@ -152,8 +147,8 @@ At that point, treating the app like a “side project” was no longer acceptab
 
 <div>
   <div class="my-20 flex flex-col items-center justify-center gap-24 sm:flex-row sm:gap-2 md:my-32">
-    <Media src={imgItem.src} class="mx-auto h-auto w-full max-w-[280px] md:mx-0" ratio="auto" />
-    <Media src={imgMoveout.src} class="mx-auto h-auto w-full max-w-[280px] md:mx-0" ratio="auto" />
+    <Media src={imgItem} class="mx-auto h-auto w-full max-w-[280px] md:mx-0" />
+    <Media src={imgMoveout} class="mx-auto h-auto w-full max-w-[280px] md:mx-0" />
   </div>
 </div>
 
