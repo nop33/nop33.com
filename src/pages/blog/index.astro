@@ -2,6 +2,7 @@
 import DefaultLayout from '@layouts/DefaultLayout.astro'
 import PageHeader from '@components/PageHeader.astro'
 import { getCollection, render } from 'astro:content'
+import { Icon } from 'astro-icon/components'
 
 const posts = await getCollection('blog', ({ data }) => !data.draft || import.meta.env.DEV)
 
@@ -22,7 +23,14 @@ const formatDate = (date: Date) => date.toLocaleDateString('en-US', { year: 'num
   description="Articles about web development, performance, and open source."
   showCallToAction={false}
 >
-  <PageHeader title="Blog" subtitle="Articles about web development, performance, and open source." bgType="bordered" />
+  <PageHeader title="Blog" subtitle="Articles about web development, performance, and open source." bgType="bordered">
+    <div class="mt-4 flex gap-4">
+      <a href="/rss.xml" class="flex items-center gap-2 text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 transition-colors" data-umami-event="rss-click" data-umami-event-location="blog-header">
+        <Icon name="lucide:rss" class="h-5 w-5" />
+        <span>Subscribe via RSS</span>
+      </a>
+    </div>
+  </PageHeader>
 
   <section class="my-12">
     <div class="container">

@@ -1,4 +1,5 @@
 ---
+import { Icon } from 'astro-icon/components'
 /**
  * Footer Component
  *
@@ -81,8 +82,12 @@
     </div>
   </section> -->
   <section class="py-8">
-    <div class="container">
+    <div class="container flex items-center justify-between">
       <span class="footer-logo" aria-hidden="true"></span>
+      <a href="/rss.xml" class="flex items-center gap-2 text-sm hover:underline" data-umami-event="rss-click" data-umami-event-location="footer">
+        <Icon name="lucide:rss" class="h-4 w-4" />
+        RSS Feed
+      </a>
     </div>
   </section>
 </footer>
