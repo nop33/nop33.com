@@ -4,6 +4,8 @@ import { getCollection } from 'astro:content'
 export async function GET(context) {
   const posts = await getCollection('blog', ({ data }) => !data.draft)
 
+  posts.sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime())
+
   return rss({
     title: "Ilias Trichopoulos's Blog",
     description: "Articles about web development, performance, and open source.",

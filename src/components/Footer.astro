@@ -1,5 +1,5 @@
 ---
-import { Icon } from 'astro-icon/components'
+import RssDropdown from './RssDropdown.astro'
 /**
  * Footer Component
  *
@@ -84,10 +84,7 @@ import { Icon } from 'astro-icon/components'
   <section class="py-8">
     <div class="container flex items-center justify-between">
       <span class="footer-logo" aria-hidden="true"></span>
-      <a href="/rss.xml" class="flex items-center gap-2 text-sm hover:underline" data-umami-event="rss-click" data-umami-event-location="footer">
-        <Icon name="lucide:rss" class="h-4 w-4" />
-        RSS Feed
-      </a>
+      <RssDropdown class="[&_.rss-dropdown-menu]:bottom-full [&_.rss-dropdown-menu]:top-auto [&_.rss-dropdown-menu]:mb-2" />
     </div>
   </section>
 </footer>
