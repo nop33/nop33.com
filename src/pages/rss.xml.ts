@@ -1,7 +1,7 @@
 import rss from '@astrojs/rss'
 import type { APIContext } from 'astro'
 import { getCollection } from 'astro:content'
-import { BLOG_DESCRIPTION, BLOG_TITLE, RSS_FEED_PATH } from '../utils/site'
+import { BLOG_DESCRIPTION, BLOG_TITLE, RSS_FEED_PATH, RSS_STYLESHEET_PATH } from '../utils/site'
 
 export async function GET(context: APIContext) {
   const site = context.site!
@@ -16,6 +16,7 @@ export async function GET(context: APIContext) {
     title: BLOG_TITLE,
     description: BLOG_DESCRIPTION,
     site,
+    stylesheet: RSS_STYLESHEET_PATH,
     xmlns: { atom: 'http://www.w3.org/2005/Atom', dc: 'http://purl.org/dc/elements/1.1/' },
     items: posts.map((post) => {
       const postUrl = new URL(`/blog/${post.id}/`, site).toString()
