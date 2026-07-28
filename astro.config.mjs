@@ -94,7 +94,10 @@ export default defineConfig({
     remarkPlugins: [remarkReadingTime],
   },
   integrations: [
-    compress(),
+    // html-minifier-terser's clean-css pass silently drops valid rules from inline <style>
+    // blocks (it ate the blog list's `.post a { color: inherit }`). Astro already minifies
+    // these styles through Vite, so the pass only adds risk.
+    compress({ HTML: { 'html-minifier-terser': { minifyCSS: false } } }),
     icon(),
     mdx(),
     sitemap(),

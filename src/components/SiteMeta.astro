@@ -1,4 +1,6 @@
 ---
+import { BLOG_TITLE, RSS_FEED_PATH } from '../utils/site'
+
 /**
  * SiteMeta Component
  *
@@ -14,7 +16,15 @@ interface Props {
   author?: string
 }
 
-const { title, description, url, image, imageWidth = 1200, imageHeight = 630, author = 'Ilias Trichopoulos' } = Astro.props
+const {
+  title,
+  description,
+  url,
+  image,
+  imageWidth = 1200,
+  imageHeight = 630,
+  author = 'Ilias Trichopoulos',
+} = Astro.props
 
 let subtitle = 'Ilias Trichopoulos'
 ---
@@ -43,4 +53,9 @@ let subtitle = 'Ilias Trichopoulos'
 <title>{title} - {subtitle}</title>
 
 <!-- rss feed autodiscovery -->
-<link rel="alternate" type="application/rss+xml" title="Ilias Trichopoulos's Blog RSS Feed" href="/rss.xml" />
+<link
+  rel="alternate"
+  type="application/rss+xml"
+  title={`${BLOG_TITLE} RSS Feed`}
+  href={new URL(RSS_FEED_PATH, Astro.site)}
+/>

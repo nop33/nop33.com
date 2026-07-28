@@ -3,6 +3,7 @@ import DefaultLayout from '@layouts/DefaultLayout.astro'
 import PageHeader from '@components/PageHeader.astro'
 import { getCollection, render } from 'astro:content'
 import RssDropdown from '@components/RssDropdown.astro'
+import { BLOG_DESCRIPTION } from '../../utils/site'
 
 const posts = await getCollection('blog', ({ data }) => !data.draft || import.meta.env.DEV)
 
@@ -18,12 +19,8 @@ const postsWithReadTime = await Promise.all(
 const formatDate = (date: Date) => date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
 ---
 
-<DefaultLayout
-  title="Blog"
-  description="Articles about web development, performance, and open source."
-  showCallToAction={false}
->
-  <PageHeader title="Blog" subtitle="Articles about web development, performance, and open source." bgType="bordered">
+<DefaultLayout title="Blog" description={BLOG_DESCRIPTION} showCallToAction={false}>
+  <PageHeader title="Blog" subtitle={BLOG_DESCRIPTION} bgType="bordered">
     <div class="mt-4 flex gap-4">
       <RssDropdown />
     </div>

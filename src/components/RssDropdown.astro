@@ -3,182 +3,268 @@ import { Icon } from 'astro-icon/components'
 
 interface Props {
   class?: string
+  placement?: 'bottom' | 'top'
+  align?: 'start' | 'end'
 }
 
-const { class: className } = Astro.props
+const { class: className, placement = 'bottom', align = 'start' } = Astro.props
+
 const rssUrl = new URL('/rss.xml', Astro.site).toString()
+const panelId = `rss-panel-${Math.random().toString(36).slice(2, 9)}`
+
+const readers = [
+  {
+    label: 'Add to Feedly',
+    href: `https://feedly.com/i/subscription/feed/${encodeURIComponent(rssUrl)}`,
+    event: 'rss-subscribe-feedly',
+  },
+  {
+    label: 'Add to Inoreader',
+    // `?add_feed=` subscribes directly; the `/feed/` preview route dead-ends on a login wall.
+    href: `https://www.inoreader.com/?add_feed=${encodeURIComponent(rssUrl)}`,
+    event: 'rss-subscribe-inoreader',
+  },
+]
 ---
 
-<div class:list={['rss-dropdown-container relative inline-block text-left', className]}>
+<div class:list={['rss-dropdown relative inline-block', className]} data-placement={placement} data-align={align}>
   <button
     type="button"
-    class="rss-dropdown-trigger flex items-center gap-2 text-sm text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+    class="rss-dropdown-trigger flex items-center gap-2 text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
     aria-expanded="false"
-    aria-haspopup="true"
-    data-umami-event="rss-dropdown-open"
+    aria-controls={panelId}
+    data-umami-event="rss-dropdown-toggle"
   >
-    <Icon name="lucide:rss" class="h-4 w-4 md:h-5 md:w-5" />
+    <Icon name="lucide:rss" class="size-4 shrink-0" />
     <span>Subscribe via RSS</span>
-    <Icon name="lucide:chevron-down" class="h-4 w-4 transition-transform duration-200" />
+    <Icon name="lucide:chevron-down" class="rss-dropdown-chevron size-4 shrink-0" />
   </button>
 
   <div
-    class="rss-dropdown-menu absolute right-0 z-50 mt-2 hidden w-56 origin-top-right rounded-md border border-[var(--border-color-subtle)] bg-[var(--background-color)] shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-    role="menu"
-    aria-orientation="vertical"
-    tabindex="-1"
+    id={panelId}
+    class="rss-dropdown-panel absolute z-50 w-max max-w-[calc(100vw-2rem)] min-w-56 rounded-md border border-[var(--border-color-subtle)] bg-[var(--background-color)] shadow-lg"
+    hidden
   >
-    <div class="flex flex-col divide-y divide-[var(--border-color-subtle)]" role="none">
-      <a
-        href={`https://feedly.com/i/subscription/feed/${encodeURIComponent(rssUrl)}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="!no-underline !text-neutral-900 dark:!text-neutral-100 flex items-center gap-3 px-4 py-3 text-sm hover:bg-[var(--border-color-subtle)] transition-colors"
-        role="menuitem"
-        data-umami-event="rss-subscribe-feedly"
-      >
-        <Icon name="lucide:external-link" class="h-4 w-4 text-neutral-500 shrink-0" />
-        Add to Feedly
-      </a>
-      <a
-        href={`https://www.inoreader.com/feed/${encodeURIComponent(rssUrl)}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="!no-underline !text-neutral-900 dark:!text-neutral-100 flex items-center gap-3 px-4 py-3 text-sm hover:bg-[var(--border-color-subtle)] transition-colors"
-        role="menuitem"
-        data-umami-event="rss-subscribe-inoreader"
-      >
-        <Icon name="lucide:external-link" class="h-4 w-4 text-neutral-500 shrink-0" />
-        Add to Inoreader
-      </a>
-      <a
-        href={`https://readwise.io/read/add?url=${encodeURIComponent(rssUrl)}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="!no-underline !text-neutral-900 dark:!text-neutral-100 flex items-center gap-3 px-4 py-3 text-sm hover:bg-[var(--border-color-subtle)] transition-colors"
-        role="menuitem"
-        data-umami-event="rss-subscribe-readwise"
-      >
-        <Icon name="lucide:external-link" class="h-4 w-4 text-neutral-500 shrink-0" />
-        Add to Reader (Readwise)
-      </a>
+    <div class="flex flex-col divide-y divide-[var(--border-color-subtle)]">
+      {
+        readers.map(({ label, href, event }) => (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="flex items-center gap-3 px-4 py-3 transition-colors"
+            data-umami-event={event}
+          >
+            <Icon name="lucide:external-link" class="size-4 shrink-0 text-neutral-500" />
+            {label}
+          </a>
+        ))
+      }
       <button
         type="button"
-        class="!no-underline !text-neutral-900 dark:!text-neutral-100 rss-copy-btn flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-[var(--border-color-subtle)] transition-colors"
-        role="menuitem"
+        class="rss-dropdown-copy flex w-full items-center gap-3 px-4 py-3 text-start transition-colors"
         data-rss-url={rssUrl}
         data-umami-event="rss-copy-link"
       >
-        <Icon name="lucide:copy" class="h-4 w-4 text-neutral-500 rss-copy-icon shrink-0" />
-        <Icon name="lucide:check" class="h-4 w-4 text-green-500 rss-check-icon hidden shrink-0" />
-        <span class="rss-copy-text">Copy Link</span>
+        <Icon name="lucide:copy" class="rss-dropdown-copy-idle size-4 shrink-0 text-neutral-500" />
+        <Icon name="lucide:check" class="rss-dropdown-copy-done size-4 shrink-0 text-green-500" />
+        <span class="rss-dropdown-copy-label">Copy Link</span>
       </button>
-      <a
-        href="/rss.xml"
-        class="!no-underline !text-neutral-900 dark:!text-neutral-100 flex items-center gap-3 px-4 py-3 text-sm hover:bg-[var(--border-color-subtle)] transition-colors"
-        role="menuitem"
-        data-umami-event="rss-view-xml"
-      >
-        <Icon name="lucide:file-code" class="h-4 w-4 text-neutral-500 shrink-0" />
+      <a href="/rss.xml" class="flex items-center gap-3 px-4 py-3 transition-colors" data-umami-event="rss-view-xml">
+        <Icon name="lucide:file-code" class="size-4 shrink-0 text-neutral-500" />
         View RSS XML
       </a>
     </div>
   </div>
+
+  <span class="rss-dropdown-status sr-only" role="status"></span>
 </div>
 
 <script>
-  function setupRssDropdowns() {
-    const containers = document.querySelectorAll('.rss-dropdown-container')
+  const DROPDOWN = '.rss-dropdown'
+  const TRIGGER = '.rss-dropdown-trigger'
+  const PANEL = '.rss-dropdown-panel'
+  const COPY_RESET_DELAY = 2000
 
-    containers.forEach((container) => {
-      const trigger = container.querySelector('.rss-dropdown-trigger') as HTMLButtonElement
-      const menu = container.querySelector('.rss-dropdown-menu') as HTMLDivElement
-      const chevron = trigger.querySelector('.lucide-chevron-down') as HTMLElement
-      const copyBtn = container.querySelector('.rss-copy-btn') as HTMLButtonElement
-      const copyIcon = copyBtn?.querySelector('.rss-copy-icon') as HTMLElement
-      const checkIcon = copyBtn?.querySelector('.rss-check-icon') as HTMLElement
-      const copyText = copyBtn?.querySelector('.rss-copy-text') as HTMLElement
+  const setExpanded = (dropdown: Element, expanded: boolean) => {
+    const trigger = dropdown.querySelector(TRIGGER)
+    const panel = dropdown.querySelector<HTMLElement>(PANEL)
+    if (!trigger || !panel) return
 
-      // Toggle menu
-      trigger.addEventListener('click', (e) => {
-        e.stopPropagation()
-        const isExpanded = trigger.getAttribute('aria-expanded') === 'true'
+    trigger.setAttribute('aria-expanded', String(expanded))
+    panel.hidden = !expanded
+  }
 
-        // Close all other dropdowns first
-        document.querySelectorAll('.rss-dropdown-trigger').forEach(t => {
-          t.setAttribute('aria-expanded', 'false')
-          const c = t.closest('.rss-dropdown-container')
-          c?.querySelector('.rss-dropdown-menu')?.classList.add('hidden')
-          const chev = t.querySelector('.lucide-chevron-down') as HTMLElement
-          if(chev) chev.style.transform = 'rotate(0deg)'
-        })
-
-        if (!isExpanded) {
-          trigger.setAttribute('aria-expanded', 'true')
-          menu.classList.remove('hidden')
-          if(chevron) chevron.style.transform = 'rotate(180deg)'
-        }
-      })
-
-      // Handle click outside to close
-      document.addEventListener('click', (event) => {
-        if (!container.contains(event.target as Node)) {
-          trigger.setAttribute('aria-expanded', 'false')
-          menu.classList.add('hidden')
-          if(chevron) chevron.style.transform = 'rotate(0deg)'
-        }
-      })
-
-      // Handle copy link
-      if (copyBtn) {
-        copyBtn.addEventListener('click', async (e) => {
-          e.stopPropagation()
-          const url = copyBtn.getAttribute('data-rss-url')
-          if (url) {
-            try {
-              await navigator.clipboard.writeText(url)
-
-              // Show success state
-              copyIcon.classList.add('hidden')
-              checkIcon.classList.remove('hidden')
-              copyText.textContent = 'Copied!'
-
-              // Reset after 2 seconds
-              setTimeout(() => {
-                copyIcon.classList.remove('hidden')
-                checkIcon.classList.add('hidden')
-                copyText.textContent = 'Copy Link'
-              }, 2000)
-            } catch (err) {
-              console.error('Failed to copy: ', err)
-            }
-          }
-        })
-      }
+  const closeAll = (except?: Element | null) => {
+    document.querySelectorAll(DROPDOWN).forEach((dropdown) => {
+      if (dropdown !== except) setExpanded(dropdown, false)
     })
   }
 
-  // Setup on initial load
-  setupRssDropdowns()
+  const copyTimeouts = new WeakMap<HTMLElement, number>()
 
-  // Re-run setup on View Transitions (Astro)
-  document.addEventListener('astro:page-load', setupRssDropdowns)
-</script>
+  const copyFeedUrl = async (button: HTMLElement) => {
+    const url = button.dataset.rssUrl
+    const label = button.querySelector('.rss-dropdown-copy-label')
+    const status = button.closest(DROPDOWN)?.querySelector('.rss-dropdown-status')
+    if (!url || !label) return
 
-<style>
-  .rss-dropdown-menu {
-    transform-origin: top right;
-    animation: dropdown-fade-in 0.1s ease-out;
+    let message: string
+    try {
+      await navigator.clipboard.writeText(url)
+      button.dataset.copyState = 'done'
+      message = 'Copied!'
+    } catch {
+      button.dataset.copyState = 'failed'
+      message = 'Copy failed'
+    }
+
+    label.textContent = message
+    if (status) status.textContent = `${message} ${url}`
+
+    clearTimeout(copyTimeouts.get(button))
+    copyTimeouts.set(
+      button,
+      window.setTimeout(() => {
+        delete button.dataset.copyState
+        label.textContent = 'Copy Link'
+        if (status) status.textContent = ''
+      }, COPY_RESET_DELAY),
+    )
   }
 
-  @keyframes dropdown-fade-in {
+  const onDocumentClick = (event: MouseEvent) => {
+    const target = event.target as Element | null
+    const dropdown = target?.closest(DROPDOWN)
+
+    if (!dropdown) {
+      closeAll()
+      return
+    }
+
+    const trigger = target?.closest(TRIGGER)
+    if (trigger) {
+      const wasExpanded = trigger.getAttribute('aria-expanded') === 'true'
+      closeAll(dropdown)
+      setExpanded(dropdown, !wasExpanded)
+      return
+    }
+
+    const copyButton = target?.closest<HTMLElement>('.rss-dropdown-copy')
+    if (copyButton) {
+      copyFeedUrl(copyButton)
+      return
+    }
+
+    if (target?.closest('a')) closeAll()
+  }
+
+  const onDocumentKeydown = (event: KeyboardEvent) => {
+    if (event.key !== 'Escape') return
+
+    const openTrigger = document.querySelector<HTMLElement>(`${TRIGGER}[aria-expanded='true']`)
+    if (!openTrigger) return
+
+    closeAll()
+    openTrigger.focus()
+  }
+
+  const onDocumentFocusin = (event: FocusEvent) => {
+    closeAll((event.target as Element | null)?.closest(DROPDOWN))
+  }
+
+  // Astro re-runs this module on some navigations and on every HMR update. Binding twice
+  // would make each click toggle the panel open and straight back closed. The flag lives on
+  // `window` because ClientRouter resets <html> attributes from the incoming document.
+  const scope = window as typeof window & { rssDropdownBound?: boolean }
+
+  if (!scope.rssDropdownBound) {
+    scope.rssDropdownBound = true
+    document.addEventListener('click', onDocumentClick)
+    document.addEventListener('keydown', onDocumentKeydown)
+    document.addEventListener('focusin', onDocumentFocusin)
+  }
+</script>
+
+<style lang="scss">
+  .rss-dropdown {
+    font-size: var(--font-size--1);
+    line-height: 1.4;
+  }
+
+  .rss-dropdown-panel {
+    transform-origin: var(--rss-dropdown-origin-block, top) var(--rss-dropdown-origin-inline, left);
+    animation: rss-dropdown-in var(--animation-speed-fast, 0.1s) var(--cubic-bezier, ease-out);
+    margin-block-start: 0.5rem;
+    inset-block-start: 100%;
+    inset-inline-start: 0;
+
+    a {
+      color: var(--foreground-color);
+      text-decoration: none;
+
+      &:where(:hover, :focus-visible) {
+        color: var(--foreground-color);
+      }
+    }
+
+    :where(a, .rss-dropdown-copy):where(:hover, :focus-visible) {
+      background-color: var(--border-color-subtle);
+    }
+  }
+
+  .rss-dropdown[data-placement='top'] .rss-dropdown-panel {
+    --rss-dropdown-origin-block: bottom;
+
+    margin-block: 0 0.5rem;
+    inset-block: auto 100%;
+  }
+
+  .rss-dropdown[data-align='end'] .rss-dropdown-panel {
+    --rss-dropdown-origin-inline: right;
+
+    inset-inline: auto 0;
+  }
+
+  .rss-dropdown-chevron {
+    transition: rotate var(--animation-speed-fast, 0.2s) var(--cubic-bezier, ease-out);
+  }
+
+  .rss-dropdown-trigger[aria-expanded='true'] .rss-dropdown-chevron {
+    rotate: 180deg;
+  }
+
+  .rss-dropdown-copy-done,
+  .rss-dropdown-copy[data-copy-state] .rss-dropdown-copy-idle {
+    display: none;
+  }
+
+  .rss-dropdown-copy[data-copy-state='done'] .rss-dropdown-copy-done {
+    display: block;
+  }
+
+  .rss-dropdown-copy[data-copy-state='failed'] .rss-dropdown-copy-idle {
+    display: block;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rss-dropdown-panel {
+      animation: none;
+    }
+
+    .rss-dropdown-chevron {
+      transition: none;
+    }
+  }
+
+  @keyframes rss-dropdown-in {
     from {
-      opacity: 0;
       transform: scale(0.95);
+      opacity: 0;
     }
     to {
-      opacity: 1;
       transform: scale(1);
+      opacity: 1;
     }
   }
 </style>

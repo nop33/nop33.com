@@ -1,4 +1,12 @@
-@import 'tailwindcss' source(none);
+/* `accessible-astro-components` ships an unlayered reset (src/styles/forms.css), and unlayered
+   CSS outranks every cascade layer. Importing Tailwind's parts by hand lets the utilities stay
+   unlayered too, so `text-sm` and friends still reach <button>, <input>, <select> and <textarea>.
+   Keep theme and preflight layered - they are meant to be overridable. */
+@layer theme, base, components;
+
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/preflight.css' layer(base);
+@import 'tailwindcss/utilities.css' source(none);
 
 @source '../../src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}';
 @custom-variant dark (&:where(.darkmode, .darkmode *));
