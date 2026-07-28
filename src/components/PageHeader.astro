@@ -194,6 +194,7 @@ const sanitizedSubtitle: string = subtitle
         <div class="order-2 flex flex-col justify-center md:order-1">
           <h1 class="leading-none">{title}</h1>
           {sanitizedSubtitle && <p class="mt-4 text-xl md:text-2xl" set:html={sanitizedSubtitle} />}
+          <slot />
         </div>
 
         {
