@@ -29,7 +29,7 @@ import Logo from './Logo.astro'
 </div>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
+  const setupNavigation = () => {
     // variables
     const mainNav = document.querySelector('#main-navigation') as HTMLElement | null
     if (!mainNav) return
@@ -210,7 +210,9 @@ import Logo from './Logo.astro'
         closeAllDropdownMenus()
       }
     })
-  })
+  }
+
+  setupNavigation()
 </script>
 
 <style lang="scss" is:global>

@@ -27,7 +27,7 @@ const { class: className } = Astro.props
 </button>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
+  const setupResponsiveToggle = () => {
     // variables
     const responsiveToggle = document.querySelector('.responsive-toggle')
     if (!responsiveToggle) return
@@ -63,7 +63,9 @@ const { class: className } = Astro.props
       mobileNavigation.classList.toggle('show')
       mobileNavigation.classList.contains('show') ? openMenu(responsiveToggle) : closeMenu(responsiveToggle)
     })
-  })
+  }
+
+  setupResponsiveToggle()
 </script>
 
 <style lang="scss">

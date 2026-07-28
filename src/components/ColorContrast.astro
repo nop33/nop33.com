@@ -246,11 +246,7 @@ const themes: Theme[] = [
       })
     }
 
-    // Run contrast check when page loads
-    document.addEventListener('astro:page-load', processColorItems)
-
-    // Run contrast check when theme changes
-    document.addEventListener('astro:after-swap', processColorItems)
+    processColorItems()
   }
 
   // Initialize the contrast checker

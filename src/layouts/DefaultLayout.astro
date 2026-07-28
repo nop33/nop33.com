@@ -5,7 +5,6 @@ import SiteMeta from '@components/SiteMeta.astro'
 import Header from '@components/Header.astro'
 import Footer from '@components/Footer.astro'
 import CallToAction from '@components/CallToAction.astro'
-import { ClientRouter } from 'astro:transitions'
 
 const {
   title = 'Ilias Trichopoulos',
@@ -43,8 +42,9 @@ const {
       author={author}
     />
 
-    <!-- Enable Astro View Transitions for all browsers -->
-    <ClientRouter />
+    <!-- No ClientRouter here on purpose. It calls history.replaceState() on every scroll
+         end to persist scroll position, which makes Brave on iOS re-expand its collapsed
+         toolbars mid-read. Transitions come from `@view-transition` in _general.scss. -->
   </head>
   <body>
     <Header />

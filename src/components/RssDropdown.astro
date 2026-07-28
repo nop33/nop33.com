@@ -173,9 +173,8 @@ const readers = [
     closeAll((event.target as Element | null)?.closest(DROPDOWN))
   }
 
-  // Astro re-runs this module on some navigations and on every HMR update. Binding twice
-  // would make each click toggle the panel open and straight back closed. The flag lives on
-  // `window` because ClientRouter resets <html> attributes from the incoming document.
+  // Astro re-runs this module on every HMR update. Binding twice would make each click
+  // toggle the panel open and straight back closed.
   const scope = window as typeof window & { rssDropdownBound?: boolean }
 
   if (!scope.rssDropdownBound) {
