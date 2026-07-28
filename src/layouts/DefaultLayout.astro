@@ -56,15 +56,12 @@ const {
     <style lang="scss" is:global>
       @use '../assets/scss/base/mixins' as *;
 
-      // sticky footer on low content pages
-      html,
-      body {
-        height: 100%;
-      }
-
+      // sticky footer on low content pages. svh (not vh/dvh/%) keeps the page height
+      // constant while mobile browser toolbars collapse and expand during scroll.
       body {
         display: flex;
         flex-direction: column;
+        min-block-size: 100svh;
         overflow-x: clip;
 
         main {
