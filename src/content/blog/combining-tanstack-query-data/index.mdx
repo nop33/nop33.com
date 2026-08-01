@@ -1,16 +1,17 @@
 ---
 title: 'How to Combine TanStack Query Data in React'
-description: 'other words: query composition, derived queries.'
+description: 'Four ways to derive a value from several TanStack Query endpoints, and the trade-off each one makes. Query composition and derived queries, compared.'
 publishDate: 2026-08-01
 author: 'Ilias Trichopoulos'
 tags: ['TanStack Query', 'React']
 ---
 
 import BreakoutSection from '@components/BreakoutSection.astro'
+import Callout from '@components/Callout.astro'
 
 > **Who this is for.** You already use TanStack Query and are comfortable with `useQuery` and query keys. If you are not there yet, read [TkDodo's React Query series](https://tkdodo.eu/blog/practical-react-query) first. It is the best writing there is on this library, and everything below assumes it.
 
-One common TanStack Query pattern is that you can create your own wrapper hooks around the primitive hooks the library provides, especially if you want to reuse them accross several components or other hooks, or just want to keep your components' code clean:
+One common TanStack Query pattern is that you can create your own wrapper hooks around the primitive hooks the library provides, especially if you want to reuse them across several components or other hooks, or just want to keep your components' code clean:
 
 ```tsx
 // src/components/Asset.tsx
@@ -35,7 +36,7 @@ TkDodo recommends exactly this in [Practical React Query](https://tkdodo.eu/blog
 
 An interesting question then is: What goes **inside** these wrapper hooks?
 
-For an example like the one above where the data the component needs come directly from a single API endpoint the answer is simple: just the `useQuery` call. But what if the shape of the data the component needs has to **be derived by combining data** from multiple API endpoints?
+For an example like the one above where the data the component needs comes directly from a single API endpoint, the answer is simple: just the `useQuery` call. But what if the shape of the data the component needs has to **be derived by combining data** from multiple API endpoints?
 
 To illustrate what I mean: Take the example of a portfolio app that supports multiple accounts and displays the total value. You create `usePortfolioValue()`.
 
@@ -108,21 +109,23 @@ const mergeAssets = (assetsPerAccounts) =>
   assetsPerAccounts.flatMap((account) => account.data ?? [])
 ```
 
-[TODO: Put next 2 paragraphs in a box component if we have any, sth like the TLDR]  
+<Callout icon="🤔" label="Aside">
 
 You might object and say _"Hey, you are also combining in `useQueries`, you're not just combining them in the `useMemo()` call"_. And you would be right. This is **extremely** necessary.
 
-First of all, why `useQueries`? Because the number of accounts is not known ahead of time, and you can't use `useQuery` in a loop. Secondly, without `combine` the results the `useQueries` call would spit out will be a freshly built array. On every render. This means the `useMemo()` deps would change every time. Your `reduceTotalValue()` function then runs on every render, defeating the point of using `useMemo()`. So, use `combine` when using `useQueries`.
+First of all, why `useQueries`? Because the number of accounts is not known ahead of time, and you can't use `useQuery` in a loop. Secondly, without `combine` the results the `useQueries` call spits out will be a freshly built array. On every render. This means the `useMemo()` deps would change every time. Your `reduceTotalValue()` function then runs on every render, defeating the point of using `useMemo()`. So, use `combine` when using `useQueries`.
 
-This is a totally valid approach. It is important, however, to understand [what happens under the hood](https://tkdodo.eu/blog/inside-react-query). Let's do some arithmetics. Our `usePortfolioValue()` hook will create several Observers once it's called, one for each Query. One for the prices data, and one for each account data. In our example of 3 accounts, we get a total of 4 Observers to the QueryCache, for every use of `usePortfolioValue()` across our app.
+</Callout>
+
+This is a totally valid approach. It is important, however, to understand [what happens under the hood](https://tkdodo.eu/blog/inside-react-query). Let's do some arithmetic. Our `usePortfolioValue()` hook will create several Observers once it's called, one for each Query. One for the prices data, and one for each account data. In our example of 3 accounts, that is **4 Observers per consumer**, one for prices and one for each account, for every use of `usePortfolioValue()` across our app.
 
 Another thing worth noticing is what happens when our cached data changes.
-- If prices change, the Observer will notify the component to rerender. The `mergeAssets()` function, however, won't run. The results of the `combine` function didn't change (thank you [structural sharing](https://tanstack.com/query/v5/docs/framework/react/guides/render-optimizations#structural-sharing)). The deps of the `useMemo()` will of course change and we'll get a new portfolio value.
+- If prices change, the prices Observer notifies the component and it rerenders. The `mergeAssets()` function, however, won't run. It lives in a *different* Observer, the one watching the accounts, and none of the queries that Observer watches has changed. `combine` is memoized per Observer, so it hands back the previous result untouched. The `useMemo()` deps do change, of course, so we get a new portfolio value.
 - If an account's data change, the corresponding Observer will run the `combine` method (our `mergeAssets()`) which will return new results. `useMemo()` runs again and our components rerender.
 
 ## 2. Combine in `combine` of `useQueries`
 
-Did you notice how cool structural sharing is? This next approach attempts to put all queries in the `useQueries` call to benefit from this feature:
+Did you notice how useful that `combine` memoization is? This next approach hands *all* the queries to one `useQueries` call, so the whole derivation gets it:
 
 ```tsx
 const usePortfolioValue = () => {
@@ -148,7 +151,7 @@ const combineResults = (results) => {
 }
 ```
 
-`reduceTotalValue()` and `mergeAssets()` stay the same as before, nothing new here about them. What is new is that `reduceTotalValue()` is no longer called at the component/hook render function level but rather in the Observer level, just like our `mergeAssets()` from before. That means the result is memoized and the components will rerender only when the portfolio value changes. If, for example prices of two assets change together and they cancel each other out, the components won't rerender. I wouldn't judge you if you think this is a stupid example. But at least it demonstrates my point.
+`reduceTotalValue()` and `mergeAssets()` stay the same as before, nothing new here about them. What is new is that `reduceTotalValue()` is no longer called at the component/hook render function level but rather in the Observer level, just like our `mergeAssets()` from before. That means the result is memoized, and the output of `combine` runs through [structural sharing](https://tanstack.com/query/v5/docs/framework/react/guides/render-optimizations#structural-sharing) before it reaches the consumer, so the components rerender only when the portfolio value actually changes. If, for example, prices of two assets change together and they cancel each other out, the components won't rerender. I wouldn't judge you if you think this is a stupid example. But at least it demonstrates my point.
 
 Did you notice something, though? What happens now if only 1 price changes? The Observer will run `combineResults()` which itself will run `mergeAssets()` and the new portfolio value is returned. In our previous approach, `mergeAssets()` didn't need to run. The assets didn't change, only a price changed. 
 
@@ -156,13 +159,13 @@ Did you notice something, though? What happens now if only 1 price changes? The 
 
 (_I'd add that you're also trading some code readability._)
 
-As for the number of Observers, nothing changed. Our `usePortfolioValue()` will create the same number of Observers, as the previous approach.
+As for the number of Observers, nothing changed. Still **4 Observers per consumer**. Same queries, just combined in a different place.
 
 ---
 
-You are happy with your `usePortfolioValue()` hook, you pat yourself on the shoulder, and you start using it around in your codebase. In fact, you realize you need to calculate the allocation percentage for each asset row, so you decide to use your new hook on each asset row. Now, `usePorftolioValue()` has 6 consumers, the header value, and each row.
+You are happy with your `usePortfolioValue()` hook, you pat yourself on the back, and you start using it around in your codebase. In fact, you realize you need to calculate the allocation percentage for each asset row, so you decide to use your new hook on each asset row. Now, `usePortfolioValue()` has 6 consumers, the header value, and each row.
 
-(_If you think this example is not realistic and that the developer should instead prop-drill the value or put it in a Context, bare with me. It will be addressed. This is just an example to illustrate other approaches._)
+(_If you think this example is not realistic and that the developer should instead prop-drill the value or put it in a Context, you have a point. That is a discussion of its own and I cover it in a follow-up. Here it is just a way to illustrate the other approaches._)
 
 ```
 Total value
@@ -181,7 +184,7 @@ GOLD    ██░░░░░░░░░░░░░░░░░░   10%   $4,
 
 You think to yourself, _"hmm... so much wasted computation. Every time I use `usePortfolioValue()`, the results of `reduceTotalValue()` and `mergeAssets()` need to be recalculated."_ And you would be correct. No matter which of the above approaches you use, the results are cached either at the component level (in `useMemo()`) or in the Observer level (in `combine`). The results are cached **per consumer**.
 
-There are several ideas on how to share a cache between consumers. [One idea is to move the memoization outside of the components and the Observers](https://tkdodo.eu/blog/react-query-selectors-supercharged#the-final-boss) completely by using a separate library like [fast-memoize.js](https://github.com/caiogondim/fast-memoize.js). There are, however, a few more ideas that don't require an additional package, which you mind find useful.
+There are several ideas on how to share a cache between consumers. [One idea is to move the memoization outside of the components and the Observers](https://tkdodo.eu/blog/react-query-selectors-supercharged#the-final-boss) completely by using a separate library like [fast-memoize.js](https://github.com/caiogondim/fast-memoize.js). There are, however, a few more ideas that don't require an additional package, which you might find useful.
 
 ## 3. Combine in `queryFn` with `Promise.all`
 
@@ -206,12 +209,12 @@ const portfolioQuery = (accountIds) =>
         fetchPrices()
       ])
 
-      return reduceTotalValue(mergeAssets(assetsPerAccounts), prices)
+      return reduceTotalValue(assetsPerAccounts.flat(), prices)
     }
   })
 ```
 
-The derivation of the portfolio value now happens at the Query level and stored in the QueryCache. It is calculated on every refetch. It is not calculated per consumer anymore. When the all above 6 components mount, the calculation will run only once. Your components now have a cache they can share. But at what cost?
+The derivation of the portfolio value now happens at the Query level and stored in the QueryCache. It is calculated on every refetch. It is not calculated per consumer anymore. When all 6 of the above components mount, the calculation will run only once. Your components now have a cache they can share. But at what cost?
 
 Since the QueryCache now stores only the derived value, any component that simply needs the price of an asset needs to fetch it again:
 
@@ -221,15 +224,15 @@ const { data: prices } = useQuery(pricesQuery())
 
 So one cost of a shared derived cache is additional network requests. You've lost granularity.
 
-Another cost is error handling. I purposefully left loading and error states out of scope to keep the article content simple. But it's worth talking about it here. With the above `Promise.all()` implementation, if _any_ of the API calls returns an error, the whole Query throws and will be retried again, depending on your configuration. Imagine an extreme scenario where your app has 100 accounts, not 3. Firing 101 requests at the same time and you'll most probably hit some rate limitting and `429`s. Even if only 1 out of those 101 returns a `429`, all 101 requests will then be retried.
+Another cost is error handling. I purposefully left loading and error states out of scope to keep the article content simple. But it's worth talking about it here. With the above `Promise.all()` implementation, if _any_ of the API calls returns an error, the whole Query throws and will be retried again, depending on your configuration. Imagine an extreme scenario where your app has 100 accounts, not 3. Fire 101 requests at the same time and you will most probably hit some rate limiting and `429`s. Even if only 1 out of those 101 returns a `429`, all 101 requests will then be retried.
 
-This again, is a trade-off against additional network requests, and an even dangerous one that you need to watch out for. You could, of course, reach for `Promise.settled()` but that wouldn't solve your retry problem, unless you re-implement retries within the `queryFn` but let's not get there.
+This again, is a trade-off against additional network requests, and an even more dangerous one that you need to watch out for. You could, of course, reach for `Promise.allSettled()` but that wouldn't solve your retry problem, unless you re-implement retries within the `queryFn` but let's not get there.
 
-Last thing worth mentioning regarding this approach is that your number of Observers per consumer now has been reduced to 1.
+Last thing worth mentioning: you are now down to **1 Observer per consumer**, from 4. The whole fan-out moved inside the `queryFn`.
 
 ## 4. Combine in `queryFn` with `fetchQuery`
 
-This loss of granularity really bugs you. But then you remember: The `queryFn` doesn't care what's inside as long as it's a `Promise`. Making API calls return promises, of course, but so do `queryClient.fetchQuery` calls. What if we replaced our raw API calls from the example above with calls to the QueryCache?
+This loss of granularity really bugs you. But then you remember: The `queryFn` doesn't care what's inside as long as it's a `Promise`. API calls return promises, of course, but so do `queryClient.fetchQuery` calls. What if we replaced our raw API calls from the example above with calls to the QueryCache?
 
 ```tsx
 const usePortfolioValue = () => {
@@ -244,13 +247,15 @@ const portfolioQuery = (accountIds) =>
   queryOptions({
     queryKey: ['portfolio', accountIds],
     queryFn: async () => {
-      const assetsPromises = Promise.all(accountIds.map((id) => queryClient.fetchQuery(assetsQuery(id))))
+      const assetsPromises = Promise.all(
+        accountIds.map((id) => queryClient.fetchQuery(assetsQuery(id)))
+      )
       const [assets, prices] = await Promise.all([
         assetsPromises,
         queryClient.fetchQuery(pricesQuery())
       ])
 
-      return reduceTotalValue(mergeAssets(assetsPerAccounts), prices)
+      return reduceTotalValue(assets.flat(), prices)
     }
   })
 ```
@@ -258,21 +263,42 @@ const portfolioQuery = (accountIds) =>
 Now, look at that. With only a two-line change, each account keeps its own cache. Prices too. So we can still make the below calls anywhere in our app and we will hit the same cache:
 
 ```tsx
-useQuery(assetsQuery(assetId))
+useQuery(assetsQuery(accountId))
 useQuery(pricesQuery())
 ```
 
 Depending on `staleTime`, `fetchQuery` returns the cached value for everything still fresh and only fetches what was invalidated. And the composed result gets an entry too, computed once and read by everyone. I felt very proud when I came up with this idea, and very happy when I later discovered that [TkDodo pointed at this solution as well](https://github.com/TanStack/query/discussions/2178#discussioncomment-3615704).
 
-You must realize though what you have just traded, once again. A derived entry in the QueryCache is a snapshit. Not a subscription. If the prices query invalidates, any consumer of `usePortfolioValue()` will not re-render. The `portfolioQuery` has not been invalidated. Query invalidation for the portfolio value is now on your hands. I'll save you the Uncle Ben quote here.
+You must realize though what you have just traded, once again. A derived entry in the QueryCache is a snapshot. Not a subscription. If the prices query is invalidated, no consumer of `usePortfolioValue()` will re-render. The `portfolioQuery` has not been invalidated. Query invalidation for the portfolio value is now on your hands. I'll save you the Uncle Ben quote here.
 
 Nevertheless, it can be useful. If your app is [built around manual invalidations](https://tkdodo.eu/blog/react-query-as-a-state-manager#smart-refetches), this can be a totally valid approach. In an app I've worked on I use a ["change detection" query](/blog/tanstack-query-change-detection-polling/) that asks the server "are there new data?" and invalidates several queries only when the answer is yes.
 
+And like the previous approach, you are down to **1 Observer per consumer**. Unlike it, each source keeps its own cache entry.
+
+## Which one to reach for
+
+| | Observers per consumer | Derivation runs | What you give up |
+|---|---|---|---|
+| **1.** Combine in the component | 4 | once per consumer | nothing shared between consumers |
+| **2.** Combine in `combine` | 4 | once per consumer | any query data change re-runs the merge too |
+| **3.** `Promise.all` in `queryFn` | 1 | once, shared | granular caches, and one failure retries everything |
+| **4.** `fetchQuery` in `queryFn` | 1 | once, shared | you own invalidation of the derived entry |
+
+Reading it as a decision:
+
+- **Few consumers?** Stop at approach 1 or 2. The sharing the others buy you is not worth the trade. Pick between them by which function is the expensive one, `mergeAssets()` or `reduceTotalValue()`.
+- **Many consumers, and nothing else in the app needs the raw sources?** Approach 3 is the simplest thing that shares the work. Watch the error handling.
+- **Many consumers, and other screens do need the sources?** Approach 4. Pay for it by invalidating the derived entry yourself. Or use an external library, which comes with its own trade-offs.
+
+None of these is the right answer in general. They are four different answers to _"where should this value be computed and cached"_. Each of your use-cases can have a different answer. You are not restricted to using only one of them.
+
 ## Conclusion
 
-All above approaches are different ideas of how to implement your `useQuery`/`useQueries` hook wrappers. We started simple, by deriving and memoizing the data in the render functions, moving to memoizing them in the Observer level, and finally bringing them inside the QueryCache so that all consumers can have access to the same derived data. There are some things though that I eluded to but haven't talked about.
+All above approaches are different ideas of how to implement your `useQuery`/`useQueries` hook wrappers. We started simple, by deriving and memoizing the data in the render functions, moving to memoizing them in the Observer level, and finally bringing them inside the QueryCache so that all consumers can have access to the same derived data. There are some things though that I alluded to but haven't talked about.
 
-I keep referring to Observer count. But I never explained why. Fearing that this article is getting pretty long I've decided to address it in a follow-up. In my research and experience I notice that the number of Observers has an effect in the performance of your app. This is tightly coupled with where your wrapper hooks are used, particularly the co-location idea.
+I keep counting Observers and I never said why it matters. That turns out to be a post of its own, because it is really a question about where you call these hooks rather than how you write them.
+
+TanStack Query encourages you to call them wherever you need the data. That advice is good, and it is not free. I built a slight variation of this portfolio page in nine different ways and measured each one. I'll present my research in a follow-up article.
 
 What do you think about these approaches? Have you thought of other ones? Did I miss a hidden trade-off? I'd be very happy to hear about it!
 
