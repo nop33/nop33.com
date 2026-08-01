@@ -7,7 +7,6 @@ author: 'Ilias Trichopoulos'
 tags: ['TanStack Query', 'React']
 ---
 
-import BreakoutSection from '@components/BreakoutSection.astro'
 import Callout from '@components/Callout.astro'
 
 > **Who this is for.** You already use TanStack Query and are comfortable with `useQuery` and query keys. If you are not there yet, read [TkDodo's React Query series](https://tkdodo.eu/blog/practical-react-query) first. It is the best writing there is on this library, and everything below assumes it.
@@ -54,6 +53,8 @@ GET /prices              -> { assetId: price }
 How would you do it?
 
 A [detailed catalogue of options for transforming data](https://tkdodo.eu/blog/react-query-data-transformations) already exists. Combining is a different problem, and only partially addressed online. If your backend can do the `JOIN` for you, take it. But if it can't, keep reading.
+
+You will see this called different things depending on where you read about it. Derived queries. Query composition. Combining queries. Same question.
 
 In this article I am exploring different ways the community and myself have thought of to solve this problem, each with its own trade-offs.
 
@@ -268,11 +269,11 @@ useQuery(assetsQuery(accountId))
 useQuery(pricesQuery())
 ```
 
-Depending on `staleTime`, `fetchQuery` returns the cached value for everything still fresh and only fetches what was invalidated. And the composed result gets an entry too, computed once and read by everyone. I felt very proud when I came up with this idea, and very happy when I later discovered that [TkDodo pointed at this solution as well](https://github.com/TanStack/query/discussions/2178#discussioncomment-3615704).
+Depending on `staleTime`, `fetchQuery` returns the cached value for everything still fresh and only fetches what was invalidated. And the composed result gets an entry too, computed once and read by everyone. I felt very proud when I came up with this idea, and very happy when I later discovered that [TkDodo pointed at this solution as well](https://github.com/TanStack/query/discussions/2178#discussioncomment-3615704), in a discussion titled, aptly, _Derived Queries_.
 
 You must realize though what you have just traded, once again. A derived entry in the QueryCache is a snapshot. Not a subscription. If the prices query is invalidated, no consumer of `usePortfolioValue()` will re-render. The `portfolioQuery` has not been invalidated. Query invalidation for the portfolio value is now on your hands. I'll save you the Uncle Ben quote here.
 
-Nevertheless, it can be useful. If your app is [built around manual invalidations](https://tkdodo.eu/blog/react-query-as-a-state-manager#smart-refetches), this can be a totally valid approach. In an app I've worked on I use a ["change detection" query](/blog/tanstack-query-change-detection-polling/) that asks the server "are there new data?" and invalidates several queries only when the answer is yes.
+Nevertheless, it can be useful. If your app is [built around manual invalidations](https://tkdodo.eu/blog/react-query-as-a-state-manager#smart-refetches), this can be a totally valid approach. In an [app I've worked on](/portfolio/alephium-desktop-wallet/) I use a ["change detection" query](/blog/tanstack-query-change-detection-polling/) that asks the server "are there new data?" and invalidates several queries only when the answer is yes.
 
 And like the previous approach, you are down to **1 Observer per consumer**. Unlike it, each source keeps its own cache entry.
 
@@ -280,10 +281,10 @@ And like the previous approach, you are down to **1 Observer per consumer**. Unl
 
 | | Observers per consumer | Derivation runs | What you give up |
 |---|---|---|---|
-| **1.** Combine in the component | 4 | once per consumer | nothing shared between consumers |
-| **2.** Combine in `combine` | 4 | once per consumer | any query data change re-runs the merge too |
-| **3.** `Promise.all` in `queryFn` | 1 | once, shared | granular caches, and one failure retries everything |
-| **4.** `fetchQuery` in `queryFn` | 1 | once, shared | you own invalidation of the derived entry |
+| 1. Combine in the component | 4 | once per consumer | nothing shared between consumers |
+| 2. Combine in `combine` | 4 | once per consumer | any query data change re-runs the merge too |
+| 3. `Promise.all` in `queryFn` | 1 | once, shared | granular caches, and one failure retries everything |
+| 4. `fetchQuery` in `queryFn` | 1 | once, shared | you own invalidation of the derived entry |
 
 Reading it as a decision:
 
