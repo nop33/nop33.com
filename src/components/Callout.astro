@@ -1,0 +1,58 @@
+---
+interface Props {
+  label: string
+  icon?: string
+}
+
+const { label, icon } = Astro.props
+---
+
+<aside class="callout" aria-label={label}>
+  <span class="callout__badge">
+    {icon && <span aria-hidden="true">{icon}</span>}
+    {label}
+  </span>
+  <div class="callout__body"><slot /></div>
+</aside>
+
+<style lang="scss">
+  .callout {
+    margin-block: var(--space-m);
+    border: 1px solid
+      light-dark(oklch(from var(--brand-secondary) 82% 0.06 h), oklch(from var(--brand-secondary) 45% 0.06 h));
+    border-radius: 10px;
+    background: light-dark(
+      oklch(from var(--brand-secondary) 96% 0.025 h),
+      oklch(from var(--brand-secondary) 28% 0.035 h)
+    );
+    padding: var(--space-s) var(--space-m);
+  }
+
+  .callout__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    margin-block-end: 0.5rem;
+    color: light-dark(oklch(from var(--brand-secondary) 35% 0.08 h), oklch(from var(--brand-secondary) 88% 0.06 h));
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .callout__body {
+    color: var(--foreground-color);
+
+    :global(> * + *) {
+      margin-block-start: var(--space-s);
+    }
+
+    :global(> :first-child) {
+      margin-block-start: 0;
+    }
+
+    :global(> :last-child) {
+      margin-block-end: 0;
+    }
+  }
+</style>
