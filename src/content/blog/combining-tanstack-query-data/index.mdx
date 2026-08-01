@@ -2,6 +2,7 @@
 title: 'How to Combine TanStack Query Data in React'
 description: 'Four ways to derive a value from several TanStack Query endpoints, and the trade-off each one makes. Query composition and derived queries, compared.'
 publishDate: 2026-08-01
+featuredImage: ./cover.webp
 author: 'Ilias Trichopoulos'
 tags: ['TanStack Query', 'React']
 ---
@@ -296,7 +297,7 @@ None of these is the right answer in general. They are four different answers to
 
 All above approaches are different ideas of how to implement your `useQuery`/`useQueries` hook wrappers. We started simple, by deriving and memoizing the data in the render functions, moving to memoizing them in the Observer level, and finally bringing them inside the QueryCache so that all consumers can have access to the same derived data. There are some things though that I alluded to but haven't talked about.
 
-I keep counting Observers and I never said why it matters. That turns out to be a post of its own, because it is really a question about where you call these hooks rather than how you write them.
+I keep counting Observers and I never said why it matters. That turns out to be an article of its own, because it is really a question about where you call these hooks rather than how you write them.
 
 TanStack Query encourages you to call them wherever you need the data. That advice is good, and it is not free. I built a slight variation of this portfolio page in nine different ways and measured each one. I'll present my research in a follow-up article.
 
