@@ -1,6 +1,7 @@
 ---
 import DefaultLayout from '@layouts/DefaultLayout.astro'
 import PageHeader from '@components/PageHeader.astro'
+import Comments from '@components/Comments.astro'
 import { Image } from 'astro:assets'
 import { getCollection, render } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
@@ -51,6 +52,9 @@ const subtitle = `${formattedDate} · ${remarkPluginFrontmatter.minutesRead}`
       <Content />
     </div>
   </section>
+  <div class="narrow container my-16 md:my-24">
+    <Comments term={`blog/${post.id}`} />
+  </div>
 </DefaultLayout>
 
 <style lang="scss" is:global>
@@ -80,9 +84,9 @@ const subtitle = `${formattedDate} · ${remarkPluginFrontmatter.minutesRead}`
 
     blockquote {
       margin-block: var(--space-m);
-      padding-block: var(--space-3xs);
-      padding-inline-start: var(--space-s);
       border-inline-start: 4px solid light-dark(var(--color-primary-400), var(--color-primary-300));
+      padding-inline-start: var(--space-s);
+      padding-block: var(--space-3xs);
       color: light-dark(var(--color-neutral-700), var(--color-neutral-300));
       font-style: italic;
 

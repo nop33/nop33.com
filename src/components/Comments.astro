@@ -1,0 +1,182 @@
+---
+interface Props {
+  term: string
+}
+
+const { term } = Astro.props
+
+const REPO = 'nop33/nop33.com'
+const REPO_ID = 'R_kgDOQ6-8xA'
+const CATEGORY = 'Announcements'
+const CATEGORY_ID = 'DIC_kwDOQ6-8xM4DCdbh'
+const DISCUSSIONS_URL = `https://github.com/${REPO}/discussions`
+
+// giscus fetches the theme from inside its own https iframe, so an http://localhost URL is
+// dropped as mixed content and the widget renders with no colours at all. Dev therefore falls
+// back to the nearest built-in theme; the custom CSS only takes effect once deployed.
+const SITE = Astro.site ?? new URL('https://www.nop33.com')
+const themeLight = import.meta.env.DEV ? 'noborder_light' : new URL('/giscus/light.css', SITE).href
+const themeDark = import.meta.env.DEV ? 'noborder_dark' : new URL('/giscus/dark.css', SITE).href
+
+const panelId = 'comments-panel'
+---
+
+<section
+  class="comments"
+  aria-labelledby="comments-heading"
+  data-comments
+  data-repo={REPO}
+  data-repo-id={REPO_ID}
+  data-category={CATEGORY}
+  data-category-id={CATEGORY_ID}
+  data-term={term}
+  data-fallback-url={DISCUSSIONS_URL}
+  data-theme-light={themeLight}
+  data-theme-dark={themeDark}
+>
+  <h2 id="comments-heading" class="comments__heading">Comments</h2>
+  <p class="comments__intro">
+    Thoughts, corrections or war stories are all welcome. Comments run on <a href={DISCUSSIONS_URL}
+      >GitHub Discussions</a
+    >, so you need a GitHub account to post one.
+  </p>
+  <button
+    type="button"
+    class="comments__toggle"
+    aria-expanded="false"
+    aria-controls={panelId}
+    data-comments-toggle
+    data-umami-event="comments-toggle"
+  >
+    Show comments
+  </button>
+  <div id={panelId} class="comments__panel" data-comments-panel hidden>
+    <p class="comments__status" role="status" data-comments-status></p>
+  </div>
+</section>
+
+<script>
+  const GISCUS_ORIGIN = 'https://giscus.app'
+  const LOAD_TIMEOUT = 10000
+
+  const root = document.querySelector<HTMLElement>('[data-comments]')
+  const toggle = root?.querySelector<HTMLButtonElement>('[data-comments-toggle]')
+  const panel = root?.querySelector<HTMLElement>('[data-comments-panel]')
+  const status = root?.querySelector<HTMLElement>('[data-comments-status]')
+
+  if (root && toggle && panel && status) {
+    const themeFor = () =>
+      document.documentElement.classList.contains('darkmode')
+        ? (root.dataset.themeDark ?? 'noborder_dark')
+        : (root.dataset.themeLight ?? 'noborder_light')
+
+    let requested = false
+    let rendered = false
+
+    const showFallback = () => {
+      status.textContent = 'Comments could not load. You can read and reply on '
+      const link = document.createElement('a')
+      link.href = root.dataset.fallbackUrl ?? `https://github.com/${root.dataset.repo}/discussions`
+      link.textContent = 'GitHub Discussions'
+      status.append(link, '.')
+    }
+
+    const load = () => {
+      requested = true
+      status.textContent = 'Loading comments'
+
+      const script = document.createElement('script')
+      script.src = `${GISCUS_ORIGIN}/client.js`
+      script.async = true
+      script.crossOrigin = 'anonymous'
+
+      const config: Record<string, string> = {
+        repo: root.dataset.repo ?? '',
+        'repo-id': root.dataset.repoId ?? '',
+        category: root.dataset.category ?? '',
+        'category-id': root.dataset.categoryId ?? '',
+        // 'specific' rather than 'pathname': pathname mapping keys off location.pathname, so
+        // /blog/foo and /blog/foo/ would open two separate discussions for the same post.
+        mapping: 'specific',
+        term: root.dataset.term ?? '',
+        strict: '0',
+        'reactions-enabled': '1',
+        'emit-metadata': '0',
+        'input-position': 'bottom',
+        theme: themeFor(),
+        lang: 'en',
+      }
+      Object.entries(config).forEach(([key, value]) => script.setAttribute(`data-${key}`, value))
+
+      script.addEventListener('error', showFallback)
+      panel.appendChild(script)
+
+      window.setTimeout(() => {
+        if (!rendered) showFallback()
+      }, LOAD_TIMEOUT)
+    }
+
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true'
+      toggle.setAttribute('aria-expanded', String(!expanded))
+      toggle.textContent = expanded ? 'Show comments' : 'Hide comments'
+      panel.hidden = expanded
+      if (!expanded && !requested) load()
+    })
+
+    window.addEventListener('message', (event: MessageEvent) => {
+      if (event.origin !== GISCUS_ORIGIN || !event.data?.giscus) return
+      rendered = true
+      status.textContent = ''
+    })
+
+    document.addEventListener('darkmode:change', () => {
+      const frame = document.querySelector<HTMLIFrameElement>('iframe.giscus-frame')
+      frame?.contentWindow?.postMessage({ giscus: { setConfig: { theme: themeFor() } } }, GISCUS_ORIGIN)
+    })
+  }
+</script>
+
+<style lang="scss">
+  .comments__heading {
+    font-size: var(--font-size-3);
+    line-height: var(--font-size-4);
+  }
+
+  .comments__intro {
+    margin-block: var(--space-s) var(--space-m);
+    color: light-dark(var(--color-neutral-700), var(--color-neutral-300));
+  }
+
+  .comments__toggle {
+    display: inline-flex;
+    cursor: pointer;
+    border: 2px solid var(--border-color-subtle);
+    border-radius: 0.5rem;
+    padding-inline: 1.1rem;
+    padding-block: 0.6rem;
+    font-weight: 600;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .comments__toggle {
+      transition:
+        border-color 0.15s ease,
+        color 0.15s ease;
+    }
+  }
+
+  .comments__toggle:hover,
+  .comments__toggle:focus-visible {
+    border-color: var(--link-color);
+    color: var(--link-color);
+  }
+
+  .comments__panel {
+    margin-block-start: var(--space-m);
+  }
+
+  .comments__status:empty {
+    display: none;
+  }
+</style>
