@@ -1,0 +1,5 @@
+# giscus injects the theme as <link rel="stylesheet" crossorigin="anonymous"> from inside its
+# own iframe, so these files are read cross-origin and are blocked without an explicit ACAO.
+/giscus/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=3600
