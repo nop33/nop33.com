@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 580" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 580" width="100%" height="100%" role="img">
+  <title>React Native cold start thread timelines, before and after enabling global inline requires: the UI thread sits frozen on the splash screen for over 7 seconds while the JS thread runs one synchronous evaluation loop, and afterwards the UI thread is interactive at 1.8 seconds with the heavy frameworks loaded lazily on demand.</title>
   <rect width="900" height="580" fill="#000000" rx="8"/>
 
   <style>
